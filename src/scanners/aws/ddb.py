@@ -1,6 +1,8 @@
+from typing import Any, Dict, List
+
 import boto3
-from typing import Dict, List, Any
 from boto3.dynamodb.types import TypeDeserializer
+
 from src.scanners.base import BaseScanner
 from src.utils.logger import get_logger
 
@@ -28,11 +30,15 @@ class DynamoDBScanner(BaseScanner):
         """
         table_name = target["table_name"]
         region = target.get("region")
-        
+
         resource_id = f"arn:aws:dynamodb:{region or 'us-east-1'}:table/{table_name}"
         logger.info(f"Starting DynamoDB scan for {resource_id}")
 
-        ddb_client = boto3.client("dynamodb", region_name=region) if region else boto3.client("dynamodb")
+        ddb_client = (
+            boto3.client("dynamodb", region_name=region)
+            if region
+            else boto3.client("dynamodb")
+        )
         findings = []
 
         try:
@@ -49,16 +55,24 @@ class DynamoDBScanner(BaseScanner):
                 for item_idx, raw_item in enumerate(items):
                     item = self._deserialize_item(raw_item)
                     item_findings = self._scan_deserialized_item(item)
-                    
+
                     # Track location using primary keys if possible, or index
                     pk_info = self._get_primary_key_info(item)
-                    location = f"Item index {items_scanned + item_idx} (Keys: {pk_info})"
+                    location = (
+                        f"Item index {items_scanned + item_idx} (Keys: {pk_info})"
+                    )
 
                     for f in item_findings:
-                        findings.append(self.format_finding(
-                            f["detector"], f["category"], f["severity"], f["value"],
-                            resource_id, location
-                        ))
+                        findings.append(
+                            self.format_finding(
+                                f["detector"],
+                                f["category"],
+                                f["severity"],
+                                f["value"],
+                                resource_id,
+                                location,
+                            ),
+                        )
 
                 items_scanned += len(items)
 
@@ -67,7 +81,10 @@ class DynamoDBScanner(BaseScanner):
 
         return findings
 
-    def scan_stream_records(self, records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def scan_stream_records(
+        self,
+        records: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
         """
         Scans change data capture (CDC) stream records.
         """
@@ -76,7 +93,7 @@ class DynamoDBScanner(BaseScanner):
             event_name = record.get("eventName")  # INSERT, MODIFY, REMOVE
             if event_name == "REMOVE":
                 continue  # skip deletions
-            
+
             dynamodb_data = record.get("dynamodb", {})
             raw_image = dynamodb_data.get("NewImage")
             if not raw_image:
@@ -84,19 +101,29 @@ class DynamoDBScanner(BaseScanner):
 
             table_arn = record.get("eventSourceARN", "unknown-table")
             # Remove stream suffix if present
-            table_resource_id = table_arn.split("/stream/")[0] if "/stream/" in table_arn else table_arn
+            table_resource_id = (
+                table_arn.split("/stream/")[0] if "/stream/" in table_arn else table_arn
+            )
 
             item = self._deserialize_item(raw_image)
             item_findings = self._scan_deserialized_item(item)
 
-            pk_info = self._get_primary_key_info(self._deserialize_item(dynamodb_data.get("Keys", {})))
+            pk_info = self._get_primary_key_info(
+                self._deserialize_item(dynamodb_data.get("Keys", {})),
+            )
             location = f"CDC Event {event_name} (Keys: {pk_info})"
 
             for f in item_findings:
-                findings.append(self.format_finding(
-                    f["detector"], f["category"], f["severity"], f["value"],
-                    table_resource_id, location
-                ))
+                findings.append(
+                    self.format_finding(
+                        f["detector"],
+                        f["category"],
+                        f["severity"],
+                        f["value"],
+                        table_resource_id,
+                        location,
+                    ),
+                )
 
         return findings
 
@@ -117,7 +144,7 @@ class DynamoDBScanner(BaseScanner):
         for attr_name, value in item.items():
             # Scan attribute key name for potential secrets (e.g., password field name)
             findings.extend(self.engine.scan_text(attr_name))
-            
+
             # Scan value
             if isinstance(value, str):
                 findings.extend(self.engine.scan_text(value))

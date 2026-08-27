@@ -1,11 +1,11 @@
 import os
 import tempfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from src.engine.detector import DetectionEngine
-from src.scanners.aws.s3 import S3Scanner
-from src.scanners.aws.rds import RDSScanner
 from src.scanners.aws.ddb import DynamoDBScanner
+from src.scanners.aws.rds import RDSScanner
+from src.scanners.aws.s3 import S3Scanner
 
 
 @patch("boto3.client")
@@ -54,7 +54,7 @@ def test_s3_scanner(mock_boto_client):
 #     # Mock connection execution returning a row
 #     mock_conn = MagicMock()
 #     mock_engine.connect.return_value.__enter__.return_value = mock_conn
-    
+
 #     mock_result = MagicMock()
 #     # Mock row data: id=1, email="test@email.com", password="SecretPassword123"
 #     mock_result.fetchall.side_effect = [
@@ -76,7 +76,7 @@ def test_s3_scanner(mock_boto_client):
 #     }
 
 #     findings = scanner.scan(target)
-    
+
 #     assert len(findings) == 2
 #     detectors = [f["detector"] for f in findings]
 #     assert "Email" in detectors
@@ -99,10 +99,10 @@ def test_dynamodb_scanner(mock_boto_client):
                 {
                     "PK": {"S": "USER#1"},
                     "Email": {"S": "alice@email.com"},
-                    "APIKey": {"S": "api_key:abcdef1234567890abcdef"}
-                }
-            ]
-        }
+                    "APIKey": {"S": "api_key:abcdef1234567890abcdef"},
+                },
+            ],
+        },
     ]
 
     engine = DetectionEngine()
@@ -127,16 +127,14 @@ def test_dynamodb_stream_scanner():
             "eventName": "INSERT",
             "eventSourceARN": "arn:aws:dynamodb:us-east-1:123456789012:table/users-table/stream/2026-06-28",
             "dynamodb": {
-                "Keys": {
-                    "PK": {"S": "USER#2"}
-                },
+                "Keys": {"PK": {"S": "USER#2"}},
                 "NewImage": {
                     "PK": {"S": "USER#2"},
                     "Email": {"S": "bob@email.com"},
-                    "Secret": {"S": "Password: MySecurePassword!"}
-                }
-            }
-        }
+                    "Secret": {"S": "Password: MySecurePassword!"},
+                },
+            },
+        },
     ]
 
     findings = scanner.scan_stream_records(stream_records)
@@ -151,7 +149,9 @@ def test_dynamodb_stream_scanner():
 def test_s3_scanner_single_line_multiple_instances(mock_boto_client):
     def mock_download(bucket, key, path):
         with open(path, "w", encoding="utf-8") as f:
-            f.write("Some code here AKIA1234567890ABCDEF and later AKIA9876543210FEDCBA in same file\n")
+            f.write(
+                "Some code here AKIA1234567890ABCDEF and later AKIA9876543210FEDCBA in same file\n",
+            )
 
     s3_mock = MagicMock()
     s3_mock.download_file.side_effect = mock_download

@@ -1,12 +1,12 @@
+import bz2
+import gzip
 import os
 import shutil
+import tarfile
 import tempfile
 import zipfile
-import tarfile
-import gzip
-import bz2
-from typing import Dict, List, Any
 from pathlib import Path
+from typing import Any, Dict, List
 
 # Conditional imports for soft failures
 try:
@@ -73,17 +73,19 @@ class S3Scanner(BaseScanner):
         bucket = target["bucket"]
         key = target["key"]
         version_id = target.get("version_id")
-        
+
         resource_id = f"arn:aws:s3:::{bucket}/{key}"
         logger.info(f"Starting S3 scan for {resource_id}")
 
         s3_client = self.client or boto3.client("s3")
-        
+
         # Incremental check if configuration specifies last scan time
         if "last_scan_time" in self.config and target.get("last_modified"):
             last_scan = self.config["last_scan_time"]
             if target["last_modified"] <= last_scan:
-                logger.info(f"Skipping S3 scan for {resource_id} (not modified since {last_scan})")
+                logger.info(
+                    f"Skipping S3 scan for {resource_id} (not modified since {last_scan})",
+                )
                 return []
 
         # Download to a temporary file
@@ -94,9 +96,9 @@ class S3Scanner(BaseScanner):
             download_kwargs = {"Bucket": bucket, "Key": key}
             if version_id:
                 download_kwargs["VersionId"] = version_id
-                
+
             s3_client.download_file(bucket, key, temp_file_path)
-            
+
             # Scan local file path
             findings = self._scan_local_file(temp_file_path, resource_id)
             return findings
@@ -145,7 +147,12 @@ class S3Scanner(BaseScanner):
         seen = set()
         deduped = []
         for f in findings:
-            sig = (f.get("resource_id"), f.get("detector"), f.get("value"), f.get("location"))
+            sig = (
+                f.get("resource_id"),
+                f.get("detector"),
+                f.get("value"),
+                f.get("location"),
+            )
             if sig not in seen:
                 seen.add(sig)
                 deduped.append(f)
@@ -154,7 +161,12 @@ class S3Scanner(BaseScanner):
 
     # Parser Implementations
 
-    def _parse_csv_tsv(self, file_path: str, ext: str, resource_id: str) -> List[Dict[str, Any]]:
+    def _parse_csv_tsv(
+        self,
+        file_path: str,
+        ext: str,
+        resource_id: str,
+    ) -> List[Dict[str, Any]]:
         findings = []
         if not pd:
             logger.warning("Pandas is not installed. Skipping CSV/TSV scan.")
@@ -163,7 +175,15 @@ class S3Scanner(BaseScanner):
         sep = "\t" if ext == ".tsv" else ","
         try:
             # Streaming chunks of CSV
-            for chunk_idx, chunk in enumerate(pd.read_csv(file_path, sep=sep, chunksize=5000, on_bad_lines='skip', dtype=str)):
+            for chunk_idx, chunk in enumerate(
+                pd.read_csv(
+                    file_path,
+                    sep=sep,
+                    chunksize=5000,
+                    on_bad_lines="skip",
+                    dtype=str,
+                ),
+            ):
                 # Convert the chunk into rows and scan each column
                 for col in chunk.columns:
                     for row_idx, val in enumerate(chunk[col]):
@@ -172,10 +192,16 @@ class S3Scanner(BaseScanner):
                         cell_findings = self.engine.scan_text(val)
                         for f in cell_findings:
                             location = f"Chunk {chunk_idx}, Row {chunk_idx * 5000 + row_idx}, Column '{col}'"
-                            findings.append(self.format_finding(
-                                f["detector"], f["category"], f["severity"], f["value"],
-                                resource_id, location
-                            ))
+                            findings.append(
+                                self.format_finding(
+                                    f["detector"],
+                                    f["category"],
+                                    f["severity"],
+                                    f["value"],
+                                    resource_id,
+                                    location,
+                                ),
+                            )
         except Exception as e:
             logger.error(f"Error parsing CSV/TSV {resource_id}: {str(e)}")
         return findings
@@ -188,7 +214,9 @@ class S3Scanner(BaseScanner):
 
         try:
             parquet_file = pq.ParquetFile(file_path)
-            for batch_idx, batch in enumerate(parquet_file.iter_batches(batch_size=5000)):
+            for batch_idx, batch in enumerate(
+                parquet_file.iter_batches(batch_size=5000),
+            ):
                 df = batch.to_pandas()
                 for col in df.columns:
                     for row_idx, val in enumerate(df[col]):
@@ -197,10 +225,16 @@ class S3Scanner(BaseScanner):
                         cell_findings = self.engine.scan_text(val)
                         for f in cell_findings:
                             location = f"Batch {batch_idx}, Row {batch_idx * 5000 + row_idx}, Column '{col}'"
-                            findings.append(self.format_finding(
-                                f["detector"], f["category"], f["severity"], f["value"],
-                                resource_id, location
-                            ))
+                            findings.append(
+                                self.format_finding(
+                                    f["detector"],
+                                    f["category"],
+                                    f["severity"],
+                                    f["value"],
+                                    resource_id,
+                                    location,
+                                ),
+                            )
         except Exception as e:
             logger.error(f"Error parsing Parquet {resource_id}: {str(e)}")
         return findings
@@ -221,11 +255,19 @@ class S3Scanner(BaseScanner):
                             continue
                         cell_findings = self.engine.scan_text(val)
                         for f in cell_findings:
-                            location = f"Sheet '{sheet_name}', Row {row_idx}, Column '{col}'"
-                            findings.append(self.format_finding(
-                                f["detector"], f["category"], f["severity"], f["value"],
-                                resource_id, location
-                            ))
+                            location = (
+                                f"Sheet '{sheet_name}', Row {row_idx}, Column '{col}'"
+                            )
+                            findings.append(
+                                self.format_finding(
+                                    f["detector"],
+                                    f["category"],
+                                    f["severity"],
+                                    f["value"],
+                                    resource_id,
+                                    location,
+                                ),
+                            )
         except Exception as e:
             logger.error(f"Error parsing Excel {resource_id}: {str(e)}")
         return findings
@@ -243,13 +285,21 @@ class S3Scanner(BaseScanner):
                             cell_findings = self.engine.scan_text(value)
                             for f_item in cell_findings:
                                 location = f"JSON Path '{prefix}'"
-                                findings.append(self.format_finding(
-                                    f_item["detector"], f_item["category"], f_item["severity"], f_item["value"],
-                                    resource_id, location
-                                ))
+                                findings.append(
+                                    self.format_finding(
+                                        f_item["detector"],
+                                        f_item["category"],
+                                        f_item["severity"],
+                                        f_item["value"],
+                                        resource_id,
+                                        location,
+                                    ),
+                                )
                 return findings
             except Exception as e:
-                logger.warning(f"ijson parsing failed for {resource_id}, falling back to text scan: {str(e)}")
+                logger.warning(
+                    f"ijson parsing failed for {resource_id}, falling back to text scan: {str(e)}",
+                )
 
         # Fallback to line by line or full file reading
         return self._parse_text_fallback(file_path, resource_id)
@@ -265,14 +315,22 @@ class S3Scanner(BaseScanner):
                         cell_findings = self.engine.scan_text(elem.text.strip())
                         for f in cell_findings:
                             location = f"XML Element '{elem.tag}'"
-                            findings.append(self.format_finding(
-                                f["detector"], f["category"], f["severity"], f["value"],
-                                resource_id, location
-                            ))
+                            findings.append(
+                                self.format_finding(
+                                    f["detector"],
+                                    f["category"],
+                                    f["severity"],
+                                    f["value"],
+                                    resource_id,
+                                    location,
+                                ),
+                            )
                     elem.clear()
                 return findings
             except Exception as e:
-                logger.warning(f"etree parsing failed for {resource_id}, falling back to text scan: {str(e)}")
+                logger.warning(
+                    f"etree parsing failed for {resource_id}, falling back to text scan: {str(e)}",
+                )
 
         return self._parse_text_fallback(file_path, resource_id)
 
@@ -290,10 +348,16 @@ class S3Scanner(BaseScanner):
                     page_findings = self.engine.scan_text(text)
                     for f in page_findings:
                         location = f"PDF Page {idx + 1}"
-                        findings.append(self.format_finding(
-                            f["detector"], f["category"], f["severity"], f["value"],
-                            resource_id, location
-                        ))
+                        findings.append(
+                            self.format_finding(
+                                f["detector"],
+                                f["category"],
+                                f["severity"],
+                                f["value"],
+                                resource_id,
+                                location,
+                            ),
+                        )
         except Exception as e:
             logger.error(f"Error parsing PDF {resource_id}: {str(e)}")
         return findings
@@ -311,18 +375,30 @@ class S3Scanner(BaseScanner):
                     p_findings = self.engine.scan_text(paragraph.text)
                     for f in p_findings:
                         location = f"Paragraph {idx + 1}"
-                        findings.append(self.format_finding(
-                            f["detector"], f["category"], f["severity"], f["value"],
-                            resource_id, location
-                        ))
+                        findings.append(
+                            self.format_finding(
+                                f["detector"],
+                                f["category"],
+                                f["severity"],
+                                f["value"],
+                                resource_id,
+                                location,
+                            ),
+                        )
         except Exception as e:
             logger.error(f"Error parsing DOCX {resource_id}: {str(e)}")
         return findings
 
-    def _parse_image_ocr(self, file_path: str, resource_id: str) -> List[Dict[str, Any]]:
+    def _parse_image_ocr(
+        self,
+        file_path: str,
+        resource_id: str,
+    ) -> List[Dict[str, Any]]:
         findings = []
         if not pytesseract or not Image:
-            logger.warning("pytesseract/Pillow is not installed. Skipping Image OCR scan.")
+            logger.warning(
+                "pytesseract/Pillow is not installed. Skipping Image OCR scan.",
+            )
             return findings
 
         try:
@@ -332,15 +408,25 @@ class S3Scanner(BaseScanner):
                     img_findings = self.engine.scan_text(text)
                     for f in img_findings:
                         location = "Image OCR Text"
-                        findings.append(self.format_finding(
-                            f["detector"], f["category"], f["severity"], f["value"],
-                            resource_id, location
-                        ))
+                        findings.append(
+                            self.format_finding(
+                                f["detector"],
+                                f["category"],
+                                f["severity"],
+                                f["value"],
+                                resource_id,
+                                location,
+                            ),
+                        )
         except Exception as e:
             logger.error(f"Error parsing image OCR {resource_id}: {str(e)}")
         return findings
 
-    def _parse_text_fallback(self, file_path: str, resource_id: str) -> List[Dict[str, Any]]:
+    def _parse_text_fallback(
+        self,
+        file_path: str,
+        resource_id: str,
+    ) -> List[Dict[str, Any]]:
         findings = []
         try:
             with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
@@ -355,17 +441,23 @@ class S3Scanner(BaseScanner):
                             start = f_item.get("start", 0)
                             end = f_item.get("end", 0)
                             text_before = block_text[:start]
-                            line_num = line_offset + text_before.count('\n')
-                            last_nl = text_before.rfind('\n')
+                            line_num = line_offset + text_before.count("\n")
+                            last_nl = text_before.rfind("\n")
                             col_num = start + 1 if last_nl == -1 else start - last_nl
                             location = f"Line {line_num}, Column {col_num}-{col_num + (end - start)}"
-                            findings.append(self.format_finding(
-                                f_item["detector"], f_item["category"], f_item["severity"], f_item["value"],
-                                resource_id, location
-                            ))
+                            findings.append(
+                                self.format_finding(
+                                    f_item["detector"],
+                                    f_item["category"],
+                                    f_item["severity"],
+                                    f_item["value"],
+                                    resource_id,
+                                    location,
+                                ),
+                            )
                         line_offset += len(block_lines)
                         block_lines = []
-                
+
                 # Scan remaining lines
                 if block_lines:
                     block_text = "".join(block_lines)
@@ -374,19 +466,30 @@ class S3Scanner(BaseScanner):
                         start = f_item.get("start", 0)
                         end = f_item.get("end", 0)
                         text_before = block_text[:start]
-                        line_num = line_offset + text_before.count('\n')
-                        last_nl = text_before.rfind('\n')
+                        line_num = line_offset + text_before.count("\n")
+                        last_nl = text_before.rfind("\n")
                         col_num = start + 1 if last_nl == -1 else start - last_nl
                         location = f"Line {line_num}, Column {col_num}-{col_num + (end - start)}"
-                        findings.append(self.format_finding(
-                            f_item["detector"], f_item["category"], f_item["severity"], f_item["value"],
-                            resource_id, location
-                        ))
+                        findings.append(
+                            self.format_finding(
+                                f_item["detector"],
+                                f_item["category"],
+                                f_item["severity"],
+                                f_item["value"],
+                                resource_id,
+                                location,
+                            ),
+                        )
         except Exception as e:
             logger.error(f"Error scanning fallback text file {resource_id}: {str(e)}")
         return findings
 
-    def _parse_archive(self, file_path: str, ext: str, resource_id: str) -> List[Dict[str, Any]]:
+    def _parse_archive(
+        self,
+        file_path: str,
+        ext: str,
+        resource_id: str,
+    ) -> List[Dict[str, Any]]:
         findings = []
         extract_dir = tempfile.mkdtemp()
 
@@ -425,7 +528,7 @@ class S3Scanner(BaseScanner):
                 pass
 
         return findings
-    
+
     def list_all_files(self, bucket: str):
         paginator = self.client.get_paginator("list_objects_v2")
 
@@ -435,6 +538,3 @@ class S3Scanner(BaseScanner):
             files.extend(page.get("Contents", []))
 
         return files
-
-
-        

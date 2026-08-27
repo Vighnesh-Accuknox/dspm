@@ -1,0 +1,57 @@
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize]
+    branches:
+      - development
+
+
+name: Linting pipeline for divy application
+
+jobs:
+  tests:
+    # Run the linting pipeline only if the base_branch gets changed in case of `edited` github action event
+    if: ${{ github.event.action != 'edited' || ( github.event.changes.base && github.event.changes.base.sha.from ) }}
+    name: Run Linters
+    runs-on: ubuntu-latest
+    # services:
+    #   redis:
+    #     image: harbor.do.accuknox.com/cspm/k9v9d5v2/redis:latest
+    #     options: >-
+    #       --health-cmd "redis-cli ping"
+    #       --health-interval 10s
+    #       --health-timeout 5s
+    #       --health-retries 5
+    #     ports:
+    #       - 6379:6379
+
+    #   postgres:
+    #     image: harbor.do.accuknox.com/cspm/k9v9d5v2/postgres:latest
+    #     env:
+    #       POSTGRES_DB: postgres
+    #       POSTGRES_PASSWORD: postgres
+    #       POSTGRES_USER: postgres
+    #     volumes:
+    #       - /var/run/postgresql:/var/run/postgresql
+    #     ports:
+    #       - 5432:5432
+    #     options: >-
+    #       --health-cmd pg_isready
+    #       --health-interval 10s
+    #       --health-timeout 5s
+    #       --health-retries 5
+    steps:
+      - name: Checkout PR branch code
+        uses: actions/checkout@v7
+
+        # with:
+        #   ref: ${{ github.event.pull_request.head.ref }}
+        #   repository: ${{ github.event.pull_request.head.repo.full_name }}
+        #   token: ${{ secrets.GH_ORG_TOKEN }}
+        #   allow-unsafe-pr-checkout: true
+
+      # - uses: ./.github/install_project_dependencies
+      #   with:
+      #     python_version: "3.14"
+
+      - name: Run pre-commit
+        uses: pre-commit/action@v3.0.0
