@@ -1,8 +1,12 @@
 from typing import Any, Dict, List
 
 from src.engine.layers import (
-    scan_credentials, scan_entropy, scan_financial,
-    scan_healthcare, scan_pii, scan_regional,
+    scan_credentials,
+    scan_entropy,
+    scan_financial,
+    scan_healthcare,
+    scan_pii,
+    scan_regional,
 )
 
 
@@ -31,7 +35,13 @@ class DetectionEngine:
         findings.extend(scan_financial(text))
         findings.extend(scan_healthcare(text))
         findings.extend(scan_regional(text, self.enabled_regions))
-        findings.extend(scan_entropy(text))
+        findings.extend(
+            scan_entropy(
+                text,
+                min_length=self.config.get("entropy_min_length", 24),
+                min_entropy=self.config.get("entropy_min_entropy", 4.5),
+            ),
+        )
 
         # Filter findings where score is > 0.8
         filtered_findings = [f for f in findings if f.get("score", 0.0) > 0.8]

@@ -1,0 +1,87 @@
+# DSPM scanner as an OpenShift/Kubernetes CronJob.
+# Works under the restricted SCC (arbitrary non-root UID, no privileges).
+#
+#   oc apply -f deploy/openshift-cronjob.yaml -n <namespace>
+#
+# Fill in the Secret values and the image reference before applying.
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dspm-scanner-credentials
+type: Opaque
+stringData:
+  DB_USERNAME: ""            # read-only DB account recommended
+  DB_PASSWORD: ""
+  # DB_URI: ""               # alternative: full connection string/URI (overrides host/port/user/password)
+  DSPM_TOKEN: ""             # CSPM upload token
+  # AWS_ACCESS_KEY_ID: ""    # only for OBJECT_TYPE=S3 without IRSA/instance roles
+  # AWS_SECRET_ACCESS_KEY: ""
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dspm-scanner
+spec:
+  schedule: "0 2 * * *"                  # daily at 02:00
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: dspm-scanner
+              image: REGISTRY/dspm-scanner:latest   # <- your image
+              envFrom:
+                - secretRef:
+                    name: dspm-scanner-credentials
+              env:
+                - name: SCANNING_OBJECT_TYPE
+                  value: "EC2"                      # run-once mode; exit code reflects scan status
+                - name: OBJECT_TYPE
+                  value: "POSTGRES"                 # S3|POSTGRES|MYSQL|MARIADB|MSSQL|MONGODB
+                - name: OBJECT_NAME
+                  value: "appdb"                    # database name (or bucket name for S3)
+                - name: DB_HOST
+                  value: "postgres.example.svc"
+                - name: DB_PORT
+                  value: "5432"
+                - name: CSPM_URL
+                  value: "https://cspm.example.com/"
+                - name: ENABLED_REGIONS
+                  value: "US,IN,GB"
+                - name: LOG_QUERIES
+                  value: "false"
+                - name: OUTPUT_DIR
+                  value: "/output"
+              volumeMounts:
+                - name: output
+                  mountPath: /output
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 250m
+                  memory: 512Mi
+                limits:
+                  cpu: "1"
+                  memory: 2Gi
+              # Verified: the scanner runs with a fully read-only root filesystem,
+              # arbitrary non-root UID, and all capabilities dropped
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                capabilities:
+                  drop: ["ALL"]
+                seccompProfile:
+                  type: RuntimeDefault
+          volumes:
+            - name: output
+              emptyDir: {}
+            - name: tmp
+              emptyDir: {}

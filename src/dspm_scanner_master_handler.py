@@ -4,13 +4,40 @@ from typing import Any, Dict, List
 
 import settings
 from src.engine.detector import DetectionEngine
-# from src.scanners.aws.rds import RDSScanner
 from src.scanners.aws.ddb import DynamoDBScanner
+from src.scanners.aws.rds import RDSScanner
 from src.scanners.aws.s3 import S3Scanner
+from src.scanners.db.mongo import MongoScanner
+from src.scanners.db.sql import SQLScanner
 from src.utils.aws import get_secret
 from src.utils.logger import get_logger
 
 logger = get_logger("handler")
+
+# scan_type aliases -> canonical engine name for the SQL scanner
+SQL_SCAN_TYPES = {
+    "postgres": "postgres",
+    "postgresql": "postgres",
+    "mysql": "mysql",
+    "mariadb": "mariadb",
+    "mssql": "mssql",
+    "sqlserver": "mssql",
+}
+MONGO_SCAN_TYPES = {"mongo", "mongodb", "documentdb"}
+
+
+def resolve_db_credentials(target: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Fills missing connection details from AWS Secrets Manager if the target
+    specifies a password_secret ARN/name.
+    """
+    secret_arn = target.get("password_secret")
+    if secret_arn:
+        secret_data = get_secret(secret_arn)
+        if secret_data:
+            for key in ("username", "password", "host", "port", "database", "uri"):
+                target[key] = target.get(key) or secret_data.get(key)
+    return target
 
 
 def post_findings_to_api(
@@ -55,20 +82,26 @@ def process_single_event(event: Dict[str, Any]) -> List[Dict[str, Any]]:
         scanner = S3Scanner(engine, config)
         return scanner.scan(target)
 
-    # elif scan_type in ["rds", "aurora"]:
-    #     # Retrieve credentials from Secrets Manager if password_secret is specified
-    #     secret_arn = target.get("password_secret")
-    #     if secret_arn:
-    #         secret_data = get_secret(secret_arn)
-    #         if secret_data:
-    #             target["username"] = target.get("username") or secret_data.get("username")
-    #             target["password"] = target.get("password") or secret_data.get("password")
-    #             target["host"] = target.get("host") or secret_data.get("host")
-    #             target["port"] = target.get("port") or secret_data.get("port")
-    #             target["database"] = target.get("database") or secret_data.get("database")
+    elif scan_type in ["rds", "aurora"]:
+        target = resolve_db_credentials(target)
+        # SQL scanners read connection_string; honor a secret-provided uri too
+        if target.get("uri") and not target.get("connection_string"):
+            target["connection_string"] = target["uri"]
+        scanner = RDSScanner(engine, config)
+        return scanner.scan(target)
 
-    #     scanner = RDSScanner(engine, config)
-    #     return scanner.scan(target)
+    elif scan_type in SQL_SCAN_TYPES:
+        target = resolve_db_credentials(target)
+        if target.get("uri") and not target.get("connection_string"):
+            target["connection_string"] = target["uri"]
+        target.setdefault("engine", SQL_SCAN_TYPES[scan_type])
+        scanner = SQLScanner(engine, config)
+        return scanner.scan(target)
+
+    elif scan_type in MONGO_SCAN_TYPES:
+        target = resolve_db_credentials(target)
+        scanner = MongoScanner(engine, config)
+        return scanner.scan(target)
 
     elif scan_type == "dynamodb":
         scanner = DynamoDBScanner(engine, config)

@@ -6,6 +6,26 @@ from src.engine.detector import DetectionEngine
 from src.scanners.aws.ddb import DynamoDBScanner
 from src.scanners.aws.rds import RDSScanner
 from src.scanners.aws.s3 import S3Scanner
+from src.scanners.db.mongo import MongoScanner
+from src.scanners.db.sql import SQLScanner
+
+
+def _create_sqlite_db():
+    """Creates a throwaway SQLite database with PII test rows, returns its connection string."""
+    from sqlalchemy import create_engine, text
+
+    db_path = os.path.join(tempfile.mkdtemp(), "test.db")
+    conn_str = f"sqlite:///{db_path}"
+    sa_engine = create_engine(conn_str)
+    with sa_engine.begin() as conn:
+        conn.execute(text("CREATE TABLE users (id INTEGER, email TEXT, password TEXT)"))
+        conn.execute(
+            text(
+                "INSERT INTO users VALUES (1, 'john.doe@accuknox.com', 'SuperSecret123!')",
+            ),
+        )
+    sa_engine.dispose()
+    return conn_str
 
 
 @patch("boto3.client")
@@ -32,55 +52,172 @@ def test_s3_scanner(mock_boto_client):
     assert "Email" in detectors
 
 
-# @patch("src.scanners.rds.create_engine")
-# @patch("src.scanners.rds.inspect")
-# def test_rds_scanner(mock_inspect, mock_create_engine):
-#     # Mock SQLAlchemy engine, connection and inspection
-#     mock_engine = MagicMock()
-#     mock_create_engine.return_value = mock_engine
+def test_sql_scanner():
+    try:
+        import sqlalchemy  # noqa: F401
+    except ImportError:
+        print("        (skipped: sqlalchemy not installed)")
+        return
 
-#     # Mock Inspector
-#     mock_inspector = MagicMock()
-#     mock_inspector.get_schema_names.return_value = ["public"]
-#     mock_inspector.get_table_names.return_value = ["users"]
-#     mock_inspector.get_view_names.return_value = []
-#     mock_inspector.get_columns.return_value = [
-#         {"name": "id", "type": "INTEGER"},
-#         {"name": "email", "type": "VARCHAR"},
-#         {"name": "password", "type": "VARCHAR"}
-#     ]
-#     mock_inspect.return_value = mock_inspector
+    conn_str = _create_sqlite_db()
 
-#     # Mock connection execution returning a row
-#     mock_conn = MagicMock()
-#     mock_engine.connect.return_value.__enter__.return_value = mock_conn
+    engine = DetectionEngine()
+    scanner = SQLScanner(engine)
 
-#     mock_result = MagicMock()
-#     # Mock row data: id=1, email="test@email.com", password="SecretPassword123"
-#     mock_result.fetchall.side_effect = [
-#         [(1, "test@email.com", "SecretPassword123")], # first call returns users
-#         [] # second call returns empty
-#     ]
-#     mock_conn.execute.return_value = mock_result
+    target = {"engine": "sqlite", "connection_string": conn_str, "database": "testdb"}
+    findings = scanner.scan(target)
 
-#     engine = DetectionEngine()
-#     scanner = RDSScanner(engine)
+    assert len(findings) == 2
+    detectors = [f["detector"] for f in findings]
+    assert "Email" in detectors
+    assert "Password Pattern" in detectors
+    assert scanner.stats["tables_scanned"] == 1
+    assert scanner.stats["rows_scanned"] == 1
+    locations = [f["location"] for f in findings]
+    assert any("Column 'email'" in loc for loc in locations)
+    assert any("Column 'password'" in loc for loc in locations)
 
-#     target = {
-#         "engine": "postgres",
-#         "host": "localhost",
-#         "port": 5432,
-#         "username": "user",
-#         "password": "pwd",
-#         "database": "db"
-#     }
 
-#     findings = scanner.scan(target)
+def test_sql_scanner_sample_limit():
+    try:
+        import sqlalchemy  # noqa: F401
+        from sqlalchemy import create_engine, text
+    except ImportError:
+        print("        (skipped: sqlalchemy not installed)")
+        return
 
-#     assert len(findings) == 2
-#     detectors = [f["detector"] for f in findings]
-#     assert "Email" in detectors
-#     assert "Password Pattern" in detectors
+    db_path = os.path.join(tempfile.mkdtemp(), "limit.db")
+    conn_str = f"sqlite:///{db_path}"
+    sa_engine = create_engine(conn_str)
+    with sa_engine.begin() as conn:
+        conn.execute(text("CREATE TABLE contacts (id INTEGER, email TEXT)"))
+        for i in range(10):
+            conn.execute(text(f"INSERT INTO contacts VALUES ({i}, 'user{i}@accuknox.com')"))
+    sa_engine.dispose()
+
+    engine = DetectionEngine()
+    scanner = SQLScanner(engine)
+    findings = scanner.scan({"engine": "sqlite", "connection_string": conn_str, "sample_limit": 3})
+
+    assert scanner.stats["rows_scanned"] == 3
+    assert len(findings) == 3
+
+
+def test_rds_scanner():
+    try:
+        import sqlalchemy  # noqa: F401
+    except ImportError:
+        print("        (skipped: sqlalchemy not installed)")
+        return
+
+    conn_str = _create_sqlite_db()
+
+    engine = DetectionEngine()
+    scanner = RDSScanner(engine)
+
+    target = {
+        "engine": "sqlite",
+        "connection_string": conn_str,
+        "host": "mydb.xyz.us-east-1.rds.amazonaws.com",
+        "database": "production",
+    }
+    findings = scanner.scan(target)
+
+    assert len(findings) == 2
+    for f in findings:
+        assert f["resource_id"].startswith("arn:aws:rds:db:mydb.xyz.us-east-1.rds.amazonaws.com/production")
+
+
+def test_sql_scanner_aggregation():
+    try:
+        import sqlalchemy  # noqa: F401
+        from sqlalchemy import create_engine, text
+    except ImportError:
+        print("        (skipped: sqlalchemy not installed)")
+        return
+
+    db_path = os.path.join(tempfile.mkdtemp(), "agg.db")
+    conn_str = f"sqlite:///{db_path}"
+    sa_engine = create_engine(conn_str)
+    with sa_engine.begin() as conn:
+        conn.execute(text("CREATE TABLE contacts (id INTEGER, email TEXT)"))
+        for i in range(30):
+            conn.execute(text(f"INSERT INTO contacts VALUES ({i}, 'user{i}@accuknox.com')"))
+    sa_engine.dispose()
+
+    engine = DetectionEngine()
+    scanner = SQLScanner(engine)
+    findings = scanner.scan({"engine": "sqlite", "connection_string": conn_str})
+
+    # 30 hits in one (detector, column) pair collapse into a single column-level finding
+    assert len(findings) == 1
+    assert findings[0]["aggregated"] is True
+    assert findings[0]["occurrences"] == 30
+    assert findings[0]["column"] == "email"
+    assert "(30 matches)" in findings[0]["location"]
+
+    # threshold 0 disables aggregation
+    scanner = SQLScanner(engine, config={"aggregation_threshold": 0})
+    findings = scanner.scan({"engine": "sqlite", "connection_string": conn_str})
+    assert len(findings) == 30
+
+
+def test_sql_scanner_column_suppression():
+    try:
+        import sqlalchemy  # noqa: F401
+    except ImportError:
+        print("        (skipped: sqlalchemy not installed)")
+        return
+
+    conn_str = _create_sqlite_db()
+    engine = DetectionEngine()
+
+    scanner = SQLScanner(engine, config={"column_suppression": {"Email": "email"}})
+    findings = scanner.scan({"engine": "sqlite", "connection_string": conn_str})
+    detectors = [f["detector"] for f in findings]
+    assert "Email" not in detectors
+    assert "Password Pattern" in detectors
+
+
+
+def test_mongo_scanner():
+    # Mock pymongo client: one user database next to system databases
+    coll_mock = MagicMock()
+    coll_mock.find.return_value.limit.return_value = [
+        {
+            "_id": "user-1",
+            "email": "carol.smith@yahoo.com",
+            "profile": {"work_email": "carol@zoho.com"},
+            "api_key": "sk_live_abcdef1234567890",
+        },
+    ]
+
+    db_mock = MagicMock()
+    db_mock.list_collection_names.return_value = ["users", "system.indexes"]
+    db_mock.__getitem__.return_value = coll_mock
+
+    client_mock = MagicMock()
+    client_mock.list_database_names.return_value = ["appdb", "admin", "local", "config"]
+    client_mock.__getitem__.return_value = db_mock
+
+    engine = DetectionEngine()
+    scanner = MongoScanner(engine, client=client_mock)
+
+    findings = scanner.scan({"host": "mongo.local"})
+
+    detectors = [f["detector"] for f in findings]
+    assert "Email" in detectors
+    assert "API Key" in detectors
+
+    # Nested fields are reported with their dotted path
+    locations = [f["location"] for f in findings]
+    assert any("Field 'profile.work_email'" in loc for loc in locations)
+
+    # System databases and system.* collections are skipped
+    for f in findings:
+        assert f["resource_id"] == "mongodb://mongo.local/appdb/users"
+    assert scanner.stats["collections_scanned"] == 1
+    assert scanner.stats["documents_scanned"] == 1
 
 
 @patch("boto3.client")

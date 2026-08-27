@@ -7,18 +7,15 @@ from src.engine.entropy import calculate_entropy
 from src.engine.luhn import luhn_check
 
 # Layer 1: Global PII
-EMAIL_REGEX = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
-DOB_REGEX = re.compile(r"\b(19|20)\d{2}[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12]\d|3[01])\b")
-ADDRESS_KEYWORDS = [
-    "street",
-    "road",
-    "avenue",
-    "postal code",
-    "zip code",
-    "city",
-    "state",
-    "country",
-]
+EMAIL_REGEX = re.compile(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}')
+DOB_REGEX = re.compile(r'\b(19|20)\d{2}[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12]\d|3[01])\b')
+# Dates outside a plausible birth range are operational timestamps, not PII
+DOB_MIN_YEAR = 1930
+DOB_MAX_YEAR = 2012
+# Street-level words are the trigger; geo words alone (state/city/country) match
+# far too much cloud/machine data ('"state": "running"') to stand on their own
+ADDRESS_STREET_KEYWORDS = ["street", "road", "avenue", "lane", "boulevard", "apartment", "suite", "sector", "block"]
+ADDRESS_CONTEXT_KEYWORDS = ["postal code", "zip code", "pincode", "city", "state", "country"]
 
 # Layer 2: Credentials and Secrets
 PASSWORD_REGEX = re.compile(
@@ -37,19 +34,13 @@ AWS_SECRET_KEY_REGEX = re.compile(
 PRIVATE_KEY_REGEX = re.compile(r"-----BEGIN (RSA |EC |OPENSSH |)?PRIVATE KEY-----")
 
 # Layer 3: Financial Data
-CREDIT_CARD_REGEX = re.compile(r"\b(?:\d[ -]*?){13,19}\b")
-IBAN_REGEX = re.compile(r"\b[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}\b")
-SWIFT_REGEX = re.compile(r"\b[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?\b")
-BANK_ACCOUNT_REGEX = re.compile(r"\b\d{8,20}\b")
-BANK_ACCOUNT_KEYWORDS = [
-    "account",
-    "bank",
-    "routing",
-    "ifsc",
-    "iban",
-    "swift",
-    "beneficiary",
-]
+CREDIT_CARD_REGEX = re.compile(r'\b(?:\d[ -]*?){13,19}\b')
+IBAN_REGEX = re.compile(r'\b[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}\b')
+SWIFT_REGEX = re.compile(r'\b[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?\b')
+BANK_ACCOUNT_REGEX = re.compile(r'\b\d{8,20}\b')
+# Bare "account" matches nearly all cloud data (AWS accounts); require finance-specific context
+BANK_ACCOUNT_KEYWORDS = ["account number", "account no", "acct", "bank", "routing", "ifsc", "iban", "swift", "beneficiary"]
+HEX_ONLY_REGEX = re.compile(r'[0-9a-fA-F]+')
 
 # Layer 4: Healthcare Data
 HEALTHCARE_KEYWORDS = [
@@ -66,7 +57,9 @@ HEALTHCARE_KEYWORDS = [
 
 # Layer 5: Regional Compliance
 REGIONAL_REGEXES = {
-    "US": {"SSN": re.compile(r"\b\d{3}-\d{2}-\d{4}\b")},
+    "US": {
+        "SSN": re.compile(r'\b\d{3}-\d{2}-\d{4}\b'),
+    },
     "IN": {
         "Aadhaar": re.compile(r"\b[2-9]\d{3}\s?\d{4}\s?\d{4}\b"),
         "PAN": re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b"),
@@ -74,57 +67,34 @@ REGIONAL_REGEXES = {
             r"\b((?:0[1-9]|[1-3][0-7])[A-Za-z0-9]{10}[A-Za-z0-9]{1}Z[A-Za-z0-9]{1})\b",
         ),
         "PASSPORT": re.compile(r"\b[A-Z][1-9]\d\s?\d{4}[1-9]\b"),
-        "VOTER ID": re.compile(
-            r"\b([A-Za-z]{1}[ABCDGHJKMNPRSYabcdghjkmnprsy]{1}[A-Za-z]{1}([0-9]){7})\b",
-        ),
+        "VOTER ID": re.compile(r"\b([A-Za-z]{1}[ABCDGHJKMNPRSYabcdghjkmnprsy]{1}[A-Za-z]{1}([0-9]){7})\b"),
     },
-    "CA": {"SIN": re.compile(r"\b\d{3}-\d{3}-\d{3}\b")},
-    "GB": {"NINO": re.compile(r"\b[A-CEGHJ-PR-TW-Z]{2}\d{6}[A-D]?\b")},
+    "CA": {
+        "SIN": re.compile(r'\b\d{3}-\d{3}-\d{3}\b'),
+    },
+    "GB": {
+        "NINO": re.compile(r'\b[A-CEGHJ-PR-TW-Z]{2}\d{6}[A-D]?\b'),
+    },
 }
 
 # Layer 6: Entropy Candidates
-ENTROPY_CANDIDATE_REGEX = re.compile(r"\b[A-Za-z0-9/+=_\-~]{20,}\b")
+ENTROPY_CANDIDATE_REGEX = re.compile(r'\b[A-Za-z0-9/+=_\-~]{20,}\b')
+# Lowercase slugs/dns-style names (my-service-name-0) are identifiers, not secrets
+ENTROPY_SLUG_REGEX = re.compile(r'[a-z0-9]+(?:[-_][a-z0-9]+)+')
 
 # Presidio Context Mapping
 CONTEXT_WORDS = {
     "Email": ["email", "e-mail", "mail", "address", "contact"],
     "Phone Number": ["phone", "mobile", "call", "telephone", "tel", "cell"],
-    "Date of Birth": ["birth", "born", "dob", "date", "birthday"],
-    "Address": [
-        "address",
-        "street",
-        "road",
-        "city",
-        "state",
-        "zip",
-        "postal",
-        "house",
-        "number",
-    ],
+    "Date of Birth": ["birth", "born", "dob", "birthday"],
+    "Address": ["address", "street", "road", "city", "state", "zip", "postal", "house", "number"],
     "Password Pattern": ["password", "passwd", "pwd", "secret", "credentials", "key"],
     "API Key": ["api", "key", "apikey", "token", "secret"],
     "Bearer Token": ["bearer", "token", "auth", "authorization"],
     "OAuth Token": ["oauth", "token", "access", "refresh"],
     "IBAN": ["iban", "bank", "account", "wire", "transfer"],
-    "SWIFT/BIC": [
-        "swift",
-        "bic",
-        "bank",
-        "routing",
-        "code",
-        "financial",
-        "payment",
-        "transfer",
-    ],
-    "Bank Account": [
-        "account",
-        "bank",
-        "routing",
-        "ifsc",
-        "iban",
-        "swift",
-        "beneficiary",
-    ],
+    "SWIFT/BIC": ["swift", "bic", "bank", "routing", "code", "financial", "payment", "transfer"],
+    "Bank Account": ["account number", "account no", "acct", "bank", "routing", "ifsc", "iban", "swift", "beneficiary"],
     "US SSN": ["ssn", "social security", "tax", "identity"],
     "IN Aadhaar": ["aadhaar", "uidai", "identity", "card"],
     "IN GST": [
@@ -236,7 +206,7 @@ def is_starred_private_key(text: str, start: int) -> bool:
     """
     Returns True if the private key content consists only of stars (*).
     """
-    sub_text = text[start : start + 1000]
+    sub_text = text[start:start+1000]
 
     # Look for a private key footer
     footer_pattern = re.compile(
@@ -269,87 +239,71 @@ def scan_pii(text: str) -> list:
             continue
 
         score = calculate_match_score(text, match.start(), match.end(), 0.6, "Email")
-        findings.append(
-            {
-                "detector": "Email",
-                "category": "PII",
-                "severity": "Medium",
-                "value": val,
-                "score": score,
-                "start": match.start(),
-                "end": match.end(),
-            },
-        )
+        findings.append({
+            "detector": "Email",
+            "category": "PII",
+            "severity": "Medium",
+            "value": val,
+            "score": score,
+            "start": match.start(),
+            "end": match.end(),
+        })
 
     # 2. Phone Numbers
     try:
         for match in phonenumbers.PhoneNumberMatcher(text, None):
-            score = calculate_match_score(
-                text,
-                match.start,
-                match.end,
-                0.4,
-                "Phone Number",
-            )
-            findings.append(
-                {
-                    "detector": "Phone Number",
-                    "category": "PII",
-                    "severity": "Medium",
-                    "value": match.raw_string,
-                    "score": score,
-                    "start": match.start,
-                    "end": match.end,
-                },
-            )
+            score = calculate_match_score(text, match.start, match.end, 0.4, "Phone Number")
+            findings.append({
+                "detector": "Phone Number",
+                "category": "PII",
+                "severity": "Medium",
+                "value": match.raw_string,
+                "score": score,
+                "start": match.start,
+                "end": match.end,
+            })
     except Exception:
         pass
 
     # 3. DOB
     for match in DOB_REGEX.finditer(text):
-        score = calculate_match_score(
-            text,
-            match.start(),
-            match.end(),
-            0.4,
-            "Date of Birth",
-        )
-        findings.append(
-            {
-                "detector": "Date of Birth",
-                "category": "PII",
-                "severity": "Medium",
-                "value": match.group(0),
-                "score": score,
-                "start": match.start(),
-                "end": match.end(),
-            },
-        )
+        year = int(match.group(0)[:4])
+        if not (DOB_MIN_YEAR <= year <= DOB_MAX_YEAR):
+            continue
+        score = calculate_match_score(text, match.start(), match.end(), 0.4, "Date of Birth")
+        findings.append({
+            "detector": "Date of Birth",
+            "category": "PII",
+            "severity": "Medium",
+            "value": match.group(0),
+            "score": score,
+            "start": match.start(),
+            "end": match.end(),
+        })
 
     # 4. Addresses (Keyword scoring line by line)
     lines = text.splitlines()
     offset = 0
     for line in lines:
         lower_line = line.lower()
-        matched_kws = [kw for kw in ADDRESS_KEYWORDS if kw in lower_line]
+        matched_kws = [kw for kw in ADDRESS_STREET_KEYWORDS if kw in lower_line]
         if matched_kws:
             has_digit = any(c.isdigit() for c in line)
-            if has_digit or len(matched_kws) >= 2:
+            has_context = any(kw in lower_line for kw in ADDRESS_CONTEXT_KEYWORDS)
+            if has_digit or has_context:
                 start_pos = offset
                 end_pos = offset + len(line)
                 score = calculate_match_score(text, start_pos, end_pos, 0.5, "Address")
-                findings.append(
-                    {
-                        "detector": "Address",
-                        "category": "PII",
-                        "severity": "Medium",
-                        "value": line.strip(),
-                        "score": score,
-                        "start": start_pos,
-                        "end": end_pos,
-                    },
-                )
-        offset += len(line) + 1  # +1 for newline character
+                findings.append({
+                    "detector": "Address",
+                    "category": "PII",
+                    "severity": "Medium",
+                    "value": line.strip(),
+                    "score": score,
+                    "start": start_pos,
+                    "end": end_pos,
+                })
+        offset += len(line) + 1 # +1 for newline character
 
     return findings
 
@@ -358,24 +312,16 @@ def scan_credentials(text: str) -> list:
     findings = []
 
     def add_secret(detector, value, match_obj, base_score):
-        score = calculate_match_score(
-            text,
-            match_obj.start(),
-            match_obj.end(),
-            base_score,
-            detector,
-        )
-        findings.append(
-            {
-                "detector": detector,
-                "category": "Credentials and Secrets",
-                "severity": "Critical",
-                "value": value,
-                "score": score,
-                "start": match_obj.start(),
-                "end": match_obj.end(),
-            },
-        )
+        score = calculate_match_score(text, match_obj.start(), match_obj.end(), base_score, detector)
+        findings.append({
+            "detector": detector,
+            "category": "Credentials and Secrets",
+            "severity": "Critical",
+            "value": value,
+            "score": score,
+            "start": match_obj.start(),
+            "end": match_obj.end(),
+        })
 
     for match in PASSWORD_REGEX.finditer(text):
         add_secret("Password Pattern", match.group(2), match, 0.5)
@@ -388,68 +334,89 @@ def scan_credentials(text: str) -> list:
 
     for match in JWT_REGEX.finditer(text):
         # Self-validating: score is 0.85 directly
-        findings.append(
-            {
-                "detector": "JWT Token",
-                "category": "Credentials and Secrets",
-                "severity": "Critical",
-                "value": match.group(0),
-                "score": 0.85,
-                "start": match.start(),
-                "end": match.end(),
-            },
-        )
+        findings.append({
+            "detector": "JWT Token",
+            "category": "Credentials and Secrets",
+            "severity": "Critical",
+            "value": match.group(0),
+            "score": 0.85,
+            "start": match.start(),
+            "end": match.end(),
+        })
 
     for match in OAUTH_TOKEN_REGEX.finditer(text):
         add_secret("OAuth Token", match.group(2), match, 0.6)
 
     for match in AWS_ACCESS_KEY.finditer(text):
         # Self-validating: score is 0.85 directly
-        findings.append(
-            {
-                "detector": "AWS Access Key",
-                "category": "Credentials and Secrets",
-                "severity": "Critical",
-                "value": match.group(0),
-                "score": 0.85,
-                "start": match.start(),
-                "end": match.end(),
-            },
-        )
+        findings.append({
+            "detector": "AWS Access Key",
+            "category": "Credentials and Secrets",
+            "severity": "Critical",
+            "value": match.group(0),
+            "score": 0.85,
+            "start": match.start(),
+            "end": match.end(),
+        })
 
     for match in AWS_SECRET_KEY_REGEX.finditer(text):
         val = match.group(0)
+        # Real AWS secrets are base64 (mixed case + digits); pure hex is a git SHA/digest
+        if HEX_ONLY_REGEX.fullmatch(val):
+            continue
+        if not (any(c.isupper() for c in val) and any(c.islower() for c in val) and any(c.isdigit() for c in val)):
+            continue
         if len(set(val)) > 4:
             # Self-validating: score is 0.85 directly
-            findings.append(
-                {
-                    "detector": "AWS Secret Access Key",
-                    "category": "Credentials and Secrets",
-                    "severity": "Critical",
-                    "value": val,
-                    "score": 0.85,
-                    "start": match.start(),
-                    "end": match.end(),
-                },
-            )
+            findings.append({
+                "detector": "AWS Secret Access Key",
+                "category": "Credentials and Secrets",
+                "severity": "Critical",
+                "value": val,
+                "score": 0.85,
+                "start": match.start(),
+                "end": match.end(),
+            })
 
     for match in PRIVATE_KEY_REGEX.finditer(text):
         if is_starred_private_key(text, match.start()):
             continue
         # Self-validating: score is 0.85 directly
-        findings.append(
-            {
-                "detector": "Private Key Header",
-                "category": "Credentials and Secrets",
-                "severity": "Critical",
-                "value": match.group(0),
-                "score": 0.85,
-                "start": match.start(),
-                "end": match.end(),
-            },
-        )
+        findings.append({
+            "detector": "Private Key Header",
+            "category": "Credentials and Secrets",
+            "severity": "Critical",
+            "value": match.group(0),
+            "score": 0.85,
+            "start": match.start(),
+            "end": match.end(),
+        })
 
     return findings
+
+
+def iin_matches_network(digits: str) -> bool:
+    """
+    Issuer prefix + per-network length check. Luhn alone passes 1 in 10 random
+    digit runs (timestamps, numeric ids), so a real card must also carry a known
+    network prefix at the right length.
+    """
+    n = len(digits)
+    if digits[0] == "4":
+        return n in (13, 16, 19)                                   # Visa
+    if digits[:2] in ("34", "37"):
+        return n == 15                                             # Amex
+    if 51 <= int(digits[:2]) <= 55:
+        return n == 16                                             # Mastercard
+    if n >= 4 and 2221 <= int(digits[:4]) <= 2720:
+        return n == 16                                             # Mastercard 2-series
+    if digits[:4] == "6011" or digits[:2] == "65":
+        return n in (16, 19)                                       # Discover / RuPay
+    if digits[:2] in ("35",):
+        return n == 16                                             # JCB
+    if digits[:2] in ("81", "82"):
+        return n == 16                                             # RuPay
+    return False
 
 
 def scan_financial(text: str) -> list:
@@ -458,59 +425,47 @@ def scan_financial(text: str) -> list:
     # 1. Credit Cards with Luhn Check
     for match in CREDIT_CARD_REGEX.finditer(text):
         candidate = match.group(0)
-        cleaned = re.sub(r"[\s\-]", "", candidate)
-        if luhn_check(cleaned):
+        cleaned = re.sub(r'[\s\-]', '', candidate)
+        if luhn_check(cleaned) and iin_matches_network(cleaned):
             # High confidence due to checksum
-            findings.append(
-                {
-                    "detector": "Credit Card",
-                    "category": "Financial Data",
-                    "severity": "Critical",
-                    "value": candidate,
-                    "score": 0.85,
-                    "start": match.start(),
-                    "end": match.end(),
-                },
-            )
+            findings.append({
+                "detector": "Credit Card",
+                "category": "Financial Data",
+                "severity": "Critical",
+                "value": candidate,
+                "score": 0.85,
+                "start": match.start(),
+                "end": match.end(),
+            })
 
     # 2. IBAN
     for match in IBAN_REGEX.finditer(text):
         score = calculate_match_score(text, match.start(), match.end(), 0.7, "IBAN")
-        findings.append(
-            {
-                "detector": "IBAN",
-                "category": "Financial Data",
-                "severity": "High",
-                "value": match.group(0),
-                "score": score,
-                "start": match.start(),
-                "end": match.end(),
-            },
-        )
+        findings.append({
+            "detector": "IBAN",
+            "category": "Financial Data",
+            "severity": "High",
+            "value": match.group(0),
+            "score": score,
+            "start": match.start(),
+            "end": match.end(),
+        })
 
     # 3. SWIFT/BIC
     for match in SWIFT_REGEX.finditer(text):
         val = match.group(0)
         if val.upper() in SWIFT_BLACKLIST:
             continue
-        score = calculate_match_score(
-            text,
-            match.start(),
-            match.end(),
-            0.5,
-            "SWIFT/BIC",
-        )
-        findings.append(
-            {
-                "detector": "SWIFT/BIC",
-                "category": "Financial Data",
-                "severity": "High",
-                "value": val,
-                "score": score,
-                "start": match.start(),
-                "end": match.end(),
-            },
-        )
+        score = calculate_match_score(text, match.start(), match.end(), 0.5, "SWIFT/BIC")
+        findings.append({
+            "detector": "SWIFT/BIC",
+            "category": "Financial Data",
+            "severity": "High",
+            "value": val,
+            "score": score,
+            "start": match.start(),
+            "end": match.end(),
+        })
 
     # 4. Bank Account numbers with proximity keyword scoring
     for match in BANK_ACCOUNT_REGEX.finditer(text):
@@ -520,24 +475,16 @@ def scan_financial(text: str) -> list:
 
         has_keyword = any(kw in context_window for kw in BANK_ACCOUNT_KEYWORDS)
         if has_keyword:
-            score = calculate_match_score(
-                text,
-                match.start(),
-                match.end(),
-                0.5,
-                "Bank Account",
-            )
-            findings.append(
-                {
-                    "detector": "Bank Account",
-                    "category": "Financial Data",
-                    "severity": "High",
-                    "value": match.group(0),
-                    "score": score,
-                    "start": match.start(),
-                    "end": match.end(),
-                },
-            )
+            score = calculate_match_score(text, match.start(), match.end(), 0.5, "Bank Account")
+            findings.append({
+                "detector": "Bank Account",
+                "category": "Financial Data",
+                "severity": "High",
+                "value": match.group(0),
+                "score": score,
+                "start": match.start(),
+                "end": match.end(),
+            })
 
     return findings
 
@@ -552,17 +499,15 @@ def scan_healthcare(text: str) -> list:
             matches.extend(matches_found)
 
     if len(set(matches)) >= 3:
-        findings.append(
-            {
-                "detector": "Healthcare Data Detection",
-                "category": "Healthcare Data (PHI)",
-                "severity": "High",
-                "value": f"Matched PHI Keywords: {list(set(matches))}",
-                "score": 0.85,
-                "start": 0,
-                "end": len(text),
-            },
-        )
+        findings.append({
+            "detector": "Healthcare Data Detection",
+            "category": "Healthcare Data (PHI)",
+            "severity": "High",
+            "value": f"Matched PHI Keywords: {list(set(matches))}",
+            "score": 0.85,
+            "start": 0,
+            "end": len(text),
+        })
     return findings
 
 
@@ -579,46 +524,40 @@ def scan_regional(text: str, enabled_regions: list) -> list:
         for name, regex in region_rules.items():
             for match in regex.finditer(text):
                 detector_name = f"{region.upper()} {name}"
-                score = calculate_match_score(
-                    text,
-                    match.start(),
-                    match.end(),
-                    0.5,
-                    detector_name,
-                )
-                findings.append(
-                    {
-                        "detector": detector_name,
-                        "category": "Regional Compliance",
-                        "severity": "High",
-                        "value": match.group(0),
-                        "score": score,
-                        "start": match.start(),
-                        "end": match.end(),
-                    },
-                )
+                score = calculate_match_score(text, match.start(), match.end(), 0.5, detector_name)
+                findings.append({
+                    "detector": detector_name,
+                    "category": "Regional Compliance",
+                    "severity": "High",
+                    "value": match.group(0),
+                    "score": score,
+                    "start": match.start(),
+                    "end": match.end(),
+                })
     return findings
 
 
-def scan_entropy(text: str) -> list:
+def scan_entropy(text: str, min_length: int = 24, min_entropy: float = 4.5) -> list:
     findings = []
     for match in ENTROPY_CANDIDATE_REGEX.finditer(text):
         candidate = match.group(0)
+        if len(candidate) < min_length:
+            continue
         if "BEGIN" in candidate or "PRIVATE" in candidate:
+            continue
+        if ENTROPY_SLUG_REGEX.fullmatch(candidate):
             continue
 
         entropy = calculate_entropy(candidate)
-        if entropy >= 4.5:
-            findings.append(
-                {
-                    "detector": "High Entropy Secret",
-                    "category": "Entropy-Based Secret Detection",
-                    "severity": "High",
-                    "value": candidate,
-                    "entropy": round(entropy, 2),
-                    "score": 0.85,
-                    "start": match.start(),
-                    "end": match.end(),
-                },
-            )
+        if entropy >= min_entropy:
+            findings.append({
+                "detector": "High Entropy Secret",
+                "category": "Entropy-Based Secret Detection",
+                "severity": "High",
+                "value": candidate,
+                "entropy": round(entropy, 2),
+                "score": 0.85,
+                "start": match.start(),
+                "end": match.end(),
+            })
     return findings

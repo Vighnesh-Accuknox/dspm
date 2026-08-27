@@ -7,17 +7,26 @@ RUN apt-get update && \
         tesseract-ocr-eng && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy requirements file
-COPY requirements.txt ${LAMBDA_TASK_ROOT}/
+WORKDIR /app
 
-# Install Python package dependencies
+# Install Python package dependencies first for better layer caching
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy Settings
-COPY settings.py ${LAMBDA_TASK_ROOT}/
+# Copy settings loader and application source (all secrets come from env, never the image)
+COPY settings.py .
+COPY src/ ./src/
 
-# Copy application source code
-COPY src/ ${LAMBDA_TASK_ROOT}/src/
+ENV PYTHONUNBUFFERED=1 \
+    OUTPUT_DIR=/app/output
 
-# Set the CMD to your handler (could also be src/handler.py)
+# Precompile bytecode: read-only root filesystems cannot cache it at runtime
+RUN python -m compileall -q /app
+
+# OpenShift runs containers as a random non-root UID in the root group:
+# group 0 needs the same permissions as the owner
+RUN mkdir -p /app/output && chgrp -R 0 /app && chmod -R g=u /app
+
+USER 1001
+
 CMD ["python", "-m", "src.dspm_scanner_worker_handler"]

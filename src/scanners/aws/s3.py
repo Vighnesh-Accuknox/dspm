@@ -93,11 +93,15 @@ class S3Scanner(BaseScanner):
         temp_file_path = os.path.join(temp_dir, os.path.basename(key) or "object.tmp")
 
         try:
-            download_kwargs = {"Bucket": bucket, "Key": key}
             if version_id:
-                download_kwargs["VersionId"] = version_id
-
-            s3_client.download_file(bucket, key, temp_file_path)
+                s3_client.download_file(
+                    bucket,
+                    key,
+                    temp_file_path,
+                    ExtraArgs={"VersionId": version_id},
+                )
+            else:
+                s3_client.download_file(bucket, key, temp_file_path)
 
             # Scan local file path
             findings = self._scan_local_file(temp_file_path, resource_id)
@@ -113,13 +117,13 @@ class S3Scanner(BaseScanner):
             except Exception:
                 pass
 
-    def _scan_local_file(self, file_path: str, resource_id: str):
+    def _scan_local_file(self, file_path: str, resource_id: str, depth: int = 0):
         findings = []
         ext = os.path.splitext(file_path)[1].lower()
 
         # Handle archives first
         if ext in [".zip", ".tar", ".gz", ".tgz", ".bz2"]:
-            findings.extend(self._parse_archive(file_path, ext, resource_id))
+            findings.extend(self._parse_archive(file_path, ext, resource_id, depth))
             return findings
 
         # Dispatch based on extension
@@ -308,8 +312,8 @@ class S3Scanner(BaseScanner):
         findings = []
         if etree:
             try:
-                # Streaming XML
-                context = etree.iterparse(file_path, events=("end",))
+                # Streaming XML; entity resolution disabled against XXE/entity-expansion input
+                context = etree.iterparse(file_path, events=("end",), resolve_entities=False)
                 for event, elem in context:
                     if elem.text and elem.text.strip():
                         cell_findings = self.engine.scan_text(elem.text.strip())
@@ -489,27 +493,48 @@ class S3Scanner(BaseScanner):
         file_path: str,
         ext: str,
         resource_id: str,
+        depth: int = 0,
     ) -> List[Dict[str, Any]]:
         findings = []
+
+        # Guard against archive nesting bombs (zip-in-zip-in-zip...)
+        max_depth = self.config.get("max_archive_depth", 3)
+        if depth >= max_depth:
+            logger.warning(f"Skipping archive {resource_id}: nesting depth exceeds {max_depth}")
+            return findings
+
+        # Guard against decompression bombs
+        max_bytes = self.config.get("max_archive_extract_bytes", 1024 ** 3)
         extract_dir = tempfile.mkdtemp()
 
         try:
             if ext == ".zip":
                 with zipfile.ZipFile(file_path, "r") as z:
+                    total_size = sum(i.file_size for i in z.infolist())
+                    if total_size > max_bytes:
+                        logger.warning(f"Skipping archive {resource_id}: uncompressed size {total_size} exceeds {max_bytes}")
+                        return findings
                     z.extractall(extract_dir)
             elif ext in [".tar", ".tgz"]:
                 with tarfile.open(file_path, "r:*") as t:
-                    t.extractall(extract_dir)
+                    total_size = sum(m.size for m in t.getmembers())
+                    if total_size > max_bytes:
+                        logger.warning(f"Skipping archive {resource_id}: uncompressed size {total_size} exceeds {max_bytes}")
+                        return findings
+                    # 'data' filter blocks path traversal, symlinks and special files
+                    t.extractall(extract_dir, filter="data")
             elif ext == ".gz":
                 out_path = os.path.join(extract_dir, os.path.basename(file_path)[:-3])
                 with gzip.open(file_path, "rb") as f_in:
-                    with open(out_path, "wb") as f_out:
-                        shutil.copyfileobj(f_in, f_out)
+                    if not self._capped_copy(f_in, out_path, max_bytes):
+                        logger.warning(f"Skipping archive {resource_id}: uncompressed size exceeds {max_bytes}")
+                        return findings
             elif ext == ".bz2":
                 out_path = os.path.join(extract_dir, os.path.basename(file_path)[:-4])
                 with bz2.open(file_path, "rb") as f_in:
-                    with open(out_path, "wb") as f_out:
-                        shutil.copyfileobj(f_in, f_out)
+                    if not self._capped_copy(f_in, out_path, max_bytes):
+                        logger.warning(f"Skipping archive {resource_id}: uncompressed size exceeds {max_bytes}")
+                        return findings
 
             # Traverse extract_dir recursively
             for root, _, files in os.walk(extract_dir):
@@ -517,7 +542,7 @@ class S3Scanner(BaseScanner):
                     full_p = os.path.join(root, f)
                     rel_p = os.path.relpath(full_p, extract_dir)
                     sub_resource_id = f"{resource_id}#{rel_p}"
-                    findings.extend(self._scan_local_file(full_p, sub_resource_id))
+                    findings.extend(self._scan_local_file(full_p, sub_resource_id, depth + 1))
 
         except Exception as e:
             logger.error(f"Error handling archive {resource_id}: {str(e)}")
@@ -528,6 +553,19 @@ class S3Scanner(BaseScanner):
                 pass
 
         return findings
+
+    def _capped_copy(self, f_in, out_path: str, max_bytes: int) -> bool:
+        """Streams f_in to out_path, aborting if the decompressed size exceeds max_bytes."""
+        copied = 0
+        with open(out_path, "wb") as f_out:
+            while True:
+                chunk = f_in.read(1024 * 1024)
+                if not chunk:
+                    return True
+                copied += len(chunk)
+                if copied > max_bytes:
+                    return False
+                f_out.write(chunk)
 
     def list_all_files(self, bucket: str):
         paginator = self.client.get_paginator("list_objects_v2")

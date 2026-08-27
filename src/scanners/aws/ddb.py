@@ -45,6 +45,8 @@ class DynamoDBScanner(BaseScanner):
             paginator = ddb_client.get_paginator("scan")
             items_scanned = 0
             limit = target.get("sample_limit", 10000)
+            if self.config.get("log_queries"):
+                logger.info(f"Executing DynamoDB Scan on table '{table_name}' (sample_limit {limit})")
 
             # Paginate through table scan
             for page in paginator.paginate(TableName=table_name):

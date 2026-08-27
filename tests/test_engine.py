@@ -1,8 +1,12 @@
 from src.engine.detector import DetectionEngine
 from src.engine.entropy import calculate_entropy
 from src.engine.layers import (
-    scan_credentials, scan_entropy, scan_financial,
-    scan_healthcare, scan_pii, scan_regional,
+    scan_credentials,
+    scan_entropy,
+    scan_financial,
+    scan_healthcare,
+    scan_pii,
+    scan_regional,
 )
 from src.engine.luhn import luhn_check
 
@@ -112,6 +116,45 @@ def test_scan_entropy():
 
     assert len(findings) > 0
     assert findings[0]["detector"] == "High Entropy Secret"
+
+
+def test_detector_tuning():
+    # git SHA1 (40 lowercase hex) must not fire the AWS secret detector
+    findings = scan_credentials("commit: 3f786850e387550fdab836ed7e6dc881de23001b")
+    assert "AWS Secret Access Key" not in [f["detector"] for f in findings]
+    # a real base64-shaped AWS secret still fires
+    findings = scan_credentials('secret = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"')
+    assert "AWS Secret Access Key" in [f["detector"] for f in findings]
+
+    # cloud/machine 'state'/'city' fields are not addresses without a street word
+    findings = scan_pii('"state": "running", "region": "us-east-1", "az": "us-east-1a"')
+    assert "Address" not in [f["detector"] for f in findings]
+    # a real street line still fires
+    findings = scan_pii("Ships to 42 Baker Street, London")
+    assert "Address" in [f["detector"] for f in findings]
+
+    # operational timestamps are not birth dates
+    findings = scan_pii("updated_at: 2024-05-15 sla_due_date: 2023-01-02")
+    assert "Date of Birth" not in [f["detector"] for f in findings]
+    findings = scan_pii("date of birth: 1990-05-15")
+    dob = [f for f in findings if f["detector"] == "Date of Birth"]
+    assert dob and dob[0]["score"] > 0.8
+
+    # Luhn-passing digit runs without a card-network prefix are not credit cards
+    findings = scan_financial("trace ids 9988776655443325 and 1750000000009")
+    assert "Credit Card" not in [f["detector"] for f in findings]
+    findings = scan_financial("card: 4111-1111-1111-1111")
+    assert "Credit Card" in [f["detector"] for f in findings]
+
+    # a bare 'account' (AWS account ids everywhere in cloud data) is not bank context
+    findings = scan_financial("aws account: 123456789012 in region us-east-1")
+    assert "Bank Account" not in [f["detector"] for f in findings]
+    findings = scan_financial("bank account number: 9876543210")
+    assert "Bank Account" in [f["detector"] for f in findings]
+
+    # lowercase dns/slug names and short tokens are not entropy secrets
+    assert scan_entropy("pod: postgres-postgres-nvk9-0aa1bb2cc3") == []
+    assert scan_entropy("k: gP9x2K1mQ8zW0yL7aJ5s") == []  # 20 chars, below min_length 24
 
 
 def test_detection_engine():
