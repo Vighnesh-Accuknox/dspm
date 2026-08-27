@@ -50,8 +50,8 @@ jobs:
         #   allow-unsafe-pr-checkout: true
 
       # - uses: ./.github/install_project_dependencies
-      #   with:
-      #     python_version: "3.14"
+        with:
+          python_version: "3.14"
 
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.0
