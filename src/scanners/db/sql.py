@@ -53,8 +53,8 @@ class SQLScanner(BaseScanner):
             "host": "db.internal.example.com",
             "port": 5432,
             "username": "scanner",
-            "password": "dbpassword",
-            "database": "production",
+            "password": "dbpassword",               # pragma: allowlist secret
+            "database": "production",               # pragma: allowlist secret
             "connection_string": "postgresql+psycopg2://...",  # optional, overrides the fields above
             "connect_args": {"sslmode": "require"},  # optional, extra DBAPI args (TLS etc.)
             "schema": "public",              # optional, restrict to a single schema

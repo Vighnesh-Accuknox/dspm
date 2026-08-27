@@ -65,7 +65,7 @@ Objects larger than 100 MB are skipped. Archives (`.zip/.tar/.gz/.bz2`) are unpa
 | `DB_PORT` | yes* | Typical defaults: 5432 (postgres), 3306 (mysql/mariadb), 1433 (mssql) |
 | `DB_USERNAME` | yes* | A read-only account is sufficient and recommended |
 | `DB_PASSWORD` | yes* | |
-| `DB_URI` | no | Full SQLAlchemy connection string, e.g. `postgresql+psycopg2://user:pass@host:5432/db`. Overrides all `DB_*` fields above (\* not needed when `DB_URI` is set) |
+| `DB_URI` | no | Full SQLAlchemy connection string, e.g. `postgresql+psycopg2://user:pass@host:5432/db`. Overrides all `DB_*` fields above (\* not needed when `DB_URI` is set) | # pragma: allowlist secret
 
 Drivers used: `psycopg2` (postgres), `PyMySQL` (mysql/mariadb), `pymssql` (mssql). All non-system schemas of the database are discovered and scanned, up to 10 000 rows per table.
 
@@ -79,7 +79,7 @@ Drivers used: `psycopg2` (postgres), `PyMySQL` (mysql/mariadb), `pymssql` (mssql
 | `DB_PORT` | yes* | Typically 27017 |
 | `DB_USERNAME` | no* | Omit for unauthenticated instances |
 | `DB_PASSWORD` | no* | |
-| `DB_URI` | no | Full MongoDB URI, e.g. `mongodb://user:pass@host:27017/?authSource=admin`. Overrides all `DB_*` fields above (\* not needed when `DB_URI` is set) |
+| `DB_URI` | no | Full MongoDB URI, e.g. `mongodb://user:pass@host:27017/?authSource=admin`. Overrides all `DB_*` fields above (\* not needed when `DB_URI` is set) |. # pragma: allowlist secret
 
 All non-`system.*` collections of the database are discovered and scanned, up to 10 000 documents per collection. Documents are walked recursively; nested fields are reported with dotted paths.
 

@@ -188,7 +188,7 @@ def test_mongo_scanner():
             "_id": "user-1",
             "email": "carol.smith@yahoo.com",
             "profile": {"work_email": "carol@zoho.com"},
-            "api_key": "sk_live_abcdef1234567890",
+            "api_key": "sk_live_abcdef1234567890", # pragma: allowlist secret
         },
     ]
 

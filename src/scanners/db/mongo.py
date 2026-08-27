@@ -34,11 +34,11 @@ class MongoScanner(BaseScanner):
         """
         Target structure:
         {
-            "uri": "mongodb://user:pass@host:27017/?authSource=admin",  # optional, overrides the fields below
+            "uri": "mongodb://user:pass@host:27017/?authSource=admin", # optional, overrides the fields below # pragma: allowlist secret
             "host": "mongo.internal.example.com",
             "port": 27017,
             "username": "scanner",
-            "password": "dbpassword",
+            "password": "dbpassword", # pragma: allowlist secret
             "database": "appdb",           # optional, all non-system databases if omitted
             "collection": "users",         # optional, all collections if omitted
             "incremental_field": "updated_at",        # optional field for incremental scans
