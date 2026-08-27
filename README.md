@@ -191,7 +191,7 @@ Uses ambient AWS credentials (Lambda role / environment). DynamoDB Stream CDC ba
 ## TLS to databases
 
 - **SQL engines**: pass DBAPI options via the target's `connect_args` (master mode), e.g. `{"sslmode": "verify-full", "sslrootcert": "/certs/rds-ca.pem"}` for PostgreSQL — or put them on the DSN: `DB_URI=postgresql+psycopg2://user:pass@host:5432/db?sslmode=require`. # pragma: allowlist secret
-- **MongoDB / DocumentDB**: use URI parameters: `DB_URI=mongodb://user:pass@host:27017/?tls=true&tlsCAFile=/certs/global-bundle.pem` (DocumentDB requires TLS with the Amazon CA bundle).
+- **MongoDB / DocumentDB**: use URI parameters: `DB_URI=mongodb://user:pass@host:27017/?tls=true&tlsCAFile=/certs/global-bundle.pem` (DocumentDB requires TLS with the Amazon CA bundle). # pragma: allowlist secret
 - Mount the CA bundle into the container (e.g. via a ConfigMap/Secret volume) and reference it by path.
 
 ## Deployment (OpenShift / Kubernetes)
