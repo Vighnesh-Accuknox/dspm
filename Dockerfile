@@ -1,4 +1,3 @@
-```dockerfile
 FROM python:3.14-slim
 
 # Install system dependencies
@@ -31,4 +30,3 @@ ENV PYTHONPATH=/app
 
 # Run the scanner
 CMD ["python", "-m", "src.dspm_scanner_worker_handler"]
-```
