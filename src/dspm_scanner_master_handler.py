@@ -1,19 +1,23 @@
 import json
 import urllib.request
-from typing import Dict, Any, List
-import settings
+from typing import Any, Dict, List
 
+import settings
 from src.engine.detector import DetectionEngine
-from src.scanners.aws.s3 import S3Scanner
 # from src.scanners.aws.rds import RDSScanner
 from src.scanners.aws.ddb import DynamoDBScanner
-from src.utils.logger import get_logger
+from src.scanners.aws.s3 import S3Scanner
 from src.utils.aws import get_secret
+from src.utils.logger import get_logger
 
 logger = get_logger("handler")
 
 
-def post_findings_to_api(api_url: str, findings: List[Dict[str, Any]], api_key: str = None):
+def post_findings_to_api(
+    api_url: str,
+    findings: List[Dict[str, Any]],
+    api_key: str = None,
+):
     """
     HTTP POST request to upload findings to the Artifact API / CSPM Backend.
     """
@@ -30,7 +34,9 @@ def post_findings_to_api(api_url: str, findings: List[Dict[str, Any]], api_key: 
         req = urllib.request.Request(api_url, data=data, headers=headers, method="POST")
         with urllib.request.urlopen(req, timeout=10) as response:
             res_body = response.read().decode("utf-8")
-            logger.info(f"Artifact API responded with status {response.status}: {res_body}")
+            logger.info(
+                f"Artifact API responded with status {response.status}: {res_body}",
+            )
     except Exception as e:
         logger.error(f"Failed to post findings to Artifact API: {str(e)}")
 
@@ -82,7 +88,9 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
     # 1. Check for SQS event wrapper
     if "Records" in event and event["Records"] and "body" in event["Records"][0]:
-        logger.info(f"Processing event as SQS queue message batch (size: {len(event['Records'])})")
+        logger.info(
+            f"Processing event as SQS queue message batch (size: {len(event['Records'])})",
+        )
         for record in event["Records"]:
             try:
                 body = json.loads(record["body"])
@@ -106,7 +114,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 s3_data = record["s3"]
                 bucket = s3_data["bucket"]["name"]
                 key = s3_data["object"]["key"]
-                
+
                 # Check for object delete/restoration if needed, or simply scan
                 engine = DetectionEngine()
                 scanner = S3Scanner(engine)
@@ -125,13 +133,17 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     if api_url and api_key:
         post_findings_to_api(api_url, findings, api_key)
     else:
-        logger.error("API URL or API Key is not configured. Please configure it in settings.py")
+        logger.error(
+            "API URL or API Key is not configured. Please configure it in settings.py",
+        )
 
     return {
         "statusCode": 200,
-        "body": json.dumps({
-            "status": "success",
-            "findings_count": len(findings),
-            "findings": findings
-        })
+        "body": json.dumps(
+            {
+                "status": "success",
+                "findings_count": len(findings),
+                "findings": findings,
+            },
+        ),
     }

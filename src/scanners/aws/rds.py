@@ -1,5 +1,6 @@
 import datetime
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+
 from src.scanners.base import BaseScanner
 from src.utils.logger import get_logger
 
@@ -58,7 +59,7 @@ class RDSScanner(BaseScanner):
     #             connect_args={"connect_timeout": 10} if db_engine in ["postgres", "mysql", "mariadb"] else {}
     #         )
     #         inspector = inspect(engine)
-            
+
     #         # 1. Discover schemas
     #         try:
     #             schemas = inspector.get_schema_names()
@@ -83,7 +84,7 @@ class RDSScanner(BaseScanner):
 
     #     except Exception as e:
     #         logger.error(f"Error connecting/scanning RDS database {resource_id}: {str(e)}")
-            
+
     #     return findings
 
     # def _build_connection_string(self, engine: str, host: str, port: int, user: str, pass_: str, db: str) -> str:
@@ -100,7 +101,7 @@ class RDSScanner(BaseScanner):
     #         return f"oracle+cx_oracle://{user}:{pass_}@{host}:{port}/{db}"
     #     return None
 
-    # def _scan_relation(self, engine: Any, inspector: Any, schema: str, name: str, rel_type: str, 
+    # def _scan_relation(self, engine: Any, inspector: Any, schema: str, name: str, rel_type: str,
     #                    target: Dict[str, Any], resource_id: str) -> List[Dict[str, Any]]:
     #     findings = []
     #     full_relation_name = f"{schema}.{name}" if schema else name
@@ -120,7 +121,7 @@ class RDSScanner(BaseScanner):
     #     # Check for incremental scanning parameters
     #     inc_col = target.get("incremental_column")
     #     last_scan_time = target.get("last_scan_time")
-        
+
     #     # Build query
     #     base_query = f"SELECT {', '.join([f'[{c}]' if target.get('engine') == 'mssql' else c for c in column_names])} FROM {full_relation_name}"
     #     where_clause = ""
@@ -135,7 +136,7 @@ class RDSScanner(BaseScanner):
     #     chunk_size = 5000
     #     offset = 0
     #     total_limit = target.get("sample_limit", 10000)
-        
+
     #     # Determine total rows we should scan
     #     rows_scanned = 0
 
@@ -145,7 +146,7 @@ class RDSScanner(BaseScanner):
     #             # Simple LIMIT/OFFSET. Note: Oracle/MSSQL may need different queries, but standard limit is used for Phase 1 (Postgres/MySQL focus)
     #             pagination = f" LIMIT {chunk_size} OFFSET {offset}"
     #             query_str = f"{base_query}{where_clause}{pagination}"
-                
+
     #             try:
     #                 result = conn.execute(text(query_str), params)
     #                 rows = result.fetchall()
@@ -155,11 +156,11 @@ class RDSScanner(BaseScanner):
     #                 for row_idx, row in enumerate(rows):
     #                     # Convert row to dictionary map
     #                     row_dict = dict(zip(column_names, row))
-                        
+
     #                     for col_name, val in row_dict.items():
     #                         if val is None:
     #                             continue
-                            
+
     #                         val_str = str(val)
     #                         cell_findings = self.engine.scan_text(val_str)
     #                         for f in cell_findings:

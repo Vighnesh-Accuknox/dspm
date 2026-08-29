@@ -1,0 +1,2224 @@
+[
+    {
+        "Private Key Header": {
+            "finding_name": "Private key in plain text",
+            "risk_factor": 9.8,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "NIST SP 800-57 Part 1",
+                "PCI DSS Req 3.6-3.7 (key management)"
+            ],
+            "description": "According to NIST SP 800-57 key-management guidance, private keys must be held in protected key storage such as an HSM or KMS. A private key readable from a datastore compromises every system that trusts it.",
+            "remediation_advice": "Revoke and reissue the affected key pair, and move private keys to a managed KMS or HSM.",
+            "cwe": [
+                "CWE-321 (Use of Hard-coded Cryptographic Key)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552.004 (Unsecured Credentials: Private Keys)"
+            ],
+            "validation": "PEM header/footer framing; base64 body parses as DER.",
+            "sample_value": "-----BEGIN RSA PRIVATE KEY-----",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/312.html",
+                "https://attack.mitre.org/techniques/T1552/004/"
+            ]
+        },
+        "AWS Secret Access Key": {
+            "finding_name": "AWS secret access key in plain text",
+            "risk_factor": 9.8,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "CIS AWS Foundations Benchmark (IAM)",
+                "NIST SP 800-53 IA-5",
+                "SOC 2 CC6"
+            ],
+            "description": "AWS security guidance and the CIS AWS Foundations Benchmark prohibit storing long-term access keys in datastores. A leaked secret key grants full API access as its principal.",
+            "remediation_advice": "Deactivate and rotate the key in IAM, then replace stored long-term credentials with IAM roles or short-lived STS credentials.",
+            "cwe": [
+                "CWE-312 (Cleartext Storage of Sensitive Information)",
+                "CWE-798 (Use of Hard-coded Credentials)"
+            ],
+            "mitre_attack": [
+                "T1552.001 (Credentials In Files)",
+                "T1078.004 (Valid Accounts: Cloud Accounts)"
+            ],
+            "validation": "40 base64 chars; valid only when paired with a live access key ID.",
+            "sample_value": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/312.html",
+                "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html"
+            ]
+        },
+        "Password Pattern": {
+            "finding_name": "Password in plain text",
+            "risk_factor": 9.5,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "NIST SP 800-63B 5.1.1.2",
+                "PCI DSS Req 8.3",
+                "India SPDI Rules 2011 Rule 3 (passwords)",
+                "CPRA 1798.140(ae)(1)(B) (account credentials)"
+            ],
+            "description": "According to NIST SP 800-63B section 5.1.1.2, passwords must be stored salted and hashed with an approved one-way key-derivation function. Plain-text password storage is never permitted.",
+            "remediation_advice": "Force a reset of the affected credentials and store passwords using Argon2, bcrypt, scrypt, or PBKDF2.",
+            "cwe": [
+                "CWE-256 (Plaintext Storage of a Password)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "Keyword assignment (password/passwd/pwd = value); no checksum.",
+            "sample_value": "password=\"hunter2\"",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/312.html",
+                "https://cwe.mitre.org/data/definitions/256.html"
+            ]
+        },
+        "AWS Access Key": {
+            "finding_name": "AWS access key ID in plain text",
+            "risk_factor": 9.3,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "CIS AWS Foundations Benchmark (IAM)",
+                "NIST SP 800-53 IA-5"
+            ],
+            "description": "An access key ID identifies a long-term AWS credential and is almost always stored alongside its secret key. The CIS AWS Foundations Benchmark requires long-term keys to be minimized and rotated.",
+            "remediation_advice": "Audit the key's usage in IAM, rotate it, and prefer IAM roles with temporary credentials.",
+            "cwe": [
+                "CWE-312 (Cleartext Storage of Sensitive Information)",
+                "CWE-798 (Use of Hard-coded Credentials)"
+            ],
+            "mitre_attack": [
+                "T1552.001 (Credentials In Files)",
+                "T1078.004 (Valid Accounts: Cloud Accounts)"
+            ],
+            "validation": "Prefix AKIA + 16 chars from [A-Z2-7] (base32).",
+            "sample_value": "AKIAIOSFODNN7EXAMPLE",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/312.html",
+                "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html"
+            ]
+        },
+        "API Key": {
+            "finding_name": "API key in plain text",
+            "risk_factor": 9.0,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP ASVS (service authentication)",
+                "NIST SP 800-53 IA-5",
+                "SOC 2 CC6"
+            ],
+            "description": "API keys are authentication credentials; OWASP ASVS secrets-management requirements mandate storage in a dedicated secrets manager, not in application datastores.",
+            "remediation_advice": "Rotate the exposed key and move service credentials to a secrets manager with scoped permissions.",
+            "cwe": [
+                "CWE-312 (Cleartext Storage of Sensitive Information)",
+                "CWE-798 (Use of Hard-coded Credentials)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "Keyword assignment (api_key/apikey = 16+ chars); no checksum.",
+            "sample_value": "api_key=\"a1b2c3d4e5f6g7h8i9j0k1l2\"",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/312.html"
+            ]
+        },
+        "Bearer Token": {
+            "finding_name": "Bearer token in plain text",
+            "risk_factor": 8.7,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "RFC 6750 Sec. 5 (bearer token threats)",
+                "OAuth 2.0 Security BCP (RFC 9700)"
+            ],
+            "description": "Per OAuth 2.0 bearer token usage (RFC 6750), possession of the token alone grants access, so tokens must not be stored where they can be read and replayed.",
+            "remediation_advice": "Revoke the affected tokens, shorten token lifetimes, and persist only hashed token references.",
+            "cwe": [
+                "CWE-312 (Cleartext Storage of Sensitive Information)",
+                "CWE-798 (Use of Hard-coded Credentials)"
+            ],
+            "mitre_attack": [
+                "T1528 (Steal Application Access Token)",
+                "T1550.001 (Use Alternate Authentication Material: Application Access Token)"
+            ],
+            "validation": "'Bearer ' prefix followed by token characters (RFC 6750).",
+            "sample_value": "Bearer mF_9.B5f-4.1JqM",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/312.html",
+                "https://datatracker.ietf.org/doc/html/rfc6750"
+            ]
+        },
+        "OAuth Token": {
+            "finding_name": "OAuth token in plain text",
+            "risk_factor": 8.7,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "OAuth 2.0 Security BCP (RFC 9700)",
+                "RFC 6750 Sec. 5 (bearer token threats)"
+            ],
+            "description": "The OAuth 2.0 Security Best Current Practice requires access and refresh tokens to be protected at rest; refresh tokens in particular grant long-lived account access.",
+            "remediation_advice": "Revoke the tokens at the authorization server and encrypt or hash stored token values.",
+            "cwe": [
+                "CWE-312 (Cleartext Storage of Sensitive Information)",
+                "CWE-798 (Use of Hard-coded Credentials)"
+            ],
+            "mitre_attack": [
+                "T1528 (Steal Application Access Token)",
+                "T1550.001 (Use Alternate Authentication Material: Application Access Token)"
+            ],
+            "validation": "Keyword assignment (access_token/refresh_token/id_token = value).",
+            "sample_value": "access_token=\"ya29.a0AfH6SMBx7pXq\"",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/312.html"
+            ]
+        },
+        "JWT Token": {
+            "finding_name": "JWT in plain text",
+            "risk_factor": 8.5,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "OAuth 2.0 Security BCP (RFC 9700)",
+                "GDPR Art. 4(1) (claims may embed personal data)"
+            ],
+            "description": "A signed JWT is replayable as a bearer credential until it expires, and its claims frequently embed personal data. Raw JWTs must not persist in readable datastores.",
+            "remediation_advice": "Invalidate the affected sessions, shorten JWT lifetimes, and avoid persisting raw tokens.",
+            "cwe": [
+                "CWE-312 (Cleartext Storage of Sensitive Information)",
+                "CWE-798 (Use of Hard-coded Credentials)"
+            ],
+            "mitre_attack": [
+                "T1528 (Steal Application Access Token)",
+                "T1550.001 (Use Alternate Authentication Material: Application Access Token)"
+            ],
+            "validation": "Three base64url segments starting eyJ; header and payload decode as JSON; signature verifiable with issuer key.",
+            "sample_value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/312.html",
+                "https://datatracker.ietf.org/doc/html/rfc7519"
+            ]
+        },
+        "Secret.ActivationOrAuthKey": {
+            "finding_name": "Authentication key in plain text",
+            "risk_factor": 8.3,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "OWASP ASVS (session management)",
+                "NIST SP 800-63B Sec. 7 (session management)"
+            ],
+            "description": "Session tokens, activation keys, nonces, and salts are authentication material; OWASP session-management guidance requires them to be unpredictable and protected at rest.",
+            "remediation_advice": "Invalidate active sessions and activation keys, and store only hashed values.",
+            "cwe": [
+                "CWE-312 (Cleartext Storage of Sensitive Information)",
+                "CWE-798 (Use of Hard-coded Credentials)"
+            ],
+            "mitre_attack": [
+                "T1528 (Steal Application Access Token)",
+                "T1550.001 (Use Alternate Authentication Material: Application Access Token)"
+            ],
+            "validation": "Column-name based (activation_key/auth_token/secret/nonce/salt columns).",
+            "sample_value": "1f3870be274f6c49b3e31a0c6728957f",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/312.html"
+            ]
+        },
+        "Secret.PasswordHash": {
+            "finding_name": "Password hash exposed",
+            "risk_factor": 8.0,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "NIST SP 800-63B 5.1.1.2",
+                "PCI DSS Req 8.3",
+                "India SPDI Rules 2011 Rule 3 (passwords)"
+            ],
+            "description": "According to NIST SP 800-63B, password hashes must use a salted, compute-hard function. Readable hashes are subject to offline cracking, and legacy schemes such as MD5-based phpass fall quickly.",
+            "remediation_advice": "Migrate to Argon2, bcrypt, or scrypt, force resets for accounts with weak hashes, and restrict read access to credential columns.",
+            "cwe": [
+                "CWE-916 (Password Hash With Insufficient Computational Effort)",
+                "CWE-328 (Use of Weak Hash)"
+            ],
+            "mitre_attack": [
+                "T1110.002 (Brute Force: Password Cracking)"
+            ],
+            "validation": "Hash-format prefixes: $P$/$H$ phpass, $2y$ bcrypt, $argon2, MD5 hex.",
+            "sample_value": "$P$984478476IagS59wHZvyQMArzfx58u.",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/312.html",
+                "https://pages.nist.gov/800-63-3/sp800-63b.html"
+            ]
+        },
+        "High Entropy Secret": {
+            "finding_name": "High-entropy secret detected",
+            "risk_factor": 7.5,
+            "category": "Entropy-Based Secret Detection",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet"
+            ],
+            "description": "A string with the statistical profile of a machine-generated secret was detected outside a secrets manager. Unclassified secrets in datastores defeat rotation and audit controls.",
+            "remediation_advice": "Identify the secret's type and owner, rotate it, and move it to a secrets manager.",
+            "cwe": [
+                "CWE-312 (Cleartext Storage of Sensitive Information)",
+                "CWE-798 (Use of Hard-coded Credentials)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "Shannon entropy >= 4.5 over a 24+ char token; slug/hex shapes excluded.",
+            "sample_value": "x9fJ2mQ8vLpT3z7WqR4nY6bK",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/312.html"
+            ]
+        },
+        "Secret.TokenLikeValue": {
+            "finding_name": "Potential token in plain text",
+            "risk_factor": 6.5,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet"
+            ],
+            "description": "A value shaped like an authentication token was detected without corroborating column context. Treat it as a credential until classified otherwise.",
+            "remediation_advice": "Review the column's contents, then either classify the value as non-sensitive or rotate it.",
+            "cwe": [
+                "CWE-312 (Cleartext Storage of Sensitive Information)",
+                "CWE-798 (Use of Hard-coded Credentials)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "Value shape heuristic (length + charset); no corroborating column name.",
+            "sample_value": "tok_9fJ2mQ8vLpT3z7WqR4nY6bK1s",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/312.html"
+            ]
+        },
+        "Credit Card": {
+            "finding_name": "Credit card number in plain text",
+            "risk_factor": 9.2,
+            "category": "Financial Data",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "PCI DSS Req 3.4 (v3.2.1) / 3.5.1 (v4.0)",
+                "CPRA 1798.140(ae)(1)(B)",
+                "India SPDI Rules 2011 Rule 3 (financial information)",
+                "GDPR Art. 32"
+            ],
+            "description": "According to PCI DSS section 3.4, if PAN storage is unavoidable the data must be rendered unreadable wherever it is stored.",
+            "remediation_advice": "Render stored PANs unreadable using strong one-way hash functions of the entire PAN, truncation, index tokens with securely stored pads, or strong cryptography.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Luhn check digit plus issuer (IIN) prefix and per-network length.",
+            "sample_value": "4111111111111111",
+            "references": [
+                "https://en.wikipedia.org/wiki/Luhn_algorithm",
+                "https://en.wikipedia.org/wiki/Payment_card_number"
+            ]
+        },
+        "Bank Account": {
+            "finding_name": "Bank account number in plain text",
+            "risk_factor": 7.8,
+            "category": "Financial Data",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "GLBA Safeguards Rule (16 CFR Part 314)",
+                "CPRA 1798.140(ae)(1)(B)",
+                "India SPDI Rules 2011 Rule 3 (financial information)",
+                "HIPAA 45 CFR 164.514(b)(2) (account numbers)",
+                "GDPR Art. 32"
+            ],
+            "description": "Financial account numbers are regulated customer information under the GLBA Safeguards Rule and GDPR Article 32 and must be encrypted at rest.",
+            "remediation_advice": "Encrypt or tokenize account numbers and restrict access to payment-processing workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "8-20 digits; requires a banking keyword within 100 chars.",
+            "sample_value": "12345678",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "IBAN": {
+            "finding_name": "IBAN in plain text",
+            "risk_factor": 7.5,
+            "category": "Financial Data",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "GDPR Art. 32",
+                "GLBA Safeguards Rule (16 CFR Part 314)"
+            ],
+            "description": "An IBAN identifies an individual's bank account; under GDPR Article 32, financial identifiers require encryption or pseudonymization at rest.",
+            "remediation_advice": "Encrypt or tokenize IBANs and limit access to payment workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "ISO 13616 mod-97 checksum over rearranged digits equals 1.",
+            "sample_value": "GB82WEST12345698765432",
+            "references": [
+                "https://en.wikipedia.org/wiki/International_Bank_Account_Number"
+            ]
+        },
+        "SWIFT/BIC": {
+            "finding_name": "SWIFT/BIC code detected",
+            "risk_factor": 4.5,
+            "category": "Financial Data",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "SWIFT/BIC codes identify financial institutions and are public directory data. Risk arises when they are stored alongside account numbers, completing a wire-transfer profile.",
+            "remediation_advice": "Review whether adjacent columns hold account data; institution codes alone need no action.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "ISO 9362: 4-letter bank, 2-letter country, 2 location, optional 3 branch.",
+            "sample_value": "DEUTDEFF",
+            "references": [
+                "https://en.wikipedia.org/wiki/ISO_9362"
+            ]
+        },
+        "Healthcare Data Detection": {
+            "finding_name": "Health information in plain text",
+            "risk_factor": 8.5,
+            "category": "Healthcare Data (PHI)",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "HIPAA Security Rule 45 CFR 164.312",
+                "HIPAA Privacy Rule 45 CFR 164.514",
+                "GDPR Art. 9 (special category data)",
+                "India SPDI Rules 2011 Rule 3 (health condition)",
+                "DPDP Act 2023"
+            ],
+            "description": "According to the HIPAA Security Rule (45 CFR 164.312), electronic protected health information requires access controls and encryption. Co-occurring clinical terms indicate ePHI in this datastore.",
+            "remediation_advice": "Confirm the records contain PHI, encrypt them at rest, and restrict access to covered workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Three or more distinct healthcare keywords in one text.",
+            "sample_value": "patient diagnosis and treatment recorded at the hospital by the doctor",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ],
+            "aliases": [
+                "PHI.HealthData"
+            ]
+        },
+        "US SSN": {
+            "finding_name": "US Social Security number in plain text",
+            "risk_factor": 9.2,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "CPRA 1798.140(ae)(1)(A)",
+                "HIPAA 45 CFR 164.514(b)(2) (Social Security numbers)",
+                "FTC Safeguards Rule",
+                "US state breach notification laws"
+            ],
+            "description": "SSNs are permanent identifiers regulated by US state breach-notification laws and the FTC Safeguards Rule; plain-text storage triggers notification duties if exposed.",
+            "remediation_advice": "Encrypt or tokenize SSNs and purge them where retention is not legally required.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "No checksum; area 000/666/900-999, group 00, serial 0000 are invalid.",
+            "sample_value": "219-09-9999",
+            "references": [
+                "https://en.wikipedia.org/wiki/Social_Security_number"
+            ]
+        },
+        "CA SIN": {
+            "finding_name": "Canadian Social Insurance Number in plain text",
+            "risk_factor": 9.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "PIPEDA"
+            ],
+            "description": "PIPEDA treats the SIN as sensitive personal information requiring safeguards proportional to its sensitivity; it is a lifetime identifier that cannot be reissued cheaply.",
+            "remediation_advice": "Encrypt or tokenize SINs and restrict collection to legally mandated purposes.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Luhn check digit; first digit encodes region (0 and 8 not issued).",
+            "sample_value": "046-454-286",
+            "references": [
+                "https://en.wikipedia.org/wiki/Social_insurance_number",
+                "https://en.wikipedia.org/wiki/Luhn_algorithm"
+            ]
+        },
+        "IN Aadhaar": {
+            "finding_name": "Aadhaar number in plain text",
+            "risk_factor": 9.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "Aadhaar Act 2016 Sec. 29",
+                "UIDAI Aadhaar Data Vault requirement (2017)",
+                "DPDP Act 2023"
+            ],
+            "description": "The Aadhaar Act, 2016 and the DPDP Act, 2023 restrict storage and disclosure of Aadhaar numbers; UIDAI mandates masking or an encrypted Aadhaar Data Vault for stored numbers.",
+            "remediation_advice": "Move Aadhaar numbers to an encrypted Aadhaar Data Vault and store only reference keys or masked values.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "12 digits starting 2-9; Verhoeff check digit.",
+            "sample_value": "234567890123",
+            "references": [
+                "https://en.wikipedia.org/wiki/Aadhaar",
+                "https://en.wikipedia.org/wiki/Verhoeff_algorithm"
+            ]
+        },
+        "GB NINO": {
+            "finding_name": "UK National Insurance number in plain text",
+            "risk_factor": 8.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "UK GDPR Art. 32",
+                "UK Data Protection Act 2018"
+            ],
+            "description": "The NINO is a lifetime tax and benefits identifier; UK GDPR Article 32 requires technical measures such as encryption for identifiers of this sensitivity.",
+            "remediation_advice": "Encrypt NINOs at rest and restrict access to payroll and HR workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Two prefix letters (D,F,I,Q,U,V excluded; QQ reserved for examples), 6 digits, suffix A-D.",
+            "sample_value": "AB123456C",
+            "references": [
+                "https://en.wikipedia.org/wiki/National_Insurance_number"
+            ]
+        },
+        "IN PASSPORT": {
+            "finding_name": "Indian passport number in plain text",
+            "risk_factor": 8.2,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "DPDP Act 2023",
+                "CPRA 1798.140(ae)(1)(A) (passport numbers)"
+            ],
+            "description": "Passport numbers are official identifiers protected as personal data under the DPDP Act, 2023; exposure enables identity fraud with a government-issued document.",
+            "remediation_advice": "Encrypt passport numbers at rest and limit access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Letter + 7 digits; no public checksum.",
+            "sample_value": "A2096457",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "IN PAN": {
+            "finding_name": "Indian PAN in plain text",
+            "risk_factor": 7.8,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "India SPDI Rules 2011 Rule 3 (financial information)",
+                "DPDP Act 2023"
+            ],
+            "description": "The Permanent Account Number is financial information classified as sensitive personal data under India's SPDI Rules, 2011 and protected under the DPDP Act, 2023.",
+            "remediation_advice": "Encrypt or mask PANs and restrict access to tax and KYC workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "AAAPL1234C: 4th char = holder type, 5th = surname initial; no public checksum.",
+            "sample_value": "ABCPE1234F",
+            "references": [
+                "https://en.wikipedia.org/wiki/Permanent_account_number"
+            ]
+        },
+        "IN VOTER ID": {
+            "finding_name": "Indian voter ID in plain text",
+            "risk_factor": 7.2,
+            "category": "Regional Compliance",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "DPDP Act 2023"
+            ],
+            "description": "Voter ID (EPIC) numbers are government-issued identifiers protected as personal data under the DPDP Act, 2023.",
+            "remediation_advice": "Encrypt voter ID numbers at rest and remove them where not required.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "3 letters + 7 digits (EPIC); no public checksum.",
+            "sample_value": "ABC1234567",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "IN GST": {
+            "finding_name": "GSTIN detected",
+            "risk_factor": 5.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "A GSTIN identifies a registered business and is publicly searchable; sensitivity is low in isolation but rises in aggregate with financial records.",
+            "remediation_advice": "Review whether the GSTIN is stored alongside financial records that require protection.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "15 chars: 2-digit state + PAN + entity + Z + check char (base-36 weighted).",
+            "sample_value": "22AAAAA0000A1Z5",
+            "references": [
+                "https://en.wikipedia.org/wiki/Goods_and_Services_Tax_(India)"
+            ]
+        },
+        "Date of Birth": {
+            "finding_name": "Date of birth in plain text",
+            "risk_factor": 6.5,
+            "category": "PII",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "GDPR Art. 4(1)",
+                "HIPAA 45 CFR 164.514(b)(2) (dates)",
+                "CPRA 1798.140(v)"
+            ],
+            "description": "Dates of birth are personal data under GDPR Article 4(1) and a core identity-theft component when combined with names or identifiers.",
+            "remediation_advice": "Minimize stored birth dates, encrypt them at rest, and avoid co-locating them with identifiers.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "ISO-ish date with plausible birth year (1930-2012).",
+            "sample_value": "1985-04-12",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "Address": {
+            "finding_name": "Physical address in plain text",
+            "risk_factor": 6.0,
+            "category": "PII",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "GDPR Art. 4(1)",
+                "HIPAA 45 CFR 164.514(b)(2) (geographic subdivisions)",
+                "CPRA 1798.140(v)"
+            ],
+            "description": "Postal addresses are personal data under GDPR Article 4(1); street-level location tied to individuals requires protection under Article 32.",
+            "remediation_advice": "Encrypt address fields at rest and restrict bulk read access.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Street keyword plus digits or geographic context on one line.",
+            "sample_value": "221B Baker Street, London",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "Phone Number": {
+            "finding_name": "Phone number in plain text",
+            "risk_factor": 5.5,
+            "category": "PII",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "GDPR Art. 4(1)",
+                "HIPAA 45 CFR 164.514(b)(2) (telephone numbers)",
+                "CPRA 1798.140(v)",
+                "DPDP Act 2023"
+            ],
+            "description": "Phone numbers are personal data under GDPR Article 4(1) and the DPDP Act, 2023; exposure enables smishing and SIM-swap targeting.",
+            "remediation_advice": "Mask or encrypt phone numbers and restrict bulk read access.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Parsed and validated by libphonenumber region metadata.",
+            "sample_value": "+1-202-555-0143",
+            "references": [
+                "https://github.com/google/libphonenumber"
+            ]
+        },
+        "Email": {
+            "finding_name": "Email address in plain text",
+            "risk_factor": 5.0,
+            "category": "PII",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "GDPR Art. 4(1)",
+                "HIPAA 45 CFR 164.514(b)(2) (email addresses)",
+                "CPRA 1798.140(v)",
+                "DPDP Act 2023"
+            ],
+            "description": "Email addresses are personal data under GDPR Article 4(1) and the DPDP Act, 2023; bulk exposure enables phishing and credential-stuffing campaigns.",
+            "remediation_advice": "Minimize stored addresses, encrypt them at rest, and restrict bulk read access.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "RFC 5322 mailbox shape; demo domains (example.com etc.) suppressed.",
+            "sample_value": "john.doe@gmail.com",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html",
+                "https://datatracker.ietf.org/doc/html/rfc5322"
+            ],
+            "aliases": [
+                "PII.EmailAddress"
+            ]
+        },
+        "PII.IPAddress": {
+            "finding_name": "IP address in plain text",
+            "risk_factor": 4.0,
+            "category": "PII",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "GDPR Art. 4(1) and Recital 30 (online identifiers)",
+                "HIPAA 45 CFR 164.514(b)(2) (IP addresses)",
+                "CPRA 1798.140(v)"
+            ],
+            "description": "Under GDPR (Article 4(1), Recital 30), online identifiers including IP addresses are personal data when linkable to a person.",
+            "remediation_advice": "Truncate or pseudonymize stored IP addresses and apply retention limits.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "IPv4 dotted-quad or IPv6; documentation ranges (TEST-NET) excluded in prod.",
+            "sample_value": "203.0.113.42",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html",
+                "https://en.wikipedia.org/wiki/Reserved_IP_addresses"
+            ],
+            "aliases": [
+                "IP_ADDRESS"
+            ]
+        },
+        "PII.PersonName": {
+            "finding_name": "Person name in plain text",
+            "risk_factor": 3.0,
+            "category": "PII",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [
+                "GDPR Art. 4(1)",
+                "HIPAA 45 CFR 164.514(b)(2) (names)",
+                "CPRA 1798.140(v)",
+                "DPDP Act 2023"
+            ],
+            "description": "Names are personal data under GDPR Article 4(1); low risk in isolation, but they raise the identifiability of every co-located finding.",
+            "remediation_advice": "Apply access controls to name columns and pseudonymize analytical copies.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Column-name rule; content validation requires NER.",
+            "sample_value": "Jane Smith",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "PII.UserIdentifier": {
+            "finding_name": "User identifier in plain text",
+            "risk_factor": 2.5,
+            "category": "PII",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Lowest",
+            "compliance_frameworks": [
+                "GDPR Art. 4(1) (online identifiers)"
+            ],
+            "description": "Usernames and account IDs are pseudonymous identifiers treated as personal data under GDPR when linkable to an individual; they also enable account enumeration.",
+            "remediation_advice": "Restrict bulk access to identifier columns and monitor for enumeration patterns.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Column-name rule (username/user_id/account_id).",
+            "sample_value": "jsmith92",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "ABA_ROUTING_NUMBER": {
+            "finding_name": "ABA routing number detected",
+            "risk_factor": 4.5,
+            "category": "Financial Data",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "ABA routing numbers identify US financial institutions and are public directory data. Risk arises when stored alongside account numbers, completing an ACH transfer profile.",
+            "remediation_advice": "Review whether adjacent columns hold account numbers; routing numbers alone need no action.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "Weighted checksum (3,7,1 repeating) over 9 digits divisible by 10.",
+            "sample_value": "021000021",
+            "references": [
+                "https://en.wikipedia.org/wiki/ABA_routing_transit_number"
+            ]
+        },
+        "US_ITIN": {
+            "finding_name": "US ITIN in plain text",
+            "risk_factor": 8.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "FTC Safeguards Rule",
+                "US state breach notification laws"
+            ],
+            "description": "The Individual Taxpayer Identification Number is a permanent tax identifier; the FTC Safeguards Rule and state breach-notification laws treat it like an SSN.",
+            "remediation_advice": "Encrypt or mask tax identifiers and restrict access to tax and KYC workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "SSN format with area 9XX and group 50-65/70-88/90-92/94-99.",
+            "sample_value": "912-70-1234",
+            "references": [
+                "https://en.wikipedia.org/wiki/Individual_Taxpayer_Identification_Number"
+            ]
+        },
+        "US_PASSPORT": {
+            "finding_name": "US passport number in plain text",
+            "risk_factor": 8.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "CPRA 1798.140(ae)(1)(A) (passport numbers)"
+            ],
+            "description": "US passport numbers are sensitive personal information under CPRA 1798.140(ae); exposure enables identity fraud with a government-issued document.",
+            "remediation_advice": "Encrypt passport numbers at rest and limit access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "9 digits (older booklets: letter + 8 digits); no public checksum.",
+            "sample_value": "896584512",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "US_DRIVER_LICENSE": {
+            "finding_name": "US driver license number in plain text",
+            "risk_factor": 7.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "CPRA 1798.140(ae)(1)(A)",
+                "Driver's Privacy Protection Act (DPPA)"
+            ],
+            "description": "US driver license numbers are sensitive personal information under CPRA and protected motor-vehicle records under the DPPA.",
+            "remediation_advice": "Encrypt licence numbers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Format varies by state; no public checksum.",
+            "sample_value": "A1234567",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "US_MBI": {
+            "finding_name": "US Medicare beneficiary identifier in plain text",
+            "risk_factor": 8.0,
+            "category": "Healthcare Data (PHI)",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "HIPAA 45 CFR 164.514(b)(2) (health plan beneficiary numbers)"
+            ],
+            "description": "The Medicare Beneficiary Identifier is a health plan beneficiary number, one of the 18 HIPAA identifiers; it links records to an individual's Medicare coverage.",
+            "remediation_advice": "Encrypt health identifiers at rest and restrict access to covered workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "11 chars, positions typed (C=1-9, A=letter excl. S,L,O,I,B,Z); no checksum — randomly generated.",
+            "sample_value": "1EG4-TE5-MK73",
+            "references": [
+                "https://www.cms.gov/medicare/new-medicare-card/understanding-the-mbi-with-format.pdf"
+            ]
+        },
+        "US_NPI": {
+            "finding_name": "US NPI detected",
+            "risk_factor": 5.5,
+            "category": "Healthcare Data (PHI)",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "National Provider Identifiers name healthcare providers and are published in the public NPPES registry. Risk arises only alongside patient data.",
+            "remediation_advice": "Provider identifiers are public directory data; review adjacent columns for patient data.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "10 digits; Luhn over the number prefixed with 80840.",
+            "sample_value": "1234567893",
+            "references": [
+                "https://en.wikipedia.org/wiki/National_Provider_Identifier"
+            ]
+        },
+        "MEDICAL_LICENSE": {
+            "finding_name": "Medical license number detected",
+            "risk_factor": 5.5,
+            "category": "Healthcare Data (PHI)",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "Medical license numbers identify practitioners and are publicly searchable in state licensing registries. Risk arises only alongside patient data.",
+            "remediation_advice": "Provider identifiers are public directory data; review adjacent columns for patient data.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "Letter (restricted set) + letter + 7 digits.",
+            "sample_value": "AB1234567",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "UK_NHS": {
+            "finding_name": "UK NHS number in plain text",
+            "risk_factor": 8.5,
+            "category": "Healthcare Data (PHI)",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "UK GDPR Art. 9 (health data)",
+                "UK Data Protection Act 2018"
+            ],
+            "description": "The NHS number links records to an individual's health history; UK GDPR treats health identifiers as special category data requiring heightened protection.",
+            "remediation_advice": "Encrypt health identifiers at rest and restrict access to covered workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Mod-11 check digit over 10 digits (weights 10..2).",
+            "sample_value": "401 023 2137",
+            "references": [
+                "https://en.wikipedia.org/wiki/NHS_number"
+            ]
+        },
+        "UK_PASSPORT": {
+            "finding_name": "UK passport number in plain text",
+            "risk_factor": 8.2,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "UK GDPR Art. 32",
+                "UK Data Protection Act 2018"
+            ],
+            "description": "UK passport numbers are official identifiers protected under UK GDPR; exposure enables identity fraud with a government-issued document.",
+            "remediation_advice": "Encrypt passport numbers at rest and limit access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "2 letters + 7 digits (pattern in use); modern booklets are 9 digits.",
+            "sample_value": "AB1234567",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "UK_DRIVING_LICENCE": {
+            "finding_name": "UK driving licence number in plain text",
+            "risk_factor": 7.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "UK GDPR Art. 32",
+                "UK Data Protection Act 2018"
+            ],
+            "description": "UK driving licence numbers encode the holder's name and birth date and are protected personal data under UK GDPR.",
+            "remediation_advice": "Encrypt licence numbers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "16 chars encoding surname, birth date and initials (DVLA scheme).",
+            "sample_value": "MORGA657054SM9IJ",
+            "references": [
+                "https://en.wikipedia.org/wiki/Driving_licence_in_the_United_Kingdom"
+            ]
+        },
+        "UK_POSTCODE": {
+            "finding_name": "UK postcode detected",
+            "risk_factor": 3.0,
+            "category": "PII",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [
+                "UK GDPR Art. 4(1)"
+            ],
+            "description": "UK postcodes locate a handful of addresses and act as quasi-identifiers when combined with other attributes.",
+            "remediation_advice": "Treat postal codes as quasi-identifiers; avoid co-locating them with names or birth dates.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Outward + inward code (area, district, sector, unit).",
+            "sample_value": "SW1A 1AA",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "UK_VEHICLE_REGISTRATION": {
+            "finding_name": "UK vehicle registration detected",
+            "risk_factor": 5.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "UK GDPR Art. 4(1)"
+            ],
+            "description": "Vehicle registration marks link to a registered keeper through the licensing agency and are personal data under UK GDPR.",
+            "remediation_advice": "Restrict access to vehicle registration data and remove it where not required.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Current format: 2 letters, 2-digit age identifier, 3 letters.",
+            "sample_value": "AB12 CDE",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "CA_POSTAL_CODE": {
+            "finding_name": "Canadian postal code detected",
+            "risk_factor": 3.0,
+            "category": "PII",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [
+                "PIPEDA"
+            ],
+            "description": "Canadian postal codes are quasi-identifiers under PIPEDA when combined with other attributes.",
+            "remediation_advice": "Treat postal codes as quasi-identifiers; avoid co-locating them with names or birth dates.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "A1A 1A1 alternating letter/digit; letters D,F,I,O,Q,U never used.",
+            "sample_value": "K1A 0B1",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "DE_ID_CARD": {
+            "finding_name": "German ID card number in plain text",
+            "risk_factor": 8.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "GDPR Art. 32",
+                "GDPR Art. 87 (national identification numbers)"
+            ],
+            "description": "German Personalausweis numbers are national identification numbers; GDPR Article 87 lets member states impose specific safeguards on their processing.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "9-10 alphanumerics from a restricted alphabet; ICAO 9303 check digit.",
+            "sample_value": "L01X00T47",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "DE_PASSPORT": {
+            "finding_name": "German passport number in plain text",
+            "risk_factor": 8.2,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "GDPR Art. 32"
+            ],
+            "description": "German passport numbers are official identifiers protected as personal data under GDPR.",
+            "remediation_advice": "Encrypt passport numbers at rest and limit access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "9 alphanumerics from a restricted alphabet; ICAO 9303 check digit.",
+            "sample_value": "C01X00T47",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "DE_SOCIAL_SECURITY": {
+            "finding_name": "German social security number in plain text",
+            "risk_factor": 9.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "GDPR Art. 32",
+                "GDPR Art. 87 (national identification numbers)"
+            ],
+            "description": "The German Sozialversicherungsnummer is a lifetime identifier linking employment and pension records; GDPR requires encryption-grade safeguards.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "12 chars: area, birth date, initial letter, check digits.",
+            "sample_value": "15070649C103",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "DE_TAX_ID": {
+            "finding_name": "German tax ID in plain text",
+            "risk_factor": 8.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "GDPR Art. 32",
+                "GDPR Art. 87 (national identification numbers)"
+            ],
+            "description": "The Steuerliche Identifikationsnummer is a permanent personal tax identifier assigned for life.",
+            "remediation_advice": "Encrypt or mask tax identifiers and restrict access to tax and KYC workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "11 digits, no leading zero; one digit appears twice; mod-11 check digit.",
+            "sample_value": "57549285017",
+            "references": [
+                "https://en.wikipedia.org/wiki/Taxpayer_Identification_Number"
+            ]
+        },
+        "DE_TAX_NUMBER": {
+            "finding_name": "German tax number in plain text",
+            "risk_factor": 7.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "GDPR Art. 32"
+            ],
+            "description": "The Steuernummer identifies a taxpayer at their local tax office.",
+            "remediation_advice": "Encrypt or mask tax identifiers and restrict access to tax and KYC workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "10-13 digits, regional formats (Steuernummer).",
+            "sample_value": "151/815/08156",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "DE_VAT_ID": {
+            "finding_name": "German VAT ID detected",
+            "risk_factor": 5.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "German VAT IDs (USt-IdNr.) identify registered businesses and are verifiable in the public VIES registry.",
+            "remediation_advice": "Review whether the identifier is stored alongside financial records that require protection.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "DE + 9 digits; verifiable via the EU VIES service.",
+            "sample_value": "DE123456789",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "DE_HANDELSREGISTER": {
+            "finding_name": "German commercial register number detected",
+            "risk_factor": 5.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "Handelsregister numbers identify companies in Germany's public commercial register.",
+            "remediation_advice": "Review whether the identifier is stored alongside financial records that require protection.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "HRA/HRB + register number.",
+            "sample_value": "HRB 12345",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "DE_HEALTH_INSURANCE": {
+            "finding_name": "German health insurance number in plain text",
+            "risk_factor": 8.0,
+            "category": "Healthcare Data (PHI)",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "GDPR Art. 9 (health data)"
+            ],
+            "description": "The Krankenversichertennummer links records to an individual's health insurance history; GDPR Article 9 treats it as special category data.",
+            "remediation_advice": "Encrypt health identifiers at rest and restrict access to covered workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Letter + 9 digits; check digit over digit expansion.",
+            "sample_value": "A123456780",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "DE_BSNR": {
+            "finding_name": "German practice number (BSNR) detected",
+            "risk_factor": 5.5,
+            "category": "Healthcare Data (PHI)",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "The Betriebsstaettennummer identifies a medical practice location, not a patient. Risk arises only alongside patient data.",
+            "remediation_advice": "Provider identifiers are public directory data; review adjacent columns for patient data.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "9 digits; first two encode the KV region.",
+            "sample_value": "123456789",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "DE_LANR": {
+            "finding_name": "German physician number (LANR) detected",
+            "risk_factor": 5.5,
+            "category": "Healthcare Data (PHI)",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "The Lebenslange Arztnummer identifies a physician, not a patient. Risk arises only alongside patient data.",
+            "remediation_advice": "Provider identifiers are public directory data; review adjacent columns for patient data.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "9 digits: 7-digit doctor ID incl. check digit + 2-digit specialty.",
+            "sample_value": "123456789",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "DE_FUEHRERSCHEIN": {
+            "finding_name": "German driver license number in plain text",
+            "risk_factor": 7.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "GDPR Art. 32"
+            ],
+            "description": "German driver license numbers are official identifiers protected as personal data under GDPR.",
+            "remediation_advice": "Encrypt licence numbers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "2 letters + 8 digits + check character.",
+            "sample_value": "AB12345678C",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "DE_KFZ": {
+            "finding_name": "German license plate detected",
+            "risk_factor": 5.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "GDPR Art. 4(1)"
+            ],
+            "description": "German Kfz-Kennzeichen link to a registered keeper through the vehicle authority.",
+            "remediation_advice": "Restrict access to vehicle registration data and remove it where not required.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "District code (1-3 letters) + 1-2 letters + up to 4 digits.",
+            "sample_value": "M AB 1234",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "DE_PLZ": {
+            "finding_name": "German postal code detected",
+            "risk_factor": 3.0,
+            "category": "PII",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [
+                "GDPR Art. 4(1)"
+            ],
+            "description": "German postal codes are quasi-identifiers when combined with other attributes.",
+            "remediation_advice": "Treat postal codes as quasi-identifiers; avoid co-locating them with names or birth dates.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "5 digits, 01xxx-99xxx.",
+            "sample_value": "80331",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "ES_NIF": {
+            "finding_name": "Spanish NIF in plain text",
+            "risk_factor": 9.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "GDPR Art. 32",
+                "GDPR Art. 87 (national identification numbers)"
+            ],
+            "description": "The NIF is Spain's personal tax and identity number, assigned for life.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "8 digits + letter computed as number mod 23 indexed into TRWAGMYFPDXBNJZSQVHLCKE.",
+            "sample_value": "12345678Z",
+            "references": [
+                "https://en.wikipedia.org/wiki/National_identity_document_(Spain)"
+            ]
+        },
+        "ES_NIE": {
+            "finding_name": "Spanish NIE in plain text",
+            "risk_factor": 8.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "GDPR Art. 32",
+                "GDPR Art. 87 (national identification numbers)"
+            ],
+            "description": "The NIE identifies foreign residents in Spain for tax and identity purposes.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "X/Y/Z + 7 digits + mod-23 check letter.",
+            "sample_value": "X1234567L",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "ES_PASSPORT": {
+            "finding_name": "Spanish passport number in plain text",
+            "risk_factor": 8.2,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "GDPR Art. 32"
+            ],
+            "description": "Spanish passport numbers are official identifiers protected as personal data under GDPR.",
+            "remediation_advice": "Encrypt passport numbers at rest and limit access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "2-3 letters + 6 digits; no public checksum.",
+            "sample_value": "AAF123456",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "FI_PERSONAL_IDENTITY_CODE": {
+            "finding_name": "Finnish personal identity code in plain text",
+            "risk_factor": 9.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "GDPR Art. 32",
+                "GDPR Art. 87 (national identification numbers)"
+            ],
+            "description": "The henkilotunnus encodes birth date and sex and identifies a person for life.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "DDMMYY, century sign, 3-digit individual number, mod-31 check char.",
+            "sample_value": "131052-308T",
+            "references": [
+                "https://en.wikipedia.org/wiki/National_identification_number#Finland"
+            ]
+        },
+        "PL_PESEL": {
+            "finding_name": "Polish PESEL number in plain text",
+            "risk_factor": 9.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "GDPR Art. 32",
+                "GDPR Art. 87 (national identification numbers)"
+            ],
+            "description": "PESEL encodes birth date and sex and identifies a person for life.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "11 digits encoding birth date and sex; weighted mod-10 check digit.",
+            "sample_value": "44051401359",
+            "references": [
+                "https://en.wikipedia.org/wiki/PESEL"
+            ]
+        },
+        "SE_PERSONNUMMER": {
+            "finding_name": "Swedish personal number in plain text",
+            "risk_factor": 9.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "GDPR Art. 32",
+                "GDPR Art. 87 (national identification numbers)"
+            ],
+            "description": "The personnummer encodes birth date and identifies a person for life.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "YYMMDD-NNNC with Luhn check digit.",
+            "sample_value": "811228-9874",
+            "references": [
+                "https://en.wikipedia.org/wiki/Personal_identity_number_(Sweden)"
+            ]
+        },
+        "SE_ORGANISATIONSNUMMER": {
+            "finding_name": "Swedish organisation number detected",
+            "risk_factor": 5.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "Organisationsnummer identify Swedish companies in public registers.",
+            "remediation_advice": "Review whether the identifier is stored alongside financial records that require protection.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "10 digits with Luhn check digit.",
+            "sample_value": "556036-0793",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "IT_FISCAL_CODE": {
+            "finding_name": "Italian fiscal code in plain text",
+            "risk_factor": 9.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "GDPR Art. 32",
+                "GDPR Art. 87 (national identification numbers)"
+            ],
+            "description": "The codice fiscale encodes name, birth date, and birthplace and identifies a person for life.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "16 chars from name, birth date, and place; check character over odd/even tables.",
+            "sample_value": "RSSMRA85T10A562S",
+            "references": [
+                "https://en.wikipedia.org/wiki/Italian_fiscal_code"
+            ]
+        },
+        "IT_IDENTITY_CARD": {
+            "finding_name": "Italian identity card number in plain text",
+            "risk_factor": 8.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "GDPR Art. 32",
+                "GDPR Art. 87 (national identification numbers)"
+            ],
+            "description": "Italian identity card numbers are national identification numbers protected under GDPR.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "CIE format: 2 letters + 5 digits + 2 letters.",
+            "sample_value": "CA12345AA",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "IT_PASSPORT": {
+            "finding_name": "Italian passport number in plain text",
+            "risk_factor": 8.2,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "GDPR Art. 32"
+            ],
+            "description": "Italian passport numbers are official identifiers protected as personal data under GDPR.",
+            "remediation_advice": "Encrypt passport numbers at rest and limit access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "2 letters + 7 digits; no public checksum.",
+            "sample_value": "YA1234567",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "IT_DRIVER_LICENSE": {
+            "finding_name": "Italian driver license number in plain text",
+            "risk_factor": 7.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "GDPR Art. 32"
+            ],
+            "description": "Italian driver license numbers are official identifiers protected as personal data under GDPR.",
+            "remediation_advice": "Encrypt licence numbers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "2 letters + 7 digits + letter (or U1 series).",
+            "sample_value": "AB1234567C",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "IT_VAT_CODE": {
+            "finding_name": "Italian VAT code detected",
+            "risk_factor": 5.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "Italian VAT codes identify registered businesses and are verifiable in the public VIES registry.",
+            "remediation_advice": "Review whether the identifier is stored alongside financial records that require protection.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "11 digits with Luhn check digit; verifiable via VIES.",
+            "sample_value": "12345678903",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "KR_RRN": {
+            "finding_name": "Korean resident registration number in plain text",
+            "risk_factor": 9.2,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "Korea PIPA Art. 24 (unique identifiers)"
+            ],
+            "description": "The RRN encodes birth date and sex and identifies a person for life; PIPA prohibits processing it without a specific legal basis.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "YYMMDD-GNNNNNC: birth date, sex/century digit, weighted mod-11 check digit.",
+            "sample_value": "900101-1234567",
+            "references": [
+                "https://en.wikipedia.org/wiki/Resident_registration_number"
+            ]
+        },
+        "KR_FRN": {
+            "finding_name": "Korean foreign resident number in plain text",
+            "risk_factor": 8.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "Korea PIPA Art. 24 (unique identifiers)"
+            ],
+            "description": "The foreign resident number is a lifetime identifier for foreign nationals in Korea, restricted under PIPA.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "RRN format with sex/century digit 5-8 for foreign nationals.",
+            "sample_value": "900101-5678901",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "KR_DRIVER_LICENSE": {
+            "finding_name": "Korean driver license number in plain text",
+            "risk_factor": 7.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "Korea PIPA Art. 24 (unique identifiers)"
+            ],
+            "description": "Korean driver license numbers are unique identifiers restricted under PIPA.",
+            "remediation_advice": "Encrypt licence numbers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Region (2) - year (2) - serial (6) - check (2).",
+            "sample_value": "11-19-174133-01",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "KR_PASSPORT": {
+            "finding_name": "Korean passport number in plain text",
+            "risk_factor": 8.2,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "Korea PIPA Art. 24 (unique identifiers)"
+            ],
+            "description": "Korean passport numbers are unique identifiers restricted under PIPA.",
+            "remediation_advice": "Encrypt passport numbers at rest and limit access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "M/S/R/G/D + 8 digits or letter+digit combos.",
+            "sample_value": "M12345678",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "KR_BRN": {
+            "finding_name": "Korean business registration number detected",
+            "risk_factor": 5.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "Korean business registration numbers identify companies in public registers.",
+            "remediation_advice": "Review whether the identifier is stored alongside financial records that require protection.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "3-2-5 digits with weighted check digit.",
+            "sample_value": "123-45-67890",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "SG_NRIC_FIN": {
+            "finding_name": "Singapore NRIC/FIN in plain text",
+            "risk_factor": 9.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "Singapore PDPA",
+                "PDPC NRIC Advisory Guidelines"
+            ],
+            "description": "NRIC/FIN numbers are permanent identifiers; PDPC guidelines bar collecting or storing them except where required by law.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "S/T/F/G/M + 7 digits + weighted mod-11 check letter.",
+            "sample_value": "S1234567D",
+            "references": [
+                "https://en.wikipedia.org/wiki/National_Registration_Identity_Card"
+            ]
+        },
+        "SG_UEN": {
+            "finding_name": "Singapore UEN detected",
+            "risk_factor": 5.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "UENs identify Singapore-registered entities in public registers.",
+            "remediation_advice": "Review whether the identifier is stored alongside financial records that require protection.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "9-10 chars; format depends on entity type and year.",
+            "sample_value": "201312345A",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "AU_TFN": {
+            "finding_name": "Australian tax file number in plain text",
+            "risk_factor": 8.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "Australian Privacy Act 1988",
+                "Privacy (Tax File Number) Rule 2015"
+            ],
+            "description": "TFNs are lifetime tax identifiers; the TFN Rule restricts their collection, use, and storage.",
+            "remediation_advice": "Encrypt or mask tax identifiers and restrict access to tax and KYC workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "8-9 digits; weighted checksum divisible by 11.",
+            "sample_value": "123456782",
+            "references": [
+                "https://en.wikipedia.org/wiki/Tax_file_number"
+            ]
+        },
+        "AU_MEDICARE": {
+            "finding_name": "Australian Medicare number in plain text",
+            "risk_factor": 8.0,
+            "category": "Healthcare Data (PHI)",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "Australian Privacy Act 1988 (health identifiers)"
+            ],
+            "description": "Medicare numbers link to an individual's health coverage and are protected health identifiers under the Privacy Act.",
+            "remediation_advice": "Encrypt health identifiers at rest and restrict access to covered workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "10-11 digits starting 2-6; weighted check digit in position 9.",
+            "sample_value": "2123 45670 1",
+            "references": [
+                "https://en.wikipedia.org/wiki/Medicare_card_(Australia)"
+            ]
+        },
+        "AU_ABN": {
+            "finding_name": "Australian business number detected",
+            "risk_factor": 5.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "ABNs identify registered businesses in the public Australian Business Register.",
+            "remediation_advice": "Review whether the identifier is stored alongside financial records that require protection.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "11 digits; weighted checksum mod 89 (subtract 1 from first digit).",
+            "sample_value": "51824753556",
+            "references": [
+                "https://en.wikipedia.org/wiki/Australian_Business_Number"
+            ]
+        },
+        "AU_ACN": {
+            "finding_name": "Australian company number detected",
+            "risk_factor": 5.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "ACNs identify registered companies in the public Australian company register.",
+            "remediation_advice": "Review whether the identifier is stored alongside financial records that require protection.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "9 digits; weighted complement check digit.",
+            "sample_value": "000000019",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "ZA_ID_NUMBER": {
+            "finding_name": "South African ID number in plain text",
+            "risk_factor": 9.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "South Africa POPIA"
+            ],
+            "description": "The SA ID number encodes birth date, sex, and citizenship and identifies a person for life.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "13 digits: YYMMDD, sequence, citizenship, Luhn check digit.",
+            "sample_value": "8001015009087",
+            "references": [
+                "https://en.wikipedia.org/wiki/South_African_identity_card"
+            ]
+        },
+        "ZA_PASSPORT": {
+            "finding_name": "South African passport number in plain text",
+            "risk_factor": 8.2,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "South Africa POPIA"
+            ],
+            "description": "South African passport numbers are official identifiers protected under POPIA.",
+            "remediation_advice": "Encrypt passport numbers at rest and limit access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Letter + 8 digits; no public checksum.",
+            "sample_value": "A12345678",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "ZA_DRIVER_LICENSE": {
+            "finding_name": "South African driver license number in plain text",
+            "risk_factor": 7.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "South Africa POPIA"
+            ],
+            "description": "South African driver license numbers are official identifiers protected under POPIA.",
+            "remediation_advice": "Encrypt licence numbers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "6-10 digits + 2-5 alphanumerics; no public checksum.",
+            "sample_value": "12345678AB",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "ZA_TRAFFIC_REGISTER_NUMBER": {
+            "finding_name": "South African traffic register number in plain text",
+            "risk_factor": 7.2,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "South Africa POPIA"
+            ],
+            "description": "Traffic register numbers identify individuals in the national traffic information system.",
+            "remediation_advice": "Encrypt licence numbers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "13 chars ending in letter pair; NaTIS scheme.",
+            "sample_value": "1234567890123",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "ZA_INCOME_TAX_NUMBER": {
+            "finding_name": "South African income tax number in plain text",
+            "risk_factor": 7.8,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "South Africa POPIA"
+            ],
+            "description": "South African income tax numbers are personal tax identifiers protected under POPIA.",
+            "remediation_advice": "Encrypt or mask tax identifiers and restrict access to tax and KYC workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "10 digits starting 0-3; Luhn-style check digit.",
+            "sample_value": "1234567890",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "ZA_VAT_NUMBER": {
+            "finding_name": "South African VAT number detected",
+            "risk_factor": 5.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "South African VAT numbers identify registered vendors in public registers.",
+            "remediation_advice": "Review whether the identifier is stored alongside financial records that require protection.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "10 digits starting with 4.",
+            "sample_value": "4123456789",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "ZA_COMPANY_REGISTRATION": {
+            "finding_name": "South African company registration number detected",
+            "risk_factor": 5.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [],
+            "description": "Company registration numbers identify South African companies in the public CIPC register.",
+            "remediation_advice": "Review whether the identifier is stored alongside financial records that require protection.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "YYYY/NNNNNN/NN (type suffix).",
+            "sample_value": "2011/123456/07",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "ZA_LICENSE_PLATE": {
+            "finding_name": "South African license plate detected",
+            "risk_factor": 5.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "South Africa POPIA"
+            ],
+            "description": "South African license plates link to a registered owner through the licensing authority.",
+            "remediation_advice": "Restrict access to vehicle registration data and remove it where not required.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Letters + digits ending in a province code (GP, WP, ZN, ...).",
+            "sample_value": "AB 12 CD GP",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "NG_NIN": {
+            "finding_name": "Nigerian NIN in plain text",
+            "risk_factor": 9.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "Nigeria Data Protection Act 2023"
+            ],
+            "description": "The National Identification Number is Nigeria's permanent identity number.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "11 digits; no public checksum.",
+            "sample_value": "12345678901",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "NG_VEHICLE_REGISTRATION": {
+            "finding_name": "Nigerian vehicle registration detected",
+            "risk_factor": 5.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "Nigeria Data Protection Act 2023"
+            ],
+            "description": "Nigerian vehicle registrations link to a registered owner through the licensing authority.",
+            "remediation_advice": "Restrict access to vehicle registration data and remove it where not required.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "ABC-123DE style: LGA code + serial.",
+            "sample_value": "ABC-123DE",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "PH_UMID": {
+            "finding_name": "Philippine UMID in plain text",
+            "risk_factor": 8.5,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "Philippines Data Privacy Act 2012"
+            ],
+            "description": "The Unified Multi-Purpose ID links social security, health insurance, and pension records.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "12-digit CRN; no public checksum.",
+            "sample_value": "0111-2345678-9",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "PH_TIN": {
+            "finding_name": "Philippine TIN in plain text",
+            "risk_factor": 7.8,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "Philippines Data Privacy Act 2012"
+            ],
+            "description": "Philippine Taxpayer Identification Numbers are personal tax identifiers protected under the Data Privacy Act.",
+            "remediation_advice": "Encrypt or mask tax identifiers and restrict access to tax and KYC workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "9 digits + 3-4 digit branch code.",
+            "sample_value": "123-456-789-000",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "PH_PASSPORT": {
+            "finding_name": "Philippine passport number in plain text",
+            "risk_factor": 8.2,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "Philippines Data Privacy Act 2012"
+            ],
+            "description": "Philippine passport numbers are official identifiers protected under the Data Privacy Act.",
+            "remediation_advice": "Encrypt passport numbers at rest and limit access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Letter + 7 digits + letter (new series); no public checksum.",
+            "sample_value": "P1234567A",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "TH_TNIN": {
+            "finding_name": "Thai national ID number in plain text",
+            "risk_factor": 9.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "Thailand PDPA 2019"
+            ],
+            "description": "The Thai national identification number identifies a person for life.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "13 digits; weighted mod-11 check digit; first digit = person category.",
+            "sample_value": "1101700230705",
+            "references": [
+                "https://en.wikipedia.org/wiki/National_identification_number#Thailand"
+            ]
+        },
+        "TR_NATIONAL_ID": {
+            "finding_name": "Turkish national ID number in plain text",
+            "risk_factor": 9.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "Turkey KVKK"
+            ],
+            "description": "The T.C. Kimlik No is Turkey's lifetime identity number.",
+            "remediation_advice": "Encrypt or tokenize national identifiers at rest and restrict access to verification workflows.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "11 digits; two arithmetic check digits over the first nine.",
+            "sample_value": "10000000146",
+            "references": [
+                "https://en.wikipedia.org/wiki/Turkish_Identification_Number"
+            ]
+        },
+        "TR_LICENSE_PLATE": {
+            "finding_name": "Turkish license plate detected",
+            "risk_factor": 5.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "Turkey KVKK"
+            ],
+            "description": "Turkish license plates link to a registered owner through the vehicle authority.",
+            "remediation_advice": "Restrict access to vehicle registration data and remove it where not required.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Province code (01-81) + letters + digits.",
+            "sample_value": "34 ABC 123",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "IN_VEHICLE_REGISTRATION": {
+            "finding_name": "Indian vehicle registration detected",
+            "risk_factor": 5.0,
+            "category": "Regional Compliance",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "DPDP Act 2023"
+            ],
+            "description": "Vehicle registration numbers link to a registered owner through the transport authority (VAHAN).",
+            "remediation_advice": "Restrict access to vehicle registration data and remove it where not required.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "State code + district + series + number (VAHAN format).",
+            "sample_value": "KA01AB1234",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "CRYPTO": {
+            "finding_name": "Cryptocurrency wallet address detected",
+            "risk_factor": 6.5,
+            "category": "Financial Data",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [],
+            "description": "Wallet addresses expose on-chain transaction history; once linked to a person they reveal their full payment graph.",
+            "remediation_advice": "Treat stored wallet addresses as financial identifiers and restrict bulk access.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Base58Check-encoded; decoded payload carries a 4-byte double-SHA256 checksum.",
+            "sample_value": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+            "references": [
+                "https://en.wikipedia.org/wiki/Bitcoin#Addresses_and_transactions"
+            ]
+        },
+        "MAC_ADDRESS": {
+            "finding_name": "MAC address detected",
+            "risk_factor": 4.0,
+            "category": "PII",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "GDPR Recital 30 (device identifiers)",
+                "HIPAA 45 CFR 164.514(b)(2) (device identifiers)"
+            ],
+            "description": "MAC addresses uniquely identify network hardware and are treated as online identifiers under GDPR Recital 30.",
+            "remediation_advice": "Truncate or hash device identifiers and apply retention limits.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Six hex octets; first three are the OUI (vendor).",
+            "sample_value": "00:1B:44:11:3A:B7",
+            "references": [
+                "https://en.wikipedia.org/wiki/MAC_address"
+            ]
+        },
+        "URL": {
+            "finding_name": "URL detected",
+            "risk_factor": 3.0,
+            "category": "PII",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Lowest",
+            "compliance_frameworks": [
+                "HIPAA 45 CFR 164.514(b)(2) (URLs)"
+            ],
+            "description": "URLs are among the 18 HIPAA identifiers and can embed usernames, tokens, or session parameters.",
+            "remediation_advice": "Strip query parameters containing tokens or identifiers before storing URLs.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "Scheme/host/path shape; TLD validated via public suffix list.",
+            "sample_value": "https://www.wikipedia.org/wiki/Main_Page",
+            "references": [
+                "https://cwe.mitre.org/data/definitions/359.html"
+            ]
+        },
+        "UUID": {
+            "finding_name": "UUID detected",
+            "risk_factor": 2.0,
+            "category": "Technical Identifier",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Lowest",
+            "compliance_frameworks": [],
+            "description": "UUIDs are technical identifiers; sensitivity depends on what record they key.",
+            "remediation_advice": "No action needed unless the UUID keys a record containing sensitive data.",
+            "cwe": [
+                "CWE-200 (Exposure of Sensitive Information to an Unauthorized Actor)"
+            ],
+            "validation": "RFC 4122: 8-4-4-4-12 hex; version nibble in third group.",
+            "sample_value": "550e8400-e29b-41d4-a716-446655440000",
+            "references": [
+                "https://datatracker.ietf.org/doc/html/rfc4122"
+            ]
+        }
+    }
+]

@@ -1,23 +1,25 @@
 import json
-import urllib.request
-from typing import Dict, Any, List
 import os
 import sys
+import urllib.request
 from pathlib import Path
+from typing import Any, Dict, List
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 FINDINGS_DIR = BASE_DIR / "output"
 
-from datetime import datetime
 import zipfile
-import settings
+from datetime import datetime
 
+import boto3
+import requests
+
+import settings
 from src.engine.detector import DetectionEngine
-from src.scanners.aws.s3 import S3Scanner
 # from src.scanners.aws.rds import RDSScanner
 from src.scanners.aws.ddb import DynamoDBScanner
-from src.utils.logger import get_logger
+from src.scanners.aws.s3 import S3Scanner
 from src.utils.aws import get_secret
 import boto3
 import requests
@@ -176,12 +178,12 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
             file_size = file.get("Size", None)
             file_key = file.get("Key", None)
 
-            if (file_size and file_size < 100*1024*1024) and file_key:
+            if (file_size and file_size < 100 * 1024 * 1024) and file_key:
                 target = {
                     "bucket": bucket_name,
                     "key": file_key,
                     "version_id": file.get("VersionId", None),
-                    "last_modified": file.get("LastModified", None)
+                    "last_modified": file.get("LastModified", None),
                 }
                 raw_findings_for_file = s3scanner.scan(target)
 
@@ -220,7 +222,7 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
                 logger.info(f"Skipping file {file_key} with size {file_size}")
 
         end_time = datetime.now()
-        final_json['time_taken'] = str(end_time - start_time)
+        final_json["time_taken"] = str(end_time - start_time)
 
         with findings_file.open("w") as f:
             json.dump(final_json, f, indent=4, default=str)

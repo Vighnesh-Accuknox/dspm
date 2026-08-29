@@ -1,3 +1,6 @@
+# local env
+setting_local.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -5,6 +8,10 @@ __pycache__/
 
 # C extensions
 *.so
+
+# Virtual environment
+*dspmenv/*
+.venv/*
 
 # Distribution / packaging
 .Python

@@ -1,17 +1,16 @@
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+
 from src.engine.layers import (
-    scan_pii,
-    scan_credentials,
-    scan_financial,
-    scan_healthcare,
-    scan_regional,
-    scan_entropy
+    scan_credentials, scan_entropy, scan_financial,
+    scan_healthcare, scan_pii, scan_regional,
 )
+
 
 class DetectionEngine:
     """
     Coordinates detection layers and executes scans on text blobs.
     """
+
     def __init__(self, config: Dict[str, Any] = None):
         self.config = config or {}
         # Regional compliance packs: e.g., ["US", "IN", "CA", "GB"] (disabled by default)
@@ -25,7 +24,7 @@ class DetectionEngine:
             return []
 
         findings = []
-        
+
         # Run standard layers
         findings.extend(scan_pii(text))
         findings.extend(scan_credentials(text))
