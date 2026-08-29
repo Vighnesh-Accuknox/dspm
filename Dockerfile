@@ -1,23 +1,34 @@
+```dockerfile
 FROM python:3.14-slim
 
-# hadolint ignore=DL3008
+# Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         tesseract-ocr \
         tesseract-ocr-eng && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy requirements file
-COPY requirements.txt ${LAMBDA_TASK_ROOT}/
+# Set application working directory
+WORKDIR /app
 
-# Install Python package dependencies
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy Settings
-COPY settings.py ${LAMBDA_TASK_ROOT}/
+# Copy settings
+COPY settings.py .
 
 # Copy application source code
-COPY src/ ${LAMBDA_TASK_ROOT}/src/
+COPY src/ ./src/
 
-# Set the CMD to your handler (could also be src/handler.py)
+# Create directory for scan findings
+RUN mkdir -p /app/output
+
+# Make Python able to import settings and src
+ENV PYTHONPATH=/app
+
+# Run the scanner
 CMD ["python", "-m", "src.dspm_scanner_worker_handler"]
+```

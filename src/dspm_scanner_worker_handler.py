@@ -27,6 +27,9 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 logger = get_logger("handler")
 
+# Create the folder if doesn't exist
+FINDINGS_DIR.mkdir(parents=True, exist_ok=True)
+
 
 def club_findings(raw_findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
@@ -94,7 +97,7 @@ def post_findings_to_api(api_url: str, object_name: str):
         token = settings.ARTIFACT_TOKEN
         label_id = settings.LABEL_ID or "test"
 
-        # Format URL ensuring clean trailing slash before query params
+        #  URL ensuring clean trailing slash before query params
         base_url = api_url.rstrip("/")
         endpoint_url = f"{base_url}/api/v1/artifact/"
 
@@ -122,10 +125,10 @@ def post_findings_to_api(api_url: str, object_name: str):
                 headers=headers,
                 files={"file": (findings_file.name, zip_file, "application/zip")}
             )
-        
+
         logger.info(f"Upload response status for {object_name}: {resp.status_code}")
         logger.info(f"Upload response body for {object_name}: {resp.text}")
-        
+
     except Exception as e:
         logger.error(f"Failed to post findings to Artifact API for {object_name}: {str(e)}")
 
@@ -140,8 +143,10 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
         "enabled_regions": ['US', 'IN', 'UK']
     }
 
+    time = datetime.date.today()
+
     engine = DetectionEngine(config=config)
-    findings_file = FINDINGS_DIR / f"{bucket_name}.json"
+    findings_file = FINDINGS_DIR / f"{bucket_name}-{time}.json"
 
     final_json = {
         "scan_time": datetime.now(),
@@ -201,7 +206,7 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
                             sheet_key = f"{file_key} {sheet_part}"
                         else:
                             sheet_key = file_key
-                        
+
                         sheet_findings_map.setdefault(sheet_key, []).append(finding)
 
                     if not sheet_findings_map:
@@ -233,7 +238,7 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
 
     # Zip findings file
     logger.info(f"Zipping findings for {bucket_name} before sending to Artifact API")
-    zip_file = FINDINGS_DIR / f"{bucket_name}.zip"
+    zip_file = FINDINGS_DIR / f"{bucket_name}-{time}.zip"
 
     with zipfile.ZipFile(
         zip_file,
@@ -251,7 +256,7 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
         post_findings_to_api(api_url, bucket_name)
     else:
         logger.error("API URL is not configured in settings.py")
-    
+
     try:
         # if findings_file.exists():
         #     findings_file.unlink(missing_ok=True)
@@ -363,4 +368,3 @@ def lambda_handler(event: Dict[str, Any] = None, context: Any = None) -> Dict[st
 
 if __name__ == "__main__":
     lambda_handler(None, None)
-

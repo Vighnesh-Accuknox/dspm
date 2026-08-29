@@ -257,10 +257,12 @@ class S3Scanner(BaseScanner):
                         cell_findings = self.engine.scan_text(val)
                         for f in cell_findings:
                             location = f"Sheet '{sheet_name}', Row {row_idx}, Column '{col}'"
-                            findings.append(self.format_finding(
-                                f["detector"], f["category"], f["severity"], f["value"],
-                                sheet_resource_id, location
-                            ))
+                            findings.append(
+                                self.format_finding(
+                                    f["detector"], f["category"], f["severity"], f["value"],
+                                    sheet_resource_id, location,
+                                ),
+                            )
         except Exception as e:
             logger.error(f"Error parsing Excel {resource_id}: {str(e)}")
         return findings

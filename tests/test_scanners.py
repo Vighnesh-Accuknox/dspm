@@ -175,7 +175,7 @@ def test_s3_scanner_excel_per_sheet(mock_boto_client, mock_pd):
     # Mock pandas ExcelFile parsing
     mock_excel_file = MagicMock()
     mock_excel_file.sheet_names = ["Employees", "Credentials"]
-    
+
     import pandas as _real_pd
     # Mock dataframes for the two sheets
     df_sheet1 = MagicMock()
