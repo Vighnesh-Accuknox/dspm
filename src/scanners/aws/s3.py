@@ -214,6 +214,7 @@ class S3Scanner(BaseScanner):
         try:
             excel_file = pd.ExcelFile(file_path)
             for sheet_name in excel_file.sheet_names:
+                sheet_resource_id = f"{resource_id} [{sheet_name}]"
                 df = excel_file.parse(sheet_name, dtype=str)
                 for col in df.columns:
                     for row_idx, val in enumerate(df[col]):
@@ -224,7 +225,7 @@ class S3Scanner(BaseScanner):
                             location = f"Sheet '{sheet_name}', Row {row_idx}, Column '{col}'"
                             findings.append(self.format_finding(
                                 f["detector"], f["category"], f["severity"], f["value"],
-                                resource_id, location
+                                sheet_resource_id, location
                             ))
         except Exception as e:
             logger.error(f"Error parsing Excel {resource_id}: {str(e)}")
