@@ -83,7 +83,7 @@ def club_findings(raw_findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return list(grouped.values())
 
 
-def post_findings_to_api(api_url: str, object_name: str):
+def post_findings_to_api(api_url: str, object_name: str, time: datetime) -> None:
     """
     HTTP POST request to upload findings to the Artifact API / CSPM Backend.
     Matches:
@@ -111,7 +111,7 @@ def post_findings_to_api(api_url: str, object_name: str):
         if token:
             headers["Authorization"] = f"Bearer {token}"
 
-        findings_file = FINDINGS_DIR / f"{object_name}.zip"
+        findings_file = FINDINGS_DIR / f"{object_name}-{time}.zip"
 
         if not findings_file.exists():
             logger.error(f"Findings zip file {findings_file} does not exist for upload.")
@@ -254,7 +254,7 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
     # Post results to Artifact API if configured
     api_url = settings.CSPM_URL
     if api_url:
-        post_findings_to_api(api_url, bucket_name)
+        post_findings_to_api(api_url, bucket_name, time)
     else:
         logger.error("API URL is not configured in settings.py")
 
