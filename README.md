@@ -22,7 +22,7 @@ There are two entry points:
    python -m src.dspm_scanner_worker_handler
    ```
 
-   Findings are written to `output/findings/<OBJECT_NAME>-<YYYY-MM-DD>.json` (one file per target) and uploaded as a zip archive to `CSPM_URL` if configured.
+   Findings are written to `output/findings/<OBJECT_NAME>-<YYYY-MM-DD>.json` (one file per target) and uploaded as a zip archive to `CSPM_URL` if configured. The JSON has the same layout for buckets and databases: `findings` holds one entry per scanned object key, `schema.table` or collection (an empty list when it is clean), and `files_scanned` counts them.
 
 2. **Master** (`src/dspm_scanner_master_handler.py`) — AWS Lambda handler that scans one target per invocation payload (also accepts SQS-wrapped payloads, S3 event notifications, and DynamoDB Stream batches).
 

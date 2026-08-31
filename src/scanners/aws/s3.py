@@ -60,6 +60,11 @@ class S3Scanner(BaseScanner):
     to prevent memory overflow, then dispatches to type-specific chunked parsers.
     """
 
+    def __init__(self, engine, config: Dict[str, Any] = None, client=None):
+        super().__init__(engine, config, client)
+        # Same shape as the DB scanners' stats so callers can surface failures uniformly
+        self.stats = {"objects_scanned": 0, "errors": 0}
+
     def scan(self, target: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Target structure:
@@ -105,9 +110,11 @@ class S3Scanner(BaseScanner):
 
             # Scan local file path
             findings = self._scan_local_file(temp_file_path, resource_id)
+            self.stats["objects_scanned"] += 1
             return findings
 
         except Exception as e:
+            self.stats["errors"] += 1
             logger.error(f"Error scanning S3 object {resource_id}: {str(e)}")
             return []
         finally:
@@ -147,21 +154,7 @@ class S3Scanner(BaseScanner):
             # Fallback for structured text-based / credentials files
             findings.extend(self._parse_text_fallback(file_path, resource_id))
 
-        # Deduplicate findings
-        seen = set()
-        deduped = []
-        for f in findings:
-            sig = (
-                f.get("resource_id"),
-                f.get("detector"),
-                f.get("value"),
-                f.get("location"),
-            )
-            if sig not in seen:
-                seen.add(sig)
-                deduped.append(f)
-
-        return deduped
+        return self.dedup_findings(findings)
 
     # Parser Implementations
 

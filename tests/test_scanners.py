@@ -342,3 +342,117 @@ def test_s3_scanner_excel_per_sheet(mock_boto_client, mock_pd):
     resource_ids = [f["resource_id"] for f in findings]
     assert "arn:aws:s3:::test-bucket/data.xlsx [Employees]" in resource_ids
     assert "arn:aws:s3:::test-bucket/data.xlsx [Credentials]" in resource_ids
+
+
+def test_sql_scanner_iter_scan():
+    # Per-relation results: every relation is yielded (clean ones with []),
+    # names are schema-qualified and scan() is the concatenation of iter_scan()
+    try:
+        import sqlalchemy  # noqa: F401
+        from sqlalchemy import create_engine, text
+    except ImportError:
+        print("        (skipped: sqlalchemy not installed)")
+        return
+
+    db_path = os.path.join(tempfile.mkdtemp(), "iter.db")
+    conn_str = f"sqlite:///{db_path}"
+    sa_engine = create_engine(conn_str)
+    with sa_engine.begin() as conn:
+        conn.execute(text("CREATE TABLE users (id INTEGER, email TEXT, password TEXT)"))
+        conn.execute(text("INSERT INTO users VALUES (1, 'john.doe@accuknox.com', 'SuperSecret123!')"))
+        conn.execute(text("CREATE TABLE settings (id INTEGER, flag TEXT)"))
+        conn.execute(text("INSERT INTO settings VALUES (1, 'on')"))
+    sa_engine.dispose()
+
+    engine = DetectionEngine()
+    target = {"engine": "sqlite", "connection_string": conn_str, "database": "testdb"}
+
+    scanner = SQLScanner(engine)
+    units = {name: (resource_id, findings) for resource_id, name, findings in scanner.iter_scan(target)}
+
+    assert set(units) == {"main.users", "main.settings"}
+    assert units["main.settings"][1] == []
+    assert units["main.users"][0] == "sqlite://localhost/testdb/main.users"
+    assert {f["detector"] for f in units["main.users"][1]} == {"Email", "Password Pattern"}
+    assert scanner.stats["tables_scanned"] == 2
+
+    assert len(SQLScanner(engine).scan(target)) == 2
+
+
+def test_sql_scanner_repeated_value_per_row():
+    # A value repeated across rows keeps one finding per row (with its own location),
+    # exactly as the S3 CSV/Excel parsers report it; aggregation handles hot columns
+    try:
+        import sqlalchemy  # noqa: F401
+        from sqlalchemy import create_engine, text
+    except ImportError:
+        print("        (skipped: sqlalchemy not installed)")
+        return
+
+    db_path = os.path.join(tempfile.mkdtemp(), "dup.db")
+    conn_str = f"sqlite:///{db_path}"
+    sa_engine = create_engine(conn_str)
+    with sa_engine.begin() as conn:
+        conn.execute(text("CREATE TABLE contacts (id INTEGER, email TEXT)"))
+        for i in range(3):
+            conn.execute(text(f"INSERT INTO contacts VALUES ({i}, 'dup@accuknox.com')"))
+    sa_engine.dispose()
+
+    findings = SQLScanner(DetectionEngine()).scan({"engine": "sqlite", "connection_string": conn_str})
+    emails = [f for f in findings if f["detector"] == "Email"]
+    assert len(emails) == 3
+    assert len({f["location"] for f in emails}) == 3
+
+
+def test_rds_scanner_reader_routing():
+    try:
+        import sqlalchemy  # noqa: F401
+    except ImportError:
+        print("        (skipped: sqlalchemy not installed)")
+        return
+
+    conn_str = _create_sqlite_db()
+    target = {
+        "engine": "sqlite",
+        "connection_string": conn_str,
+        "host": "writer.rds.amazonaws.com",
+        "reader_endpoint": "reader.rds.amazonaws.com",
+        "use_reader": True,
+        "database": "production",
+    }
+    units = list(RDSScanner(DetectionEngine()).iter_scan(target))
+    assert [name for _, name, _ in units] == ["main.users"]
+    assert units[0][0] == "arn:aws:rds:db:reader.rds.amazonaws.com/production/main.users"
+    assert len(units[0][2]) == 2
+
+
+def test_mongo_scanner_iter_scan():
+    users_coll = MagicMock()
+    users_coll.find.return_value.limit.return_value = [
+        {"_id": "user-1", "email": "carol.smith@yahoo.com"},
+    ]
+    audit_coll = MagicMock()
+    audit_coll.find.return_value.limit.return_value = [{"_id": "evt-1", "status": "ok"}]
+
+    db_mock = MagicMock()
+    db_mock.list_collection_names.return_value = ["users", "audit", "system.indexes"]
+    db_mock.__getitem__.side_effect = lambda name: {"users": users_coll, "audit": audit_coll}[name]
+
+    client_mock = MagicMock()
+    client_mock.list_database_names.return_value = ["appdb", "admin", "local", "config"]
+    client_mock.__getitem__.return_value = db_mock
+
+    engine = DetectionEngine()
+
+    # Pinned database: names are collection-relative, clean collections are yielded with []
+    scanner = MongoScanner(engine, client=client_mock)
+    units = list(scanner.iter_scan({"host": "mongo.local", "database": "appdb"}))
+    assert [name for _, name, _ in units] == ["users", "audit"]
+    assert units[0][0] == "mongodb://mongo.local/appdb/users"
+    assert [f["detector"] for f in units[0][2]] == ["Email"]
+    assert units[1][2] == []
+    assert scanner.stats["collections_scanned"] == 2
+
+    # No pinned database: names are database-qualified
+    units = list(MongoScanner(engine, client=client_mock).iter_scan({"host": "mongo.local"}))
+    assert [name for _, name, _ in units] == ["appdb.users", "appdb.audit"]

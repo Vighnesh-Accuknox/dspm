@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 from urllib.parse import quote_plus
 
 # Conditional imports for soft failures
@@ -47,6 +47,23 @@ class SQLScanner(BaseScanner):
 
     def scan(self, target: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
+        Scans every relation of the database and returns all findings.
+        See iter_scan for the target structure and per-relation results.
+        """
+        findings = []
+        for _resource_id, _relation_name, relation_findings in self.iter_scan(target):
+            findings.extend(relation_findings)
+        return findings
+
+    def iter_scan(self, target: Dict[str, Any]) -> Iterator[Tuple[str, str, List[Dict[str, Any]]]]:
+        """
+        Scans the database one relation at a time, yielding
+        (resource_id, relation_name, findings) as each table/view finishes —
+        the database counterpart of scanning an S3 bucket object by object.
+        relation_name is schema-qualified ('public.users') when the engine has
+        schemas; every visited relation is yielded, with an empty list when it
+        is clean, and findings are deduplicated per relation.
+
         Target structure:
         {
             "engine": "postgres" | "mysql" | "mariadb" | "mssql",
@@ -68,7 +85,7 @@ class SQLScanner(BaseScanner):
         if not create_engine:
             self.stats["errors"] += 1
             logger.warning("SQLAlchemy is not installed. Skipping SQL database scan.")
-            return []
+            return
 
         db_engine = (target.get("engine") or "postgres").lower()
         database = target.get("database")
@@ -86,9 +103,8 @@ class SQLScanner(BaseScanner):
         if not conn_str:
             self.stats["errors"] += 1
             logger.error(f"Unsupported database engine '{db_engine}' or missing connection details.")
-            return []
+            return
 
-        findings = []
         sa_engine = self.client
         owns_engine = sa_engine is None
         try:
@@ -98,7 +114,16 @@ class SQLScanner(BaseScanner):
             inspector = inspect(sa_engine)
 
             for schema in self._discover_schemas(sa_engine, inspector, target, database):
-                findings.extend(self._scan_schema(sa_engine, inspector, schema, target, resource_id))
+                for name, rel_type in self._list_relations(inspector, schema, target):
+                    full_relation_name = f"{schema}.{name}" if schema else name
+                    relation_findings = self._scan_relation(
+                        sa_engine, inspector, schema, name, rel_type, target, resource_id,
+                    )
+                    yield (
+                        f"{resource_id}/{full_relation_name}",
+                        full_relation_name,
+                        self.dedup_findings(relation_findings),
+                    )
 
         except Exception as e:
             self.stats["errors"] += 1
@@ -109,8 +134,6 @@ class SQLScanner(BaseScanner):
                     sa_engine.dispose()
                 except Exception:
                     pass
-
-        return self.dedup_findings(findings)
 
     def _base_resource_id(self, target: Dict[str, Any]) -> str:
         db_engine = (target.get("engine") or "postgres").lower()
@@ -178,11 +201,13 @@ class SQLScanner(BaseScanner):
             schemas = [s for s in schemas if s == database] or [database]
         return schemas or [None]
 
-    def _scan_schema(
-        self, sa_engine: Any, inspector: Any, schema: Optional[str],
-        target: Dict[str, Any], resource_id: str,
-    ) -> List[Dict[str, Any]]:
-        findings = []
+    def _list_relations(
+        self, inspector: Any, schema: Optional[str], target: Dict[str, Any],
+    ) -> List[Tuple[str, str]]:
+        """
+        (name, "table"|"view") pairs to scan in a schema, honouring target
+        'tables' (plain or schema-qualified names) and 'include_views'.
+        """
         try:
             tables = inspector.get_table_names(schema=schema)
             views = inspector.get_view_names(schema=schema) if target.get("include_views") else []
@@ -192,12 +217,13 @@ class SQLScanner(BaseScanner):
             return []
 
         requested = {t.lower() for t in target.get("tables") or []}
+        relations = []
         for name, rel_type in [(t, "table") for t in tables] + [(v, "view") for v in views]:
             qualified = f"{schema}.{name}".lower() if schema else name.lower()
             if requested and name.lower() not in requested and qualified not in requested:
                 continue
-            findings.extend(self._scan_relation(sa_engine, inspector, schema, name, rel_type, target, resource_id))
-        return findings
+            relations.append((name, rel_type))
+        return relations
 
     def _scan_relation(
         self, sa_engine: Any, inspector: Any, schema: Optional[str], name: str,

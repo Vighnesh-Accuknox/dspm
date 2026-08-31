@@ -4,14 +4,14 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 try:
-    from tests import test_engine, test_scanners
+    from tests import test_engine, test_scanners, test_worker_handler
 except ImportError as e:
     print(f"Import error: {str(e)}")
     sys.exit(1)
 
 
 def run_tests():
-    test_modules = [test_engine, test_scanners]
+    test_modules = [test_engine, test_scanners, test_worker_handler]
     passed = 0
     failed = 0
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterator, List, Tuple
 
 from src.scanners.db.sql import SQLScanner
 from src.utils.logger import get_logger
@@ -14,7 +14,7 @@ class RDSScanner(SQLScanner):
     ids as RDS ARNs.
     """
 
-    def scan(self, target: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def iter_scan(self, target: Dict[str, Any]) -> Iterator[Tuple[str, str, List[Dict[str, Any]]]]:
         """
         Target structure (in addition to SQLScanner target fields):
         {
@@ -25,7 +25,7 @@ class RDSScanner(SQLScanner):
         if target.get("use_reader") and target.get("reader_endpoint"):
             target = {**target, "host": target["reader_endpoint"]}
             logger.info(f"Routing connection to Aurora Reader Endpoint: {target['host']}")
-        return super().scan(target)
+        yield from super().iter_scan(target)
 
     def _base_resource_id(self, target: Dict[str, Any]) -> str:
         return f"arn:aws:rds:db:{target.get('host')}/{target.get('database')}"

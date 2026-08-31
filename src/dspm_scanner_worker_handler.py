@@ -250,55 +250,60 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
                         json.dump(final_json, f, indent=4, default=str)
                 else:
                     logger.info(f"Skipping file {file_key} with size {file_size}")
+
+            scan_errors = s3scanner.stats.get("errors", 0)
+            if scan_errors:
+                errors.append(f"{scan_errors} error(s) during S3 scan, see logs")
+                logger.error(errors[-1])
         except Exception as e:
             errors.append(f"S3 scan failed: {str(e)}")
             logger.error(errors[-1])
 
     elif normalized_type in DB_OBJECT_TYPES:
         engine_name = DB_OBJECT_TYPES[normalized_type]
-        logger.info(f"Creating {engine_name} scanner instance")
+        try:
+            logger.info(f"Creating {engine_name} scanner instance for {bucket_name}")
+            target = {
+                "engine": engine_name,
+                "host": settings.DB_HOST,
+                "port": settings.DB_PORT,
+                "username": settings.DB_USERNAME,
+                "password": settings.DB_PASSWORD,
+                "database": bucket_name,
+            }
 
-        target = {
-            "engine": engine_name,
-            "host": settings.DB_HOST,
-            "port": settings.DB_PORT,
-            "username": settings.DB_USERNAME,
-            "password": settings.DB_PASSWORD,
-            "database": bucket_name,
-        }
+            # DB_URI-only setups: derive the host so findings carry the real
+            # resource id instead of 'localhost'
+            if settings.DB_URI and not target["host"]:
+                try:
+                    target["host"] = urlsplit(settings.DB_URI).hostname
+                except ValueError:
+                    pass
 
-        # DB_URI-only setups: derive the host so findings carry the real
-        # resource id instead of 'localhost'
-        if settings.DB_URI and not target["host"]:
-            try:
-                target["host"] = urlsplit(settings.DB_URI).hostname
-            except ValueError:
-                pass
+            if engine_name == "mongo":
+                if settings.DB_URI:
+                    target["uri"] = settings.DB_URI
+                db_scanner = MongoScanner(engine, config)
+            else:
+                if settings.DB_URI:
+                    target["connection_string"] = settings.DB_URI
+                db_scanner = SQLScanner(engine, config)
 
-        if engine_name == "mongo":
-            if settings.DB_URI:
-                target["uri"] = settings.DB_URI
-            db_scanner = MongoScanner(engine, config)
-        else:
-            if settings.DB_URI:
-                target["connection_string"] = settings.DB_URI
-            db_scanner = SQLScanner(engine, config)
+            # A table/collection is the database counterpart of an S3 object: one entry
+            # per relation (schema-qualified) or collection, clean ones included, checkpointed
+            # after each just like the per-object S3 loop above
+            for _resource_id, relation_name, relation_findings in db_scanner.iter_scan(target):
+                final_json["findings"][relation_name] = club_findings(relation_findings)
+                final_json["files_scanned"] += 1
+                with findings_file.open("w") as f:
+                    json.dump(final_json, f, indent=4, default=str)
 
-        db_findings = db_scanner.scan(target)
-
-        # Group findings per table/collection, mirroring the per-file S3 layout
-        grouped: Dict[str, List[Dict[str, Any]]] = {}
-        for finding in db_findings:
-            grouped.setdefault(finding.get("resource_id", bucket_name), []).append(finding)
-        final_json["findings"] = {resource: club_findings(items) for resource, items in grouped.items()}
-        final_json["files_scanned"] = (
-            db_scanner.stats.get("tables_scanned")
-            or db_scanner.stats.get("collections_scanned", 0)
-        )
-
-        scan_errors = db_scanner.stats.get("errors", 0)
-        if scan_errors:
-            errors.append(f"{scan_errors} error(s) during {engine_name} scan, see logs")
+            scan_errors = db_scanner.stats.get("errors", 0)
+            if scan_errors:
+                errors.append(f"{scan_errors} error(s) during {engine_name} scan, see logs")
+                logger.error(errors[-1])
+        except Exception as e:
+            errors.append(f"{engine_name} scan failed: {str(e)}")
             logger.error(errors[-1])
 
     else:

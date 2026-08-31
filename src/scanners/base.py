@@ -106,13 +106,16 @@ class BaseScanner(ABC):
 
     def dedup_findings(self, findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        Collapses repeated values (the same secret in many rows/documents) to
-        one finding per (resource_id, detector, value).
+        Drops exact duplicates: one finding per (resource_id, detector, value,
+        location). A value repeated across rows/documents keeps one finding per
+        row, exactly as the S3 parsers report a value repeated across lines or
+        cells; columns that fire on every row are collapsed by
+        flush_grouped_findings instead.
         """
         seen = set()
         deduped = []
         for f in findings:
-            sig = (f.get("resource_id"), f.get("detector"), f.get("value"))
+            sig = (f.get("resource_id"), f.get("detector"), f.get("value"), f.get("location"))
             if sig not in seen:
                 seen.add(sig)
                 deduped.append(f)

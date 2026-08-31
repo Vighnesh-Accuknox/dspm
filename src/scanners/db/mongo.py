@@ -32,6 +32,24 @@ class MongoScanner(BaseScanner):
 
     def scan(self, target: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
+        Scans every collection and returns all findings.
+        See iter_scan for the target structure and per-collection results.
+        """
+        findings = []
+        for _resource_id, _collection_name, collection_findings in self.iter_scan(target):
+            findings.extend(collection_findings)
+        return findings
+
+    def iter_scan(self, target: Dict[str, Any]) -> Iterator[Tuple[str, str, List[Dict[str, Any]]]]:
+        """
+        Scans one collection at a time, yielding
+        (resource_id, collection_name, findings) as each collection finishes —
+        the database counterpart of scanning an S3 bucket object by object.
+        collection_name is relative to the target: 'users' when the target pins
+        a database, 'appdb.users' otherwise. Every visited collection is
+        yielded, with an empty list when it is clean, and findings are
+        deduplicated per collection.
+
         Target structure:
         {
             "uri": "mongodb://user:pass@host:27017/?authSource=admin", # optional, overrides the fields below # pragma: allowlist secret
@@ -54,20 +72,20 @@ class MongoScanner(BaseScanner):
             if not MongoClient:
                 self.stats["errors"] += 1
                 logger.warning("pymongo is not installed. Skipping MongoDB scan.")
-                return []
+                return
             uri = target.get("uri") or self._build_uri(target)
             try:
                 client = MongoClient(uri, serverSelectionTimeoutMS=self.config.get("connect_timeout", 10) * 1000)
             except Exception as e:
                 self.stats["errors"] += 1
                 logger.error(f"Failed to connect to MongoDB at {host}: {str(e)}")
-                return []
+                return
 
         logger.info(f"Starting MongoDB scan for mongodb://{host}")
-        findings = []
+        pinned_db = target.get("database")
         try:
-            if target.get("database"):
-                db_names = [target["database"]]
+            if pinned_db:
+                db_names = [pinned_db]
             else:
                 db_names = [d for d in client.list_database_names() if d not in SYSTEM_DATABASES]
 
@@ -84,7 +102,12 @@ class MongoScanner(BaseScanner):
                     continue
 
                 for coll_name in coll_names:
-                    findings.extend(self._scan_collection(db, db_name, coll_name, target, host))
+                    collection_findings = self._scan_collection(db, db_name, coll_name, target, host)
+                    yield (
+                        self._collection_resource_id(host, db_name, coll_name),
+                        coll_name if pinned_db else f"{db_name}.{coll_name}",
+                        self.dedup_findings(collection_findings),
+                    )
 
         except Exception as e:
             self.stats["errors"] += 1
@@ -96,7 +119,8 @@ class MongoScanner(BaseScanner):
                 except Exception:
                     pass
 
-        return self.dedup_findings(findings)
+    def _collection_resource_id(self, host: str, db_name: str, coll_name: str) -> str:
+        return f"mongodb://{host}/{db_name}/{coll_name}"
 
     def _build_uri(self, target: Dict[str, Any]) -> str:
         host = target.get("host") or "localhost"
@@ -116,7 +140,7 @@ class MongoScanner(BaseScanner):
         target: Dict[str, Any], host: str,
     ) -> List[Dict[str, Any]]:
         findings = []
-        resource_id = f"mongodb://{host}/{db_name}/{coll_name}"
+        resource_id = self._collection_resource_id(host, db_name, coll_name)
         logger.info(f"Scanning collection {db_name}.{coll_name}")
 
         # Incremental scanning: only documents changed since the last scan
