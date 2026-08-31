@@ -16,13 +16,13 @@ Configuration is read from environment variables (a `.env` file in the project r
 
 There are two entry points:
 
-1. **Worker** (`src/dspm_scanner_worker_handler.py`) — scans one whole resource (a bucket or a database) configured via environment variables. This is what the Docker image runs.
+1. **Worker** (`src/dspm_scanner_worker_handler.py`) — scans whole resources (buckets and/or databases) configured via environment variables; several targets are scanned two at a time. This is what the Docker image runs.
 
    ```bash
    python -m src.dspm_scanner_worker_handler
    ```
 
-   Findings are written to `output/findings/<OBJECT_NAME>.zip` and uploaded to `CSPM_URL` if configured.
+   Findings are written to `output/findings/<OBJECT_NAME>-<YYYY-MM-DD>.json` (one file per target) and uploaded as a zip archive to `CSPM_URL` if configured.
 
 2. **Master** (`src/dspm_scanner_master_handler.py`) — AWS Lambda handler that scans one target per invocation payload (also accepts SQS-wrapped payloads, S3 event notifications, and DynamoDB Stream batches).
 
@@ -34,12 +34,13 @@ There are two entry points:
 
 | Variable | Required | Description |
 |---|---|---|
-| `SCANNING_OBJECT_TYPE` | yes (for CLI/Docker) | `EC2` runs the scan immediately on start; `LAMBDA` (default) only registers the handler |
-| `OBJECT_TYPE` | yes | Selects the connector, see sections below |
-| `OBJECT_NAME` | yes | S3 bucket name, or database name for the DB connectors |
+| `OBJECT_TYPE` | yes* | Selects the connector, see sections below |
+| `OBJECT_NAME` | yes* | S3 bucket name, or database name for the DB connectors |
+| `OBJECTS_TO_SCAN` | no | Several targets at once: a JSON object `{"name": "type", ...}` (e.g. `{"bucket-a": "s3", "appdb": "postgres"}`) or a JSON list of names that all use `OBJECT_TYPE`. Overrides `OBJECT_NAME`/`OBJECT_TYPE` (\* not needed when set) |
 | `CSPM_URL` | no | CSPM backend base URL; findings upload is skipped when unset |
-| `DSPM_TOKEN` | with `CSPM_URL` | Bearer token for the findings upload (`api/v1/dspm/upload`) |
-| `OBJECT_REGION` | no | Reserved; not currently used by any connector |
+| `ARTIFACT_TOKEN` | with `CSPM_URL` | Bearer token for the findings upload (`api/v1/artifact/`) |
+| `LABEL_ID` | no | Label the uploaded findings are filed under in the CSPM backend, default `test` |
+| `OBJECT_REGION` | no | AWS region for the S3 client (applies to every S3 target) |
 | `LOG_QUERIES` | no | `true`/`1`/`yes` logs every query issued during DB scans (SQL statements, Mongo filters, DynamoDB scans). Default `false` |
 | `ENABLED_REGIONS` | no | Comma-separated regional compliance packs, default `US,IN,GB` (valid: `US`, `IN`, `CA`, `GB`; `UK` is accepted as an alias for `GB`) |
 | `OUTPUT_DIR` | no | Findings/work directory. Default `<repo>/output`; the container image sets `/app/output` — point it at a mounted volume to persist findings |
@@ -50,6 +51,7 @@ There are two entry points:
 |---|---|---|
 | `OBJECT_TYPE` | yes | `S3` |
 | `OBJECT_NAME` | yes | Bucket name |
+| `AWS_ACCOUNT_ID` | yes | Account that owns the bucket(s); recorded in the findings and required by the CSPM backend |
 | `AWS_ACCESS_KEY_ID` | yes | IAM credentials with `s3:ListBucket` + `s3:GetObject` |
 | `AWS_SECRET_ACCESS_KEY` | yes | |
 
@@ -88,7 +90,6 @@ All non-`system.*` collections of the database are discovered and scanned, up to
 ### Example `.env` (PostgreSQL)
 
 ```bash
-SCANNING_OBJECT_TYPE=EC2
 OBJECT_TYPE=POSTGRES
 OBJECT_NAME=appdb
 DB_HOST=127.0.0.1
@@ -96,7 +97,7 @@ DB_PORT=5432
 DB_USERNAME=scanner
 DB_PASSWORD=secret
 CSPM_URL=https://cspm.example.com/
-DSPM_TOKEN=eyJ...
+ARTIFACT_TOKEN=eyJ...
 ```
 
 ---
@@ -198,7 +199,7 @@ Uses ambient AWS credentials (Lambda role / environment). DynamoDB Stream CDC ba
 
 `deploy/openshift-cronjob.yaml` contains a CronJob + Secret template that runs under the restricted SCC: the image runs as a non-root arbitrary UID (group-0 writable `/app`), takes all credentials from a Secret, and writes findings to an `emptyDir` mounted at `OUTPUT_DIR`.
 
-In `SCANNING_OBJECT_TYPE=EC2` (run-once) mode the process exit code reflects the result — `0` when the scan and upload succeeded, `1` on scan errors, unsupported `OBJECT_TYPE`, or upload failure (details in the logs and in the `errors` field of the findings JSON) — so failed Jobs are visible in Kubernetes. The findings archive is deleted after a successful upload and kept locally when the upload fails.
+Running the worker (`python -m src.dspm_scanner_worker_handler`, which is the image's `CMD`) always performs one scan run and exits; the exit code reflects the result — `0` when every target was scanned and uploaded successfully, `1` on scan errors, unsupported `OBJECT_TYPE`, or upload failure (details in the logs and in the `errors` field of the findings JSON) — so failed Jobs are visible in Kubernetes. The findings JSON stays in `OUTPUT_DIR/findings/`; the zip archive is only the upload vehicle and is removed after the upload attempt.
 
 ## Tests
 

@@ -28,17 +28,19 @@ def _bool_env(name: str, default: str = "false") -> bool:
 # AWS Credentials (optional: falls back to instance profile / IRSA when unset)
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", None)
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", None)
+AWS_ACCOUNT_ID = os.environ.get("AWS_ACCOUNT_ID", None)  # required for S3 targets; recorded in the findings
 
-# CSPM backend
+# CSPM backend (findings are uploaded to <CSPM_URL>/api/v1/artifact/)
 CSPM_URL = os.environ.get("CSPM_URL", None)
 ARTIFACT_TOKEN = os.environ.get("ARTIFACT_TOKEN", None)
-DSPM_TOKEN = os.environ.get("DSPM_TOKEN", None)
+LABEL_ID = os.environ.get("LABEL_ID", "test")
 
-# Scan target
+# Scan targets: OBJECTS_TO_SCAN is a JSON object {"name": "type", ...} (or a JSON list of
+# names that all use OBJECT_TYPE); falls back to the single OBJECT_NAME/OBJECT_TYPE pair
+OBJECTS_TO_SCAN = os.environ.get("OBJECTS_TO_SCAN", None)
 OBJECT_TYPE = os.environ.get("OBJECT_TYPE", None)
 OBJECT_NAME = os.environ.get("OBJECT_NAME", None)
-OBJECT_REGION = os.environ.get("OBJECT_REGION", None)
-SCANNING_OBJECT_TYPE = os.environ.get("SCANNING_OBJECT_TYPE", "LAMBDA")  # EC2|LAMBDA
+OBJECT_REGION = os.environ.get("OBJECT_REGION", None)  # AWS region for the S3 client
 
 # Database scan settings (used when OBJECT_TYPE is MONGODB|POSTGRES|MYSQL|MARIADB|MSSQL;
 # OBJECT_NAME holds the database name to scan)

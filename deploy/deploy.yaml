@@ -14,7 +14,7 @@ stringData:
   DB_USERNAME: ""            # read-only DB account recommended
   DB_PASSWORD: ""
   # DB_URI: ""               # alternative: full connection string/URI (overrides host/port/user/password)
-  DSPM_TOKEN: ""             # CSPM upload token
+  ARTIFACT_TOKEN: ""         # CSPM upload token
   # AWS_ACCESS_KEY_ID: ""    # only for OBJECT_TYPE=S3 without IRSA/instance roles
   # AWS_SECRET_ACCESS_KEY: ""
 ---
@@ -40,8 +40,6 @@ spec:
                 - secretRef:
                     name: dspm-scanner-credentials
               env:
-                - name: SCANNING_OBJECT_TYPE
-                  value: "EC2"                      # run-once mode; exit code reflects scan status
                 - name: OBJECT_TYPE
                   value: "POSTGRES"                 # S3|POSTGRES|MYSQL|MARIADB|MSSQL|MONGODB
                 - name: OBJECT_NAME

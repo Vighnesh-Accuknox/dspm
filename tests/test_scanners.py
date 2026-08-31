@@ -304,3 +304,41 @@ def test_s3_scanner_single_line_multiple_instances(mock_boto_client):
     locations = [f["location"] for f in findings]
     assert any("Column 16-" in loc for loc in locations)
     assert any("Column 47-" in loc for loc in locations)
+
+
+@patch("src.scanners.aws.s3.pd")
+@patch("boto3.client")
+def test_s3_scanner_excel_per_sheet(mock_boto_client, mock_pd):
+    # Mock pandas ExcelFile parsing
+    mock_excel_file = MagicMock()
+    mock_excel_file.sheet_names = ["Employees", "Credentials"]
+
+    import pandas as _real_pd
+    # Mock dataframes for the two sheets
+    df_sheet1 = MagicMock()
+    df_sheet1.columns = ["Name", "Contact"]
+    df_sheet1.__getitem__.side_effect = lambda col: ["Alice", "alice@example.com"] if col == "Contact" else ["Alice", "Bob"]
+
+    df_sheet2 = MagicMock()
+    df_sheet2.columns = ["Service", "Secret"]
+    df_sheet2.__getitem__.side_effect = lambda col: ["MySecretPass123!"] if col == "Secret" else ["AWS"]
+
+    def parse_sheet(sheet_name, **kwargs):
+        if sheet_name == "Employees":
+            return df_sheet1
+        return df_sheet2
+
+    mock_excel_file.parse.side_effect = parse_sheet
+    mock_pd.isna.side_effect = lambda x: False
+    mock_pd.ExcelFile.return_value = mock_excel_file
+
+    engine = DetectionEngine()
+    scanner = S3Scanner(engine)
+
+    target = {"bucket": "test-bucket", "key": "data.xlsx"}
+    findings = scanner.scan(target)
+
+    assert len(findings) == 2
+    resource_ids = [f["resource_id"] for f in findings]
+    assert "arn:aws:s3:::test-bucket/data.xlsx [Employees]" in resource_ids
+    assert "arn:aws:s3:::test-bucket/data.xlsx [Credentials]" in resource_ids
