@@ -83,58 +83,6 @@ def club_findings(raw_findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return list(grouped.values())
 
 
-
-def club_findings(raw_findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """
-    Club raw findings by detector name and type/category for a file.
-    Output schema:
-    [
-        {
-            "name": "Email",
-            "type": "PII",
-            "finding_values": {
-                "[EMAIL_ADDRESS]": "location"
-            },
-            "total_count": "n"
-        }
-    ]
-    """
-    if not raw_findings:
-        return []
-
-    grouped: Dict[tuple, Dict[str, Any]] = {}
-
-    for f in raw_findings:
-        name = f.get("detector", "Unknown")
-        category = f.get("category", "General")
-        val = str(f.get("value", ""))
-        location = f.get("location", "")
-
-        key = (name, category)
-        if key not in grouped:
-            grouped[key] = {
-                "name": name,
-                "type": category,
-                "finding_values": {},
-                "total_count": 0,
-            }
-
-        grouped[key]["total_count"] += 1
-
-        # If the same value is found in multiple locations, record them
-        if val in grouped[key]["finding_values"]:
-            existing_loc = grouped[key]["finding_values"][val]
-            if isinstance(existing_loc, list):
-                if location not in existing_loc:
-                    existing_loc.append(location)
-            elif existing_loc != location:
-                grouped[key]["finding_values"][val] = [existing_loc, location]
-        else:
-            grouped[key]["finding_values"][val] = location
-
-    return list(grouped.values())
-
-
 def post_findings_to_api(api_url: str, object_name: str, time: datetime) -> None:
     """
     HTTP POST request to upload findings to the Artifact API / CSPM Backend.
