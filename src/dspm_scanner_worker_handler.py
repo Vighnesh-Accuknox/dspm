@@ -119,12 +119,6 @@ def post_findings_to_api(api_url: str, object_name: str, time: datetime) -> None
 
         logger.info(f"Sending findings for {object_name} to CSPM Backend: {endpoint_url} with params {params}")
 
-        if not findings_file.exists():
-            logger.error(f"Findings zip file {findings_file} does not exist for upload.")
-            return
-
-        logger.info(f"Sending findings for {object_name} to CSPM Backend: {endpoint_url} with params {params}")
-
         with open(findings_file, "rb") as zip_file:
             resp = requests.post(
                 url=endpoint_url,
