@@ -17,6 +17,7 @@ import requests
 
 import settings
 from src.engine.detector import DetectionEngine
+from src.utils.logger import get_logger
 # from src.scanners.aws.rds import RDSScanner
 from src.scanners.aws.ddb import DynamoDBScanner
 from src.scanners.aws.s3 import S3Scanner
@@ -63,7 +64,7 @@ def club_findings(raw_findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 "name": name,
                 "type": category,
                 "finding_values": {},
-                "total_count": 0
+                "total_count": 0,
             }
 
         grouped[key]["total_count"] += 1
@@ -123,7 +124,7 @@ def post_findings_to_api(api_url: str, object_name: str):
                 url=endpoint_url,
                 params=params,
                 headers=headers,
-                files={"file": (findings_file.name, zip_file, "application/zip")}
+                files={"file": (findings_file.name, zip_file, "application/zip")},
             )
 
         logger.info(f"Upload response status for {object_name}: {resp.status_code}")
@@ -140,10 +141,10 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
     logger.info(f"Starting scan for object: {bucket_name} (type: {object_type})")
 
     config = {
-        "enabled_regions": ['US', 'IN', 'UK']
+        "enabled_regions": ['US', 'IN', 'UK'],
     }
 
-    time = datetime.date.today()
+    time = datetime.today().date()
 
     engine = DetectionEngine(config=config)
     findings_file = FINDINGS_DIR / f"{bucket_name}-{time}.json"
@@ -155,7 +156,7 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
         "object_name": bucket_name,
         "account_id": settings.AWS_ACCOUNT_ID,
         "time_taken": None,
-        "findings": {}
+        "findings": {},
     }
 
     if object_type.lower() in ["s3", "s3bucket"]:
@@ -163,7 +164,7 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
         client_kwargs = {
             "aws_secret_access_key": settings.AWS_SECRET_ACCESS_KEY,
             "aws_access_key_id": settings.AWS_ACCESS_KEY_ID,
-            "service_name": "s3"
+            "service_name": "s3",
         }
         if object_region:
             client_kwargs["region_name"] = object_region
@@ -270,7 +271,7 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
     return {
         "object_name": bucket_name,
         "status": "success",
-        "files_scanned": final_json['files_scanned']
+        "files_scanned": final_json['files_scanned'],
     }
 
 
@@ -311,8 +312,8 @@ def lambda_handler(event: Dict[str, Any] = None, context: Any = None) -> Dict[st
             "statusCode": 400,
             "body": json.dumps({
                 "status": "failed",
-                "error": "AWS Account ID is not configured. Please configure it in settings.py"
-            })
+                "error": "AWS Account ID is not configured. Please configure it in settings.py",
+            }),
         }
 
     objects_dict = parse_objects_to_scan()
@@ -323,8 +324,8 @@ def lambda_handler(event: Dict[str, Any] = None, context: Any = None) -> Dict[st
             "body": json.dumps({
                 "status": "success",
                 "message": "No objects to scan",
-                "results": []
-            })
+                "results": [],
+            }),
         }
 
     logger.info(f"Target objects to scan: {objects_dict}")
@@ -354,15 +355,15 @@ def lambda_handler(event: Dict[str, Any] = None, context: Any = None) -> Dict[st
                     results.append({
                         "object_name": obj_name,
                         "status": "failed",
-                        "error": str(exc)
+                        "error": str(exc),
                     })
 
     return {
         "statusCode": 200,
         "body": json.dumps({
             "status": "success",
-            "results": results
-        })
+            "results": results,
+        }),
     }
 
 
