@@ -6,9 +6,29 @@ from src.pipeline import Cell, Record, TextBlob, UnitClassifier
 
 def _skip():
     if not ner.available():
-        print("        (skipped: spaCy en_core_web_sm not installed)")
+        print("        (skipped: no spaCy model installed)")
         return True
     return False
+
+
+def test_model_selection_and_switch():
+    if _skip():
+        return
+    assert ner.model_name() in ner.MODEL_PREFERENCE
+    # an explicit NER_MODEL wins over the preference order; an unknown name disables the layer cleanly
+    import os
+    from unittest.mock import patch
+
+    saved = (ner._NLP, ner._MODEL_NAME, ner._LOAD_FAILED)
+    try:
+        ner._NLP, ner._MODEL_NAME, ner._LOAD_FAILED = None, None, False
+        with patch.dict(os.environ, {"NER_MODEL": "en_core_web_sm"}):
+            assert ner.available() and ner.model_name() == "en_core_web_sm"
+        ner._NLP, ner._MODEL_NAME, ner._LOAD_FAILED = None, None, False
+        with patch.dict(os.environ, {"NER_MODEL": "no_such_model"}):
+            assert not ner.available() and ner.model_name() is None
+    finally:
+        ner._NLP, ner._MODEL_NAME, ner._LOAD_FAILED = saved
 
 
 def test_prose_gate_and_acceptance_rules():

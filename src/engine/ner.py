@@ -5,8 +5,10 @@ Names that sit in a name-labelled column are handled by the field rules
 (layers.scan_person_names); names inside free text - a support note, a PDF
 page, a comment field - need a model. Macie's NAME, Purview's named-entity
 SITs and Cyera's NER all do this with a statistical model, and so does this
-module with spaCy's small English model (en_core_web_sm, in requirements.txt);
-without it the layer is silently absent.
+module with spaCy: the transformer pipeline en_core_web_trf (RoBERTa, OntoNotes
+NER F1 0.90) when it is installed, else en_core_web_sm (F1 0.84, 40x smaller);
+NER_MODEL picks the model explicitly. Without any model the layer is silently
+absent.
 
 A PERSON entity is accepted when it looks like a written personal name: two
 to four title-case alphabetic tokens (initials and particles allowed), no
@@ -27,6 +29,10 @@ from src.engine.data import load_given_names
 
 MAX_CHARS = 50_000
 LOOSE_LABELS = frozenset({"ORG", "GPE", "FAC", "WORK_OF_ART", "NORP", "PRODUCT", "LOC", "EVENT"})
+MODEL_PREFERENCE = ("en_core_web_trf", "en_core_web_sm")
+# pipeline components NER does not need; dropping them halves the cost of the statistical models
+_UNUSED_PIPES = ("tagger", "parser", "attribute_ruler", "lemmatizer", "textcat")
+_MODEL_NAME: Optional[str] = None
 _NLP: Any = None
 _LOAD_FAILED = False
 
@@ -47,20 +53,40 @@ STOP_NAMES = frozenset({
 })
 
 
+def model_name() -> Optional[str]:
+    """Name of the loaded model (en_core_web_trf / en_core_web_sm), None when NER is unavailable."""
+    return _MODEL_NAME if available() else None
+
+
 def available() -> bool:
-    """spaCy + en_core_web_sm importable (cached). NER_ENABLED=false disables."""
-    global _NLP, _LOAD_FAILED
+    """
+    A spaCy pipeline is loaded (cached). NER_ENABLED=false disables; NER_MODEL
+    names the model, otherwise the first installed of MODEL_PREFERENCE is used.
+    """
+    global _NLP, _LOAD_FAILED, _MODEL_NAME
     if _NLP is not None:
         return True
     if _LOAD_FAILED or os.environ.get("NER_ENABLED", "true").strip().lower() in ("0", "false", "no", "off"):
         return False
     try:
-        import spacy  # noqa: F401
-        _NLP = spacy.load("en_core_web_sm", disable=["lemmatizer", "textcat"])
-        return True
+        import spacy
     except Exception:
         _LOAD_FAILED = True
         return False
+    wanted = os.environ.get("NER_MODEL", "").strip()
+    candidates = (wanted,) if wanted else MODEL_PREFERENCE
+    for name in candidates:
+        try:
+            nlp = spacy.load(name)
+        except Exception:
+            continue
+        for pipe in _UNUSED_PIPES:
+            if pipe in nlp.pipe_names:
+                nlp.disable_pipe(pipe)
+        _NLP, _MODEL_NAME = nlp, name
+        return True
+    _LOAD_FAILED = True
+    return False
 
 
 def looks_like_prose(text: str) -> bool:

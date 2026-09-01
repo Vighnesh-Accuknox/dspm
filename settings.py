@@ -92,7 +92,8 @@ AGGREGATION_THRESHOLD = _number_env("AGGREGATION_THRESHOLD", 25, int)  # hits pe
 SAMPLE_LIMIT = _number_env("SAMPLE_LIMIT", 10000, int)  # rows / documents read per table or collection
 SAMPLE_STRATEGY = os.environ.get("SAMPLE_STRATEGY", "head").strip().lower() or "head"  # head | random (TABLESAMPLE / $sample)
 ADAPTIVE_SAMPLING = _bool_env("ADAPTIVE_SAMPLING", "false")  # stop reading a table/collection once its column verdicts settle
-NER_ENABLED = _bool_env("NER_ENABLED", "true")  # person names in prose when the optional spaCy model is installed (requirements-ner.txt)
+NER_ENABLED = _bool_env("NER_ENABLED", "true")  # person names in prose through spaCy (src/engine/ner.py)
+NER_MODEL = os.environ.get("NER_MODEL", "").strip()  # en_core_web_trf (default when installed) | en_core_web_sm; read by src/engine/ner.py
 OUTPUT_DIR = os.environ.get("OUTPUT_DIR", None)  # findings/work dir; default <repo>/output
 
 # Regional compliance packs, comma-separated (US, IN, CA, GB)
