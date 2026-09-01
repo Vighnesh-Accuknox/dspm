@@ -255,7 +255,8 @@ _FI_CENTURY_BY_SEPARATOR = {
     "-": 1900, "Y": 1900, "X": 1900, "W": 1900, "V": 1900, "U": 1900,
     "A": 2000, "B": 2000, "C": 2000, "D": 2000, "E": 2000, "F": 2000,
 }
-_FI_CONTROL_CHARACTERS = "0123456789ABCDEFHJKLMNPRSTUVWXY"
+
+_FI_CONTROL_CHARACTERS = "0123456789ABCDEFHJKLMNPRSTUVWXY"  # pragma: allowlist secret
 
 
 def _validate_fi_personal_identity_code(pattern_text: str) -> Optional[bool]:
@@ -647,7 +648,7 @@ DE_SOCIAL_SECURITY = Rule(
     ],
     validator=_validate_de_social_security,
     field_hint=r"sozialversicherung|rentenversicherung|social_?security|(?<![a-z])(svnr|rvnr|sv_?nr|rv_?nr)(?![a-z])",
-    examples=["15070649C103", "65070803A019", "20151090B023"],
+    examples=["15070649C103", "65070803A019", "20151090B023"],  # pragma: allowlist secret
 )
 
 DE_TAX_ID = Rule(

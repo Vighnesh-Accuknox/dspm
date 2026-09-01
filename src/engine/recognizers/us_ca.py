@@ -291,7 +291,7 @@ RULES: List[Rule] = [
         ],
         context=["us", "united", "states", "passport", "passport#", "travel", "document"],
         field_hint=r"passport",
-        examples=["912803456", "A12803456"],
+        examples=["912803456", "A12803456"], #pragma: allowlist secret
     ),
     Rule(
         name="US_DRIVER_LICENSE",
@@ -402,7 +402,7 @@ RULES: List[Rule] = [
         ],
         context=["member", "subscriber", "insurance", "policy"],
         field_hint=r"member_?(id|num|no|number)|subscriber_?(id|num|no|number)|insurance_?(id|num|no|number)|policy_?(num|no|number)",
-        examples=["ABC123456789", "ZX-987654321", "HPN12345A9"],
+        examples=["ABC123456789", "ZX-987654321", "HPN12345A9"], #pragma: allowlist secret
     ),
     Rule(
         name="US_PRIOR_AUTHORIZATION_NUMBER",

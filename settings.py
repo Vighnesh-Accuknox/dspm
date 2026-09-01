@@ -54,7 +54,7 @@ DB_PASSWORD = os.environ.get("DB_PASSWORD", None)
 LOG_QUERIES = True  # every query issued during DB scans is logged
 REPORT_TOKEN_LIKE_VALUES = _bool_env("REPORT_TOKEN_LIKE_VALUES", "true")  # random tokens with no field/keyword evidence -> Secret.TokenLikeValue
 _threshold = os.environ.get("SCORE_THRESHOLD", "").strip()
-SCORE_THRESHOLD = float(_threshold) if _threshold else 0.8  # minimum detection confidence to report
+SCORE_THRESHOLD = float(_threshold) if _threshold else 0.9  # minimum detection confidence to report
 OUTPUT_DIR = os.environ.get("OUTPUT_DIR", None)  # findings/work dir; default <repo>/output
 
 # Regional compliance packs, comma-separated (US, IN, CA, GB)

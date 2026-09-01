@@ -79,7 +79,7 @@ def _validate_uk_vehicle_registration(text: str) -> Optional[bool]:
 # Spain
 # --------------------------------------------------------------------------- #
 
-_ES_CONTROL_LETTERS = "TRWAGMYFPDXBNJZSQVHLCKE"
+_ES_CONTROL_LETTERS = "TRWAGMYFPDXBNJZSQVHLCKE"  # pragma: allowlist secret
 
 
 def _validate_es_nif(text: str) -> bool:
@@ -308,7 +308,7 @@ UK_PASSPORT = Rule(
         "hmpo",
     ],
     field_hint=r"passport",
-    examples=("AB1234567", "XY9876543"),
+    examples=("AB1234567", "XY9876543"),  # pragma: allowlist secret
 )
 
 UK_POSTCODE = Rule(
@@ -554,7 +554,7 @@ IT_DRIVER_LICENSE = Rule(
     ],
     context=["patente", "patente di guida", "licenza", "licenza di guida"],
     field_hint=r"patente|driv(er|ing)_?licen[cs]e",
-    examples=("AA0123456B", "U1H00B000C", "U1K711J11M"),
+    examples=("AA0123456B", "U1H00B000C", "U1K711J11M"),  # pragma: allowlist secret
 )
 
 IT_VAT_CODE = Rule(
