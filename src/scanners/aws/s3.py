@@ -186,7 +186,7 @@ class S3Scanner(BaseScanner):
                     for row_idx, val in enumerate(chunk[col]):
                         if pd.isna(val) or not isinstance(val, str):
                             continue
-                        cell_findings = self.engine.scan_text(val)
+                        cell_findings = self.engine.scan_text(val, field_name=str(col))
                         for f in cell_findings:
                             location = f"Chunk {chunk_idx}, Row {chunk_idx * 5000 + row_idx}, Column '{col}'"
                             findings.append(
@@ -219,7 +219,7 @@ class S3Scanner(BaseScanner):
                     for row_idx, val in enumerate(df[col]):
                         if pd.isna(val) or not isinstance(val, str):
                             continue
-                        cell_findings = self.engine.scan_text(val)
+                        cell_findings = self.engine.scan_text(val, field_name=str(col))
                         for f in cell_findings:
                             location = f"Batch {batch_idx}, Row {batch_idx * 5000 + row_idx}, Column '{col}'"
                             findings.append(
@@ -251,7 +251,7 @@ class S3Scanner(BaseScanner):
                     for row_idx, val in enumerate(df[col]):
                         if pd.isna(val) or not isinstance(val, str):
                             continue
-                        cell_findings = self.engine.scan_text(val)
+                        cell_findings = self.engine.scan_text(val, field_name=str(col))
                         for f in cell_findings:
                             location = f"Sheet '{sheet_name}', Row {row_idx}, Column '{col}'"
                             findings.append(
@@ -274,7 +274,7 @@ class S3Scanner(BaseScanner):
                     parser = ijson.parse(f)
                     for prefix, event, value in parser:
                         if event == "string" and value:
-                            cell_findings = self.engine.scan_text(value)
+                            cell_findings = self.engine.scan_text(value, field_name=str(prefix))
                             for f_item in cell_findings:
                                 location = f"JSON Path '{prefix}'"
                                 findings.append(
@@ -304,7 +304,7 @@ class S3Scanner(BaseScanner):
                 context = etree.iterparse(file_path, events=("end",), resolve_entities=False)
                 for event, elem in context:
                     if elem.text and elem.text.strip():
-                        cell_findings = self.engine.scan_text(elem.text.strip())
+                        cell_findings = self.engine.scan_text(elem.text.strip(), field_name=str(elem.tag))
                         for f in cell_findings:
                             location = f"XML Element '{elem.tag}'"
                             findings.append(

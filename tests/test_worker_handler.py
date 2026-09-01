@@ -138,7 +138,9 @@ def test_worker_scanner_errors_are_reported_for_both_connectors():
     with stack:
         result = handler.process_bucket("ghost", "SQLITE")
     assert result["status"] == "error"
-    assert result["errors"] == ["1 error(s) during sqlite scan, see logs"]
+    # the failing unit is named in the error so scan gaps are visible in the findings file
+    assert len(result["errors"]) == 1
+    assert result["errors"][0].startswith("1 error(s) during sqlite scan: connect:")
 
     # Either branch: an exception outside the scanner is captured, never raised
     stack, _ = _isolated()

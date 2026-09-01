@@ -2219,6 +2219,1092 @@
             "references": [
                 "https://datatracker.ietf.org/doc/html/rfc4122"
             ]
+        },
+        "GitHub Token": {
+            "finding_name": "GitHub personal access, OAuth, user-to-server or refresh token in plain text",
+            "risk_factor": 9.3,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "GitHub personal access, OAuth, user-to-server or refresh token in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "ghp_/gho_/ghu_/ghs_/ghr_ prefix + 36 chars, or github_pat_ fine-grained format",
+            "sample_value": "ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-authentication-to-github#githubs-token-formats"
+            ]
+        },
+        "GitLab Token": {
+            "finding_name": "GitLab personal/project/runner/deploy token in plain text",
+            "risk_factor": 9.3,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "GitLab personal/project/runner/deploy token in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "glpat-/glptt-/glrt-/gldt-/glft- prefix + 20 or more chars",
+            "sample_value": "glpat-XXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://docs.gitlab.com/ee/security/tokens/"
+            ]
+        },
+        "Slack Token": {
+            "finding_name": "Slack bot, user, app-level or legacy token in plain text",
+            "risk_factor": 9.0,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Slack bot, user, app-level or legacy token in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "xox[baprs]- or xapp-1- prefix with workspace and bot ids",
+            "sample_value": "xoxb-1234567890123-1234567890123-XXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://api.slack.com/authentication/token-types"
+            ]
+        },
+        "Slack Webhook": {
+            "finding_name": "Slack incoming webhook URL in plain text",
+            "risk_factor": 8.5,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Slack incoming webhook URL in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "https://hooks.slack.com/services/T.../B.../<24 chars>",
+            "sample_value": "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://api.slack.com/messaging/webhooks"
+            ]
+        },
+        "Google API Key": {
+            "finding_name": "Google Cloud / Maps / Firebase API key in plain text",
+            "risk_factor": 9.0,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Google Cloud / Maps / Firebase API key in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "AIza prefix + 35 URL-safe base64 chars",
+            "sample_value": "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://cloud.google.com/docs/authentication/api-keys"
+            ]
+        },
+        "Google OAuth Token": {
+            "finding_name": "Google OAuth 2.0 access token in plain text",
+            "risk_factor": 9.2,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Google OAuth 2.0 access token in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "ya29. prefix followed by the opaque token",
+            "sample_value": "ya29.XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://developers.google.com/identity/protocols/oauth2"
+            ]
+        },
+        "OpenAI API Key": {
+            "finding_name": "OpenAI API key (user, project or service account) in plain text",
+            "risk_factor": 9.3,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "OpenAI API key (user, project or service account) in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "sk-... with the T3BlbkFJ marker (base64 of 'OpenAI')",
+            "sample_value": "sk-proj-XXXXXXXXXXXXXXXXXXXXT3BlbkFJXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://platform.openai.com/docs/api-reference/authentication"
+            ]
+        },
+        "Anthropic API Key": {
+            "finding_name": "Anthropic API key in plain text",
+            "risk_factor": 9.3,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Anthropic API key in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "sk-ant-api03-/sk-ant-admin01- prefix, 93 chars, AA suffix",
+            "sample_value": "sk-ant-api03-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXAA",
+            "references": [
+                "https://docs.anthropic.com/en/api/getting-started"
+            ]
+        },
+        "Stripe Key": {
+            "finding_name": "Stripe secret or restricted API key in plain text",
+            "risk_factor": 9.5,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Stripe secret or restricted API key in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "sk_live_/sk_test_/rk_live_/rk_test_ prefix + 24-99 chars",
+            "sample_value": "sk_live_XXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://docs.stripe.com/keys"
+            ]
+        },
+        "SendGrid Key": {
+            "finding_name": "SendGrid API key in plain text",
+            "risk_factor": 9.0,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "SendGrid API key in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "SG.<22 chars>.<43 chars>",
+            "sample_value": "SG.XXXXXXXXXXXXXXXXXXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://www.twilio.com/docs/sendgrid/ui/account-and-settings/api-keys"
+            ]
+        },
+        "Twilio Key": {
+            "finding_name": "Twilio API key SID in plain text",
+            "risk_factor": 9.0,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Twilio API key SID in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "SK + 32 hex chars",
+            "sample_value": "SK00000000000000000000000000000000",
+            "references": [
+                "https://www.twilio.com/docs/iam/api-keys"
+            ]
+        },
+        "Mailchimp Key": {
+            "finding_name": "Mailchimp API key in plain text",
+            "risk_factor": 8.8,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Mailchimp API key in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "32 hex chars + -us<dc>",
+            "sample_value": "00000000000000000000000000000000-us1",
+            "references": [
+                "https://mailchimp.com/developer/marketing/guides/quick-start/"
+            ]
+        },
+        "Mailgun Key": {
+            "finding_name": "Mailgun API key in plain text",
+            "risk_factor": 8.8,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Mailgun API key in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "key- prefix + 32 alphanumerics",
+            "sample_value": "key-00000000000000000000000000000000",
+            "references": [
+                "https://documentation.mailgun.com/docs/mailgun/api-reference/authentication/"
+            ]
+        },
+        "HashiCorp Vault Token": {
+            "finding_name": "HashiCorp Vault service or batch token in plain text",
+            "risk_factor": 9.5,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "HashiCorp Vault service or batch token in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "hvs./hvb. prefix + 24 or more chars",
+            "sample_value": "hvs.XXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://developer.hashicorp.com/vault/docs/concepts/tokens"
+            ]
+        },
+        "Docker Hub Token": {
+            "finding_name": "Docker Hub personal access token in plain text",
+            "risk_factor": 9.0,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Docker Hub personal access token in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "dckr_pat_ prefix + 27 or more chars",
+            "sample_value": "dckr_pat_XXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://docs.docker.com/security/for-developers/access-tokens/"
+            ]
+        },
+        "npm Token": {
+            "finding_name": "npm access token in plain text",
+            "risk_factor": 9.0,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "npm access token in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "npm_ prefix + 36 chars",
+            "sample_value": "npm_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://docs.npmjs.com/about-access-tokens"
+            ]
+        },
+        "PyPI Token": {
+            "finding_name": "PyPI API token in plain text",
+            "risk_factor": 9.0,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "PyPI API token in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "pypi-AgEIcHlwaS5vcmc prefix (base64 of the token header)",
+            "sample_value": "pypi-AgEIcHlwaS5vcmcXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://pypi.org/help/#apitoken"
+            ]
+        },
+        "Azure Storage Key": {
+            "finding_name": "Azure Storage account key in plain text",
+            "risk_factor": 9.5,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Azure Storage account key in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "AccountKey= followed by 88-char base64 (86 + ==)",
+            "sample_value": "AccountKey=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX==",
+            "references": [
+                "https://learn.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage"
+            ]
+        },
+        "Azure SAS Token": {
+            "finding_name": "Azure shared access signature token in plain text",
+            "risk_factor": 9.0,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Azure shared access signature token in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "sv=<version>&...&sig=<signature> query string",
+            "sample_value": "?sv=2022-11-02&ss=b&srt=sco&sp=rwdlac&sig=XXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview"
+            ]
+        },
+        "Shopify Token": {
+            "finding_name": "Shopify access token or shared secret in plain text",
+            "risk_factor": 9.0,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Shopify access token or shared secret in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "shpat_/shpss_/shpca_/shppa_ prefix + 32 hex chars",
+            "sample_value": "shpat_00000000000000000000000000000000",
+            "references": [
+                "https://shopify.dev/docs/apps/build/authentication-authorization"
+            ]
+        },
+        "Square Token": {
+            "finding_name": "Square access token or client secret in plain text",
+            "risk_factor": 9.2,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Square access token or client secret in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "sq0atp-/sq0csp- prefix",
+            "sample_value": "sq0atp-XXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://developer.squareup.com/docs/build-basics/access-tokens"
+            ]
+        },
+        "Telegram Bot Token": {
+            "finding_name": "Telegram bot token in plain text",
+            "risk_factor": 8.5,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Telegram bot token in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "<8-10 digit bot id>:AA<33 chars>",
+            "sample_value": "0000000000:AAXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://core.telegram.org/bots/api#authorizing-your-bot"
+            ]
+        },
+        "Databricks Token": {
+            "finding_name": "Databricks personal access token in plain text",
+            "risk_factor": 9.2,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Databricks personal access token in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "dapi + 32 hex chars",
+            "sample_value": "dapi00000000000000000000000000000000",
+            "references": [
+                "https://docs.databricks.com/en/dev-tools/auth/pat.html"
+            ]
+        },
+        "Atlassian Token": {
+            "finding_name": "Atlassian (Jira/Confluence) API token in plain text",
+            "risk_factor": 9.0,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Atlassian (Jira/Confluence) API token in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "ATATT3 prefix, 190 or more chars",
+            "sample_value": "ATATT3XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/"
+            ]
+        },
+        "Grafana Token": {
+            "finding_name": "Grafana cloud or service account token in plain text",
+            "risk_factor": 8.8,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Grafana cloud or service account token in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "glc_ or glsa_ prefix",
+            "sample_value": "glsa_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX_00000000",
+            "references": [
+                "https://grafana.com/docs/grafana/latest/administration/service-accounts/"
+            ]
+        },
+        "Postman Key": {
+            "finding_name": "Postman API key in plain text",
+            "risk_factor": 8.5,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Postman API key in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "PMAK-<24 hex>-<34 hex>",
+            "sample_value": "PMAK-000000000000000000000000-0000000000000000000000000000000000",
+            "references": [
+                "https://learning.postman.com/docs/developer/postman-api/authentication/"
+            ]
+        },
+        "Hugging Face Token": {
+            "finding_name": "Hugging Face user access token in plain text",
+            "risk_factor": 8.8,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Hugging Face user access token in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "hf_ prefix + 34 letters",
+            "sample_value": "hf_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://huggingface.co/docs/hub/security-tokens"
+            ]
+        },
+        "Age Secret Key": {
+            "finding_name": "age encryption secret key in plain text",
+            "risk_factor": 9.5,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "age encryption secret key in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "AGE-SECRET-KEY-1 + 58 bech32 chars",
+            "sample_value": "AGE-SECRET-KEY-1XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://github.com/FiloSottile/age"
+            ]
+        },
+        "Discord Bot Token": {
+            "finding_name": "Discord bot token in plain text",
+            "risk_factor": 8.8,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Discord bot token in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "<base64 id>.<6 chars>.<27+ chars>",
+            "sample_value": "MTAwMDAwMDAwMDAwMDAwMDAwMA.XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "references": [
+                "https://discord.com/developers/docs/topics/oauth2"
+            ]
+        },
+        "Heroku API Key": {
+            "finding_name": "Heroku API key in plain text",
+            "risk_factor": 9.0,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "Heroku API key in plain text. A vendor-prefixed token is self-identifying: anyone who reads this datastore can call the vendor API as the token's owner until it is revoked.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "UUID next to the word heroku",
+            "sample_value": "heroku_api_key=00000000-0000-0000-0000-000000000000",
+            "references": [
+                "https://devcenter.heroku.com/articles/platform-api-quickstart#authentication"
+            ]
+        },
+        "Credentials in URL": {
+            "finding_name": "Credentials embedded in a connection URL",
+            "risk_factor": 9.5,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "A username and password embedded in a URL/DSN (postgres://user:pass@host, https://user:pass@host). Connection strings are copied into logs, configs and error messages, spreading the credential.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "scheme://user:password@host with a non-placeholder password",
+            "sample_value": "postgresql://scanner:********@db.internal:5432/app",
+            "references": [
+                "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html"
+            ]
+        },
+        "Basic Auth Credentials": {
+            "finding_name": "HTTP Basic authentication credentials in plain text",
+            "risk_factor": 9.3,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "Critical",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "An 'Authorization: Basic <base64>' value decodes to user:password. Base64 is encoding, not protection.",
+            "remediation_advice": "Revoke and rotate the credential at the issuing service, remove it from the datastore, and move it to a secrets manager with an audit trail.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "Base64 payload decodes to printable user:password",
+            "sample_value": "Basic dXNlcjoqKioqKioqKg==",
+            "references": [
+                "https://datatracker.ietf.org/doc/html/rfc7617"
+            ]
+        },
+        "Encrypted Secret": {
+            "finding_name": "Application-encrypted secret (OpenSSL Salted__ blob)",
+            "risk_factor": 6.0,
+            "category": "Credentials and Secrets",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "OWASP Secrets Management Cheat Sheet",
+                "NIST SP 800-53 IA-5 (Authenticator Management)",
+                "PCI DSS Req 8 (identify and authenticate access to system components)"
+            ],
+            "description": "An OpenSSL 'Salted__' ciphertext (base64 U2FsdGVkX1...) stored in a credential column. The value is encrypted, but the column is a secret store and the encryption key's exposure decides the risk.",
+            "remediation_advice": "Confirm the encryption key is held in a KMS/HSM and not alongside the data; prefer envelope encryption with key rotation.",
+            "cwe": [
+                "CWE-798 (Use of Hard-coded Credentials)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "mitre_attack": [
+                "T1552 (Unsecured Credentials)",
+                "T1078 (Valid Accounts)"
+            ],
+            "validation": "Base64 starting with U2FsdGVkX1 (Salted__) in a credential-named field",
+            "sample_value": "U2FsdGVkX1********************************",
+            "references": [
+                "https://www.openssl.org/docs/man3.0/man1/openssl-enc.html"
+            ]
+        },
+        "US_HEALTH_INSURANCE_MEMBER_ID": {
+            "finding_name": "US health insurance member ID in plain text",
+            "risk_factor": 8.0,
+            "category": "Healthcare Data (PHI)",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "HIPAA 45 CFR 164.514(b)(2) (Safe Harbor identifiers)",
+                "HITECH breach notification"
+            ],
+            "description": "Health plan beneficiary numbers are HIPAA Safe Harbor identifiers.",
+            "remediation_advice": "Restrict access to the minimum necessary, encrypt at rest, and log access; de-identify where the identifier is not needed.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Labelled member/subscriber id pattern",
+            "sample_value": "Member ID: ABC123456789",
+            "references": [
+                "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+            ]
+        },
+        "US_PRIOR_AUTHORIZATION_NUMBER": {
+            "finding_name": "US healthcare prior authorization number in plain text",
+            "risk_factor": 7.5,
+            "category": "Healthcare Data (PHI)",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "HIPAA 45 CFR 164.514(b)(2) (Safe Harbor identifiers)",
+                "HITECH breach notification"
+            ],
+            "description": "Prior authorization numbers link a person to a treatment decision.",
+            "remediation_advice": "Restrict access to the minimum necessary, encrypt at rest, and log access; de-identify where the identifier is not needed.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Labelled prior-auth number pattern",
+            "sample_value": "Prior Auth #: PA123456789",
+            "references": [
+                "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+            ]
+        },
+        "US_CLAIM_NUMBER": {
+            "finding_name": "US healthcare claim number in plain text",
+            "risk_factor": 7.5,
+            "category": "Healthcare Data (PHI)",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "HIPAA 45 CFR 164.514(b)(2) (Safe Harbor identifiers)",
+                "HITECH breach notification"
+            ],
+            "description": "Claim numbers link a person to billed medical services.",
+            "remediation_advice": "Restrict access to the minimum necessary, encrypt at rest, and log access; de-identify where the identifier is not needed.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Labelled claim number pattern",
+            "sample_value": "Claim #: 1234567890123",
+            "references": [
+                "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+            ]
+        },
+        "US_PRESCRIPTION_NUMBER": {
+            "finding_name": "US prescription number in plain text",
+            "risk_factor": 7.5,
+            "category": "Healthcare Data (PHI)",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "HIPAA 45 CFR 164.514(b)(2) (Safe Harbor identifiers)",
+                "HITECH breach notification"
+            ],
+            "description": "Prescription (Rx) numbers reveal medication history.",
+            "remediation_advice": "Restrict access to the minimum necessary, encrypt at rest, and log access; de-identify where the identifier is not needed.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Labelled Rx number pattern",
+            "sample_value": "Rx #: 1234567",
+            "references": [
+                "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+            ]
+        },
+        "US_REFERRAL_NUMBER": {
+            "finding_name": "US healthcare referral number in plain text",
+            "risk_factor": 7.0,
+            "category": "Healthcare Data (PHI)",
+            "sensitivity": "Restricted",
+            "final_risk_factor": "High",
+            "compliance_frameworks": [
+                "HIPAA 45 CFR 164.514(b)(2) (Safe Harbor identifiers)",
+                "HITECH breach notification"
+            ],
+            "description": "Referral numbers link a person to specialist care.",
+            "remediation_advice": "Restrict access to the minimum necessary, encrypt at rest, and log access; de-identify where the identifier is not needed.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Labelled referral number pattern",
+            "sample_value": "Referral #: REF123456",
+            "references": [
+                "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+            ]
+        },
+        "US_PROVIDER_TAX_ID": {
+            "finding_name": "US healthcare provider tax ID (EIN) detected",
+            "risk_factor": 4.5,
+            "category": "Healthcare Data (PHI)",
+            "sensitivity": "Internal",
+            "final_risk_factor": "Low",
+            "compliance_frameworks": [
+                "HIPAA 45 CFR 164.514(b)(2) (Safe Harbor identifiers)",
+                "HITECH breach notification"
+            ],
+            "description": "Provider EINs identify organisations, not patients; sensitivity is low unless paired with patient data.",
+            "remediation_advice": "Restrict access to the minimum necessary, encrypt at rest, and log access; de-identify where the identifier is not needed.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)",
+                "CWE-312 (Cleartext Storage of Sensitive Information)"
+            ],
+            "validation": "Labelled 9-digit EIN pattern",
+            "sample_value": "Provider TIN: 12-3456789",
+            "references": [
+                "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+            ]
+        },
+        "ZA_MOBILE_NUMBER": {
+            "finding_name": "South African mobile number in plain text",
+            "risk_factor": 5.5,
+            "category": "PII",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "POPIA (ZA) / Data Privacy Act 2012 (PH)",
+                "GDPR Art. 4(1) (personal data)"
+            ],
+            "description": "A phone number is direct personal data that enables contact, SIM-swap and social-engineering attacks.",
+            "remediation_advice": "Restrict access, mask in non-production copies, and purge where retention is not required.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)"
+            ],
+            "validation": "phonenumbers library validation for the country's numbering plan",
+            "sample_value": "+27 82 123 4567",
+            "references": [
+                "https://github.com/google/libphonenumber"
+            ]
+        },
+        "ZA_TELEPHONE_NUMBER": {
+            "finding_name": "South African telephone number in plain text",
+            "risk_factor": 5.5,
+            "category": "PII",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "POPIA (ZA) / Data Privacy Act 2012 (PH)",
+                "GDPR Art. 4(1) (personal data)"
+            ],
+            "description": "A phone number is direct personal data that enables contact, SIM-swap and social-engineering attacks.",
+            "remediation_advice": "Restrict access, mask in non-production copies, and purge where retention is not required.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)"
+            ],
+            "validation": "phonenumbers library validation for the country's numbering plan",
+            "sample_value": "+27 11 123 4567",
+            "references": [
+                "https://github.com/google/libphonenumber"
+            ]
+        },
+        "PH_MOBILE_NUMBER": {
+            "finding_name": "Philippine mobile number in plain text",
+            "risk_factor": 5.5,
+            "category": "PII",
+            "sensitivity": "Confidential",
+            "final_risk_factor": "Medium",
+            "compliance_frameworks": [
+                "POPIA (ZA) / Data Privacy Act 2012 (PH)",
+                "GDPR Art. 4(1) (personal data)"
+            ],
+            "description": "A phone number is direct personal data that enables contact, SIM-swap and social-engineering attacks.",
+            "remediation_advice": "Restrict access, mask in non-production copies, and purge where retention is not required.",
+            "cwe": [
+                "CWE-359 (Exposure of Private Personal Information to an Unauthorized Actor)"
+            ],
+            "validation": "phonenumbers library validation for the country's numbering plan",
+            "sample_value": "+63 917 123 4567",
+            "references": [
+                "https://github.com/google/libphonenumber"
+            ]
         }
     }
 ]

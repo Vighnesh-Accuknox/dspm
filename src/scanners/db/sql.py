@@ -127,6 +127,7 @@ class SQLScanner(BaseScanner):
 
         except Exception as e:
             self.stats["errors"] += 1
+            self.stats.setdefault("error_details", []).append(f"connect: {str(e)[:200]}")
             logger.error(f"Error connecting/scanning SQL database {resource_id}: {str(e)}")
         finally:
             if owns_engine and sa_engine is not None:
@@ -213,6 +214,7 @@ class SQLScanner(BaseScanner):
             views = inspector.get_view_names(schema=schema) if target.get("include_views") else []
         except Exception as e:
             self.stats["errors"] += 1
+            self.stats.setdefault("error_details", []).append(f"schema {schema}: {str(e)[:200]}")
             logger.error(f"Failed to list tables for schema '{schema}': {str(e)}")
             return []
 
@@ -238,6 +240,7 @@ class SQLScanner(BaseScanner):
             column_names = [col["name"] for col in columns_info]
         except Exception as e:
             self.stats["errors"] += 1
+            self.stats.setdefault("error_details", []).append(f"{full_relation_name}: {str(e)[:200]}")
             logger.error(f"Failed to get columns for {full_relation_name}: {str(e)}")
             return []
 
@@ -293,8 +296,9 @@ class SQLScanner(BaseScanner):
                             val_str = str(val)
                             if not val_str:
                                 continue
-                            # Column name gives the detection engine keyword context
-                            cell_findings = self.engine.scan_text(f"{col_name}: {val_str}")
+                            # The column name is context for the engine (credential/identifier
+                            # columns, entity hints), never part of the scanned text
+                            cell_findings = self.engine.scan_text(val_str, field_name=col_name)
                             for f in cell_findings:
                                 if self.is_suppressed(f["detector"], col_name):
                                     continue
@@ -313,6 +317,7 @@ class SQLScanner(BaseScanner):
                 self.stats["tables_scanned"] += 1
         except Exception as e:
             self.stats["errors"] += 1
+            self.stats.setdefault("error_details", []).append(f"{full_relation_name}: {str(e)[:200]}")
             logger.error(f"Error querying rows from {full_relation_name}: {str(e)}")
 
         findings.extend(

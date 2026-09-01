@@ -41,8 +41,9 @@ There are two entry points:
 | `ARTIFACT_TOKEN` | with `CSPM_URL` | Bearer token for the findings upload (`api/v1/artifact/`) |
 | `LABEL_ID` | no | Label the uploaded findings are filed under in the CSPM backend, default `test` |
 | `OBJECT_REGION` | no | AWS region for the S3 client (applies to every S3 target) |
-| `LOG_QUERIES` | no | `true`/`1`/`yes` logs every query issued during DB scans (SQL statements, Mongo filters, DynamoDB scans). Default `false` |
-| `ENABLED_REGIONS` | no | Comma-separated regional compliance packs, default `US,IN,GB` (valid: `US`, `IN`, `CA`, `GB`; `UK` is accepted as an alias for `GB`) |
+| `ENABLED_REGIONS` | no | Comma-separated regional compliance packs, default `US,IN,GB` (valid: `US`, `CA`, `GB`, `DE`, `SE`, `FI`, `PL`, `ES`, `IT`, `TR`, `IN`, `SG`, `AU`, `KR`, `TH`, `ZA`, `NG`, `PH`; `UK` is accepted as an alias for `GB`). Also used as the regions for national-format phone numbers |
+| `REPORT_TOKEN_LIKE_VALUES` | no | `false` (default): random-looking tokens with no supporting evidence (credential-named field, `key=`/`token:` keyword, known format) are dropped; `true` reports them as `Secret.TokenLikeValue` (Medium) |
+| `SCORE_THRESHOLD` | no | Minimum detection confidence, default `0.8` (see *Detection engine* below) |
 | `OUTPUT_DIR` | no | Findings/work directory. Default `<repo>/output`; the container image sets `/app/output` — point it at a mounted volume to persist findings |
 
 ### S3
@@ -84,6 +85,8 @@ Drivers used: `psycopg2` (postgres), `PyMySQL` (mysql/mariadb), `pymssql` (mssql
 | `DB_URI` | no | Full MongoDB URI, e.g. `mongodb://user:pass@host:27017/?authSource=admin`. Overrides all `DB_*` fields above (\* not needed when `DB_URI` is set) |. # pragma: allowlist secret
 
 All non-`system.*` collections of the database are discovered and scanned, up to 10 000 documents per collection. Documents are walked recursively; nested fields are reported with dotted paths.
+
+> Reaching a replica set through `kubectl port-forward` / an SSH tunnel: the members advertise cluster-internal hostnames (`…rs0-0.…svc.cluster.local`) that do not resolve locally, so topology discovery fails with *Could not reach any servers*. The scanner adds `directConnection=true` automatically when `DB_HOST` is `localhost`/`127.0.0.1`; with `DB_URI`, append `?directConnection=true` yourself.
 
 > DynamoDB is currently only available through the master handler, not through worker mode.
 
@@ -179,15 +182,50 @@ Uses ambient AWS credentials (Lambda role / environment). DynamoDB Stream CDC ba
 
 | Key | Default | Description |
 |---|---|---|
-| `enabled_regions` | `[]` | Regional compliance packs: `US`, `IN`, `CA`, `GB` (SSN, Aadhaar/PAN/GST, SIN, NINO) |
+| `enabled_regions` | `[]` | Regional compliance packs (ISO alpha-2): `US`, `CA`, `GB`, `DE`, `SE`, `FI`, `PL`, `ES`, `IT`, `TR`, `IN`, `SG`, `AU`, `KR`, `TH`, `ZA`, `NG`, `PH` — 80+ national identifiers (SSN/ITIN/passport/driver licence, NHS/NINO, Aadhaar/PAN/GST/voter ID, PESEL, fiscal codes, ID cards, tax ids, health insurance numbers, …) |
+| `phone_regions` | `enabled_regions` | Regions used to parse national-format phone numbers (`5678942315` in a `mobile` field); international `+…` numbers are always detected |
 | `chunk_size` | 5000 (SQL) / 1000 (Mongo) | Rows/documents fetched per batch |
 | `connect_timeout` | 10 | Connection timeout in seconds (SQL and Mongo) |
-| `log_queries` | `false` | Log every query issued during DB scans (dialect-compiled SQL with bound values, Mongo filters, DynamoDB scans). Note: emits table/column names into logs |
+| `log_queries` | `false` (worker mode: always on) | Log every query issued during DB scans (dialect-compiled SQL with bound values, Mongo filters, DynamoDB scans). Note: emits table/column names into logs |
 | `last_scan_time` | – | S3 only: skip objects not modified since this timestamp |
 | `aggregation_threshold` | `25` | DB scans: a (detector, column) pair firing on at least this many rows/documents collapses into one column-level finding with an `occurrences` count. `0` disables |
-| `column_suppression` | id/hash rule for entropy | Per-detector regexes of column/field names to skip (default: entropy findings in `*_id`/`hash`/`arn`-style columns). Pass `{}` to disable, or your own `{detector: regex}` map |
+| `score_threshold` | `0.8` | Minimum confidence a finding needs to be reported |
+| `field_suppression` | `true` | Structural field-name rules: token detectors never fire in `*_id`/`hash`/`etag`/`path`/… fields, digit-run detectors never fire in counter/timestamp fields. Corroborated findings are exempt |
+| `decode_base64` | `true` | Decode base64 blobs (`Authorization: Basic …`, base64 JSON, PEM) and scan the plaintext |
+| `entropy_report_uncorroborated` | `false` | Report random-looking tokens that have no supporting evidence as `Secret.TokenLikeValue` (Medium) instead of dropping them |
+| `disabled_detectors` | `[]` | Detector names never reported |
+| `report_private_ips` | `false` | Report RFC 1918 / loopback / link-local addresses as `PII.IPAddress`; by default only public IPs count |
+| `direct_connection` | auto | MongoDB: add `directConnection=true` to the built URI. Automatic for `localhost`/`127.0.0.1`, i.e. port-forwarded replica sets whose members advertise cluster-internal hostnames |
+| `column_suppression` | id/hash rule for entropy | Scanner-level escape hatch: per-detector regexes of column/field names to skip on top of the engine's own field rules. Pass `{}` to disable, or your own `{detector: regex}` map |
 | `entropy_min_length` | `24` | Minimum token length for the entropy detector |
-| `entropy_min_entropy` | `4.5` | Shannon-entropy threshold for the entropy detector |
+| `entropy_min_entropy` | `4.5` | Shannon-entropy threshold for base64-shaped tokens (hex tokens use 3.0 and need 32+ chars) |
+
+## Detection engine
+
+`src/engine/` turns each cell / document field / file chunk into findings. Every scan gets the text **and the field name** it came from (`DetectionEngine.scan_text(text, field_name=...)`) — in structured data the field name is the strongest signal there is, and it is never mixed into the scanned text.
+
+**Scoring.** Every detector produces a confidence and only findings above `score_threshold` (0.8) are reported:
+
+| Score | Meaning | Examples |
+|---|---|---|
+| 0.95 | self-validating **and** corroborated | JWT with a decodable header, checksum-valid national id next to its context word, vendor-prefixed token, opaque value in a credential-named column |
+| 0.85 | self-validating alone | valid e-mail (IANA TLD, no demo/automated sender), Luhn + issuer prefix **with separators**, structured street address, Verhoeff-valid Aadhaar |
+| 0.6 | plausible shape, needs evidence | contiguous digit runs, BIC-shaped 8-letter words, header-only private keys |
+| 0.3 | documented example / test value | `AKIAIOSFODNN7EXAMPLE`, `4111 1111 1111 1111`, `hunter2` in advisory text |
+
+**Checksums are not enough on their own.** A mod-10/mod-11 checksum passes ~10 % of random numbers, so a bare, separator-free match of a checksum-only recognizer (NPI, NHS, ABA, DEA, Aadhaar…) needs a context word or a field hint; epoch timestamps are never identifiers; private/loopback IPs are infrastructure, not PII (`report_private_ips`).
+
+**Evidence.** Context words are detector-specific whole words near the match (`ssn`, `aadhaar`, `swift`, `card`, `password=`) or in the field name; generic words (`code`, `state`, `number`, `identity`, `key`) no longer count. Checksums (Luhn, Verhoeff, mod-97, mod-11, …) decide national ids, IBANs and cards. The entropy detector classifies token *shape* first — paths, URLs, ARNs, UUIDs, dates, slugs and word-built identifiers are never secrets — and then needs evidence (credential field, inline `token:`/`secret=` keyword, known vendor format); base64 `Salted__` blobs are reported as `Encrypted Secret`, base64 PEM as private keys, JWT claims are scanned for PII.
+
+**One finding per span.** Overlapping matches are resolved by specificity: a JWT is not also a bearer token and two entropy blobs, a card number is not also a bank account, an IBAN is not also a BIC.
+
+**Field-name rules** (`src/engine/context.py`): credential-named fields (`token`, `secret_key`, `authorization`, `cookie`, `webhook_url`, …) classify their value as a credential whatever its entropy; identifier fields (`*_id`, `hash`, `etag`, `if-none-match`, `path`, `references`, …) never yield token findings; counter/timestamp fields never yield card/id numbers; `full_name`/`first_name` fields yield `PII.PersonName`; `mobile`/`phone` fields enable national-format phone parsing.
+
+**Output.** Every finding carries a `value_hash` (sha256 prefix) for correlating the same value across scans; reported values are capped at 200 characters.
+
+**Recognizer packs.** `src/engine/recognizers/` holds 90 country-specific and generic recognizers as native `Rule` objects (`src/engine/rules.py`: pattern scores, context words, validators/invalidators; test vectors in `tests/test_recognizers_*.py`). Rules are grouped by region pack; generic ones (IBAN, crypto wallets, IP, MAC) always run, `URL`/`UUID` are shipped disabled.
+
+**Regression corpus.** `tests/fixtures/detection_corpus.json` is an anonymised corpus built from real Postgres/Mongo scans: 370+ reviewed false positives that must stay silent and 160+ true positives that must stay detected (`tests/test_regression_corpus.py`).
 
 ## TLS to databases
 

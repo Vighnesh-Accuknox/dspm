@@ -169,6 +169,8 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
     config = {
         "enabled_regions": settings.ENABLED_REGIONS,
         "log_queries": settings.LOG_QUERIES,
+        "entropy_report_uncorroborated": settings.REPORT_TOKEN_LIKE_VALUES,
+        "score_threshold": settings.SCORE_THRESHOLD,
     }
 
     scan_date = datetime.today().date()
@@ -300,7 +302,10 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
 
             scan_errors = db_scanner.stats.get("errors", 0)
             if scan_errors:
-                errors.append(f"{scan_errors} error(s) during {engine_name} scan, see logs")
+                # Name the relations that were not scanned so the gap is visible in the findings file
+                details = db_scanner.stats.get("error_details") or []
+                suffix = ": " + "; ".join(details[:10]) if details else ", see logs"
+                errors.append(f"{scan_errors} error(s) during {engine_name} scan{suffix}")
                 logger.error(errors[-1])
         except Exception as e:
             errors.append(f"{engine_name} scan failed: {str(e)}")

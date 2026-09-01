@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, List
 
 import boto3
@@ -144,14 +145,13 @@ class DynamoDBScanner(BaseScanner):
     def _scan_deserialized_item(self, item: Dict[str, Any]) -> List[Dict[str, Any]]:
         findings = []
         for attr_name, value in item.items():
-            # Scan attribute key name for potential secrets (e.g., password field name)
-            findings.extend(self.engine.scan_text(attr_name))
-
-            # Scan value
+            # The attribute name is context for the engine (password/token/id attributes)
             if isinstance(value, str):
-                findings.extend(self.engine.scan_text(value))
-            elif isinstance(value, (dict, list)):
-                findings.extend(self.engine.scan_text(str(value)))
+                findings.extend(self.engine.scan_text(value, field_name=attr_name))
+            elif isinstance(value, (dict, list, set)):
+                findings.extend(self.engine.scan_text(json.dumps(value, default=str), field_name=attr_name))
+            elif value is not None and not isinstance(value, bool):
+                findings.extend(self.engine.scan_text(str(value), field_name=attr_name))
         return findings
 
     def _get_primary_key_info(self, item: Dict[str, Any]) -> str:

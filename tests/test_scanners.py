@@ -317,7 +317,7 @@ def test_s3_scanner_excel_per_sheet(mock_boto_client, mock_pd):
     # Mock dataframes for the two sheets
     df_sheet1 = MagicMock()
     df_sheet1.columns = ["Name", "Contact"]
-    df_sheet1.__getitem__.side_effect = lambda col: ["Alice", "alice@example.com"] if col == "Contact" else ["Alice", "Bob"]
+    df_sheet1.__getitem__.side_effect = lambda col: ["Alice", "alice@accuknox.com"] if col == "Contact" else ["Alice", "Bob"]
 
     df_sheet2 = MagicMock()
     df_sheet2.columns = ["Service", "Secret"]
@@ -456,3 +456,12 @@ def test_mongo_scanner_iter_scan():
     # No pinned database: names are database-qualified
     units = list(MongoScanner(engine, client=client_mock).iter_scan({"host": "mongo.local"}))
     assert [name for _, name, _ in units] == ["appdb.users", "appdb.audit"]
+
+
+def test_mongo_uri_direct_connection_for_port_forwards():
+    scanner = MongoScanner(DetectionEngine(), client=MagicMock())
+    assert scanner._build_uri({"host": "127.0.0.1", "port": 27017}).endswith("?directConnection=true")
+    assert scanner._build_uri({"host": "localhost"}).endswith("?directConnection=true")
+    assert "directConnection" not in scanner._build_uri({"host": "mongo.internal", "port": 27017})
+    assert scanner._build_uri({"host": "mongo.internal", "direct_connection": True}).endswith("?directConnection=true")
+    assert "directConnection" not in scanner._build_uri({"host": "127.0.0.1", "direct_connection": False})

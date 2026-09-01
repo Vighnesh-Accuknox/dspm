@@ -4,11 +4,13 @@ from typing import Any, Callable, Dict, List, Tuple
 
 from src.engine.detector import DetectionEngine
 
-# Detectors that are structurally noisy for certain column/field names:
-# random ids and hashes light up the entropy detector. Overridable via
-# config {"column_suppression": {...}}. (No date rule: birth_date columns
-# would match *_date, and the engine's year-range + birth-context checks
-# already drop operational timestamps.)
+# Scanner-level column suppression, overridable via config {"column_suppression": {...}}.
+# The detection engine already receives the column/field name (scan_text(...,
+# field_name=...)) and applies its own structural rules (src/engine/context.py:
+# token detectors never fire in id/hash/etag/path columns, digit-run detectors
+# never fire in counter/timestamp columns, credential columns are classified by
+# name). This map is the escape hatch for deployment-specific noise; the default
+# mirrors the engine's identifier rule for backward compatibility.
 DEFAULT_COLUMN_SUPPRESSION = {
     "High Entropy Secret": r"(^|_)(id|ids|uuid|guid|arn|sha\d*|hash|digest|etag|checksum|fingerprint)($|_)",
 }

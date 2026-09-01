@@ -1,17 +1,28 @@
+import importlib
 import os
 import sys
+import traceback
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
 
-try:
-    from tests import test_engine, test_scanners, test_worker_handler
-except ImportError as e:
-    print(f"Import error: {str(e)}")
-    sys.exit(1)
+
+def discover_test_modules():
+    """Every tests/test_*.py module, in name order."""
+    modules = []
+    for path in sorted((ROOT / "tests").glob("test_*.py")):
+        name = f"tests.{path.stem}"
+        try:
+            modules.append(importlib.import_module(name))
+        except Exception as e:  # import failure is a test failure, not a crash
+            print(f"Import error in {name}: {type(e).__name__}: {e}")
+            traceback.print_exc()
+            modules.append(None)
+    return modules
 
 
 def run_tests():
-    test_modules = [test_engine, test_scanners, test_worker_handler]
     passed = 0
     failed = 0
 
@@ -19,7 +30,13 @@ def run_tests():
     print("           DSPM SCANNER TEST SUITE                ")
     print("==================================================")
 
-    for module in test_modules:
+    only = sys.argv[1:]  # optional substrings to select modules/tests
+    for module in discover_test_modules():
+        if module is None:
+            failed += 1
+            continue
+        if only and not any(o in module.__name__ for o in only):
+            continue
         print(f"\nRunning tests in {module.__name__}...")
         for attr_name in dir(module):
             if attr_name.startswith("test_"):
@@ -32,8 +49,6 @@ def run_tests():
                     except Exception as err:
                         print(f"  [FAIL] {attr_name}")
                         print(f"         Error: {type(err).__name__}: {str(err)}")
-                        import traceback
-
                         traceback.print_exc()
                         failed += 1
 
@@ -41,11 +56,9 @@ def run_tests():
     print(f"Summary: {passed} passed, {failed} failed.")
     print("==================================================")
 
-    if failed > 0:
-        sys.exit(1)
-    else:
-        sys.exit(0)
+    sys.exit(1 if failed else 0)
 
 
 if __name__ == "__main__":
+    os.chdir(ROOT)
     run_tests()

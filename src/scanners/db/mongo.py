@@ -111,6 +111,7 @@ class MongoScanner(BaseScanner):
 
         except Exception as e:
             self.stats["errors"] += 1
+            self.stats.setdefault("error_details", []).append(f"connect: {str(e)[:200]}")
             logger.error(f"Error scanning MongoDB at {host}: {str(e)}")
         finally:
             if owns_client:
@@ -133,7 +134,16 @@ class MongoScanner(BaseScanner):
             if password:
                 auth += f":{quote_plus(str(password))}"
             auth += "@"
-        return f"mongodb://{auth}{host}:{port}/"
+        uri = f"mongodb://{auth}{host}:{port}/"
+        # A replica set reached through a port-forward / SSH tunnel advertises
+        # cluster-internal member hostnames that do not resolve here; talk to
+        # the one address we were given instead of discovering the topology.
+        direct = target.get("direct_connection", self.config.get("direct_connection"))
+        if direct is None:
+            direct = str(host).lower() in ("localhost", "127.0.0.1", "::1")
+        if direct:
+            uri += "?directConnection=true"
+        return uri
 
     def _scan_collection(
         self, db: Any, db_name: str, coll_name: str,
@@ -173,9 +183,9 @@ class MongoScanner(BaseScanner):
             for doc_idx, doc in enumerate(cursor):
                 doc_id = doc.get("_id", f"index {doc_idx}") if isinstance(doc, dict) else f"index {doc_idx}"
                 for path, key, value in self._iter_leaves(doc):
-                    # Field name gives the detection engine keyword context
-                    text_blob = f"{key}: {value}" if key else value
-                    for f in self.engine.scan_text(text_blob):
+                    # The dotted field path is context for the engine (headers.authorization,
+                    # request.body, labels...), never part of the scanned text
+                    for f in self.engine.scan_text(value, field_name=path or key):
                         if self.is_suppressed(f["detector"], key):
                             continue
                         location = (
@@ -195,6 +205,7 @@ class MongoScanner(BaseScanner):
             self.stats["collections_scanned"] += 1
         except Exception as e:
             self.stats["errors"] += 1
+            self.stats.setdefault("error_details", []).append(f"{db_name}.{coll_name}: {str(e)[:200]}")
             logger.error(f"Error scanning collection {db_name}.{coll_name}: {str(e)}")
 
         findings.extend(

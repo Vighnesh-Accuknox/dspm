@@ -31,7 +31,8 @@ repos:
     hooks:
     - id: detect-secrets
       args: ['--baseline', '.secrets.baseline']
-      exclude: 'fixtures/findings-mapping.json'
+      # findings-mapping carries sample values; the detection corpus is made of synthetic secrets by design
+      exclude: 'fixtures/findings-mapping.json|tests/fixtures/detection_corpus.json'
 
 
 
