@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 from typing import Any, Dict, Iterator, List, Tuple
 from urllib.parse import quote_plus
@@ -9,6 +8,7 @@ try:
 except ImportError:
     MongoClient = None
 
+from src.pipeline.records import Record, document_record
 from src.scanners.base import BaseScanner
 from src.utils.logger import get_logger
 
@@ -21,9 +21,9 @@ SYSTEM_DATABASES = {"admin", "local", "config"}
 class MongoScanner(BaseScanner):
     """
     Scans MongoDB (and API-compatible stores like DocumentDB) for sensitive data.
-    Discovers databases and collections dynamically, then walks documents
-    recursively. Field values are scanned with their field name as context so
-    keyword-based scoring (e.g. a bare email in an 'email' field) works.
+    Discovers databases and collections dynamically, then streams documents as
+    Records (one Cell per scalar leaf, dotted field paths as context) into the
+    classification pipeline.
     """
 
     def __init__(self, engine, config: Dict[str, Any] = None, client=None):
@@ -61,7 +61,8 @@ class MongoScanner(BaseScanner):
             "collection": "users",         # optional, all collections if omitted
             "incremental_field": "updated_at",        # optional field for incremental scans
             "last_scan_time": "2026-08-01T00:00:00",  # optional, used with incremental_field
-            "sample_limit": 10000          # optional, max documents per collection
+            "sample_limit": 10000,         # optional, max documents per collection
+            "sample_strategy": "head"      # optional: "head" (first documents) or "random" ($sample)
         }
         """
         host = target.get("host") or "localhost"
@@ -149,7 +150,6 @@ class MongoScanner(BaseScanner):
         self, db: Any, db_name: str, coll_name: str,
         target: Dict[str, Any], host: str,
     ) -> List[Dict[str, Any]]:
-        findings = []
         resource_id = self._collection_resource_id(host, db_name, coll_name)
         logger.info(f"Scanning collection {db_name}.{coll_name}")
 
@@ -169,74 +169,46 @@ class MongoScanner(BaseScanner):
 
         sample_limit = target.get("sample_limit", 10000)
         batch_size = self.config.get("chunk_size", 1000)
+        strategy = str(target.get("sample_strategy") or self.config.get("sample_strategy") or "head").lower()
 
         if self.config.get("log_queries"):
-            logger.info(
-                f"Executing query on {db_name}.{coll_name}: "
-                f"find({query}, batch_size={batch_size}).limit({sample_limit})",
-            )
+            if strategy == "random":
+                logger.info(f"Executing aggregate on {db_name}.{coll_name}: $match {query} -> $sample {{size: {sample_limit}}}")
+            else:
+                logger.info(
+                    f"Executing query on {db_name}.{coll_name}: "
+                    f"find({query}, batch_size={batch_size}).limit({sample_limit})",
+                )
 
-        grouped = {}
-        try:
-            cursor = db[coll_name].find(query, batch_size=batch_size).limit(sample_limit)
+        def documents() -> Iterator[Record]:
+            if strategy == "random":
+                # $sample is a random draw over the whole collection (Wiz-style statistical sampling)
+                pipeline = ([{"$match": query}] if query else []) + [{"$sample": {"size": sample_limit}}]
+                cursor = db[coll_name].aggregate(pipeline, batchSize=batch_size)
+            else:
+                cursor = db[coll_name].find(query, batch_size=batch_size).limit(sample_limit)
             doc_count = 0
-            for doc_idx, doc in enumerate(cursor):
-                doc_id = doc.get("_id", f"index {doc_idx}") if isinstance(doc, dict) else f"index {doc_idx}"
-                for path, key, value in self._iter_leaves(doc):
+            try:
+                for doc_idx, doc in enumerate(cursor):
+                    doc_id = doc.get("_id", f"index {doc_idx}") if isinstance(doc, dict) else f"index {doc_idx}"
                     # The dotted field path is context for the engine (headers.authorization,
                     # request.body, labels...), never part of the scanned text
-                    for f in self.engine.scan_text(value, field_name=path or key):
-                        if self.is_suppressed(f["detector"], key):
-                            continue
-                        location = (
-                            f"Database '{db_name}', Collection '{coll_name}', "
-                            f"Document _id={doc_id}, Field '{path}'"
-                        )
-                        # Aggregate per field path with array indices collapsed
-                        norm_path = re.sub(r"\[\d+\]", "[]", path)
-                        grouped.setdefault((f["detector"], norm_path), []).append(
-                            self.format_finding(
-                                f["detector"], f["category"], f["severity"], f["value"],
-                                resource_id, location,
-                            ),
-                        )
-                doc_count += 1
-            self.stats["documents_scanned"] += doc_count
-            self.stats["collections_scanned"] += 1
-        except Exception as e:
-            self.stats["errors"] += 1
-            self.stats.setdefault("error_details", []).append(f"{db_name}.{coll_name}: {str(e)[:200]}")
-            logger.error(f"Error scanning collection {db_name}.{coll_name}: {str(e)}")
+                    yield document_record(
+                        doc,
+                        lambda path, d=doc_id: (
+                            f"Database '{db_name}', Collection '{coll_name}', Document _id={d}, Field '{path}'"
+                        ),
+                    )
+                    doc_count += 1
+            finally:
+                self.stats["documents_scanned"] += doc_count
 
-        findings.extend(
-            self.flush_grouped_findings(
-                grouped,
-                lambda field, n: (
-                    f"Database '{db_name}', Collection '{coll_name}', "
-                    f"Field '{field}' ({n} matches)"
-                ),
-            ),
+        errors_before = self.stats["errors"]
+        findings = self.classify(
+            resource_id, documents(),
+            location_fn=lambda field, n: f"Database '{db_name}', Collection '{coll_name}', Field '{field}' ({n} matches)",
+            unit_name=coll_name,
         )
+        if self.stats["errors"] == errors_before:
+            self.stats["collections_scanned"] += 1
         return findings
-
-    def _iter_leaves(self, node: Any, path: str = "", key: str = "") -> Iterator[Tuple[str, str, str]]:
-        """
-        Recursively walks a document, yielding (dotted_path, leaf_field_name, string_value)
-        for every scalar leaf. Lists keep the field name of their parent key.
-        """
-        if isinstance(node, dict):
-            for k, v in node.items():
-                child_path = f"{path}.{k}" if path else str(k)
-                yield from self._iter_leaves(v, child_path, str(k))
-        elif isinstance(node, (list, tuple)):
-            for idx, item in enumerate(node):
-                yield from self._iter_leaves(item, f"{path}[{idx}]", key)
-        elif node is None:
-            return
-        else:
-            if isinstance(node, bytes):
-                value = node.decode("utf-8", errors="ignore")
-            else:
-                value = str(node)
-            if value:
-                yield path, key, value

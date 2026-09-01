@@ -13,6 +13,7 @@ import boto3
 import requests
 
 import settings
+from src.engine.confidence import max_tier
 from src.engine.detector import DetectionEngine
 from src.scanners.aws.ddb import DynamoDBScanner
 from src.scanners.aws.s3 import S3Scanner
@@ -58,6 +59,7 @@ def club_findings(raw_findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         {
             "name": "Email",
             "type": "PII",
+            "confidence": "very_likely",      # highest tier among the clubbed findings
             "finding_values": {
                 "[EMAIL_ADDRESS]": "location"
             },
@@ -81,11 +83,13 @@ def club_findings(raw_findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             grouped[key] = {
                 "name": name,
                 "type": category,
+                "confidence": None,
                 "finding_values": {},
                 "total_count": 0,
             }
+        grouped[key]["confidence"] = max_tier([grouped[key]["confidence"], f.get("confidence")])
 
-        # Aggregated DB findings stand for many rows/documents (see BaseScanner.flush_grouped_findings)
+        # Aggregated column findings stand for many rows/documents (see src/pipeline/classifier.py)
         grouped[key]["total_count"] += f.get("occurrences", 1)
 
         # If the same value is found in multiple locations, record them
@@ -157,6 +161,29 @@ def post_findings_to_api(api_url: str, zip_path: Path) -> bool:
     return False
 
 
+def scan_config() -> Dict[str, Any]:
+    """Engine + pipeline configuration from settings (see .env.example)."""
+    config = {
+        "enabled_regions": settings.ENABLED_REGIONS,
+        "log_queries": settings.LOG_QUERIES,
+        "entropy_report_uncorroborated": settings.REPORT_TOKEN_LIKE_VALUES,
+        "min_confidence": settings.MIN_CONFIDENCE,
+        "report_private_ips": settings.REPORT_PRIVATE_IPS,
+        "disabled_detectors": list(settings.DISABLED_DETECTORS),
+        "allow_list": list(settings.ALLOW_LIST),
+        "allow_regex": list(settings.ALLOW_REGEX),
+        "aggregation_threshold": settings.AGGREGATION_THRESHOLD,
+        "sample_strategy": settings.SAMPLE_STRATEGY,
+        "adaptive_sampling": settings.ADAPTIVE_SAMPLING,
+        "ner": settings.NER_ENABLED,
+    }
+    if settings.COLUMN_RATIO is not None:
+        config["column_ratio"] = settings.COLUMN_RATIO
+    if settings.MIN_COUNT is not None:
+        config["min_count"] = settings.MIN_COUNT
+    return config
+
+
 def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str = None) -> Dict[str, Any]:
     """
     Process scan for a single bucket/target (an S3 bucket or a database).
@@ -166,12 +193,7 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
     FINDINGS_DIR.mkdir(parents=True, exist_ok=True)
 
     errors = []
-    config = {
-        "enabled_regions": settings.ENABLED_REGIONS,
-        "log_queries": settings.LOG_QUERIES,
-        "entropy_report_uncorroborated": settings.REPORT_TOKEN_LIKE_VALUES,
-        "score_threshold": settings.SCORE_THRESHOLD,
-    }
+    config = scan_config()
 
     scan_date = datetime.today().date()
     start_time = datetime.now()
@@ -272,6 +294,7 @@ def process_bucket(bucket_name: str, object_type: str = "s3", object_region: str
                 "username": settings.DB_USERNAME,
                 "password": settings.DB_PASSWORD,
                 "database": bucket_name,
+                "sample_limit": settings.SAMPLE_LIMIT,
             }
 
             # DB_URI-only setups: derive the host so findings carry the real

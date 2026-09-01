@@ -25,6 +25,32 @@ def _bool_env(name: str, default: str = "false") -> bool:
     return value.strip().lower() in ("1", "true", "yes")
 
 
+def _list_env(name: str) -> list:
+    """A JSON list ('["a", "b"]') or a comma-separated list ('a, b'); empty -> []."""
+    import json
+
+    value = (os.environ.get(name) or "").strip()
+    if not value:
+        return []
+    if value.startswith("["):
+        try:
+            parsed = json.loads(value)
+            return [str(item).strip() for item in parsed if str(item).strip()]
+        except ValueError:
+            pass
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def _number_env(name: str, default, cast=float):
+    value = (os.environ.get(name) or "").strip()
+    if not value:
+        return default
+    try:
+        return cast(value)
+    except ValueError:
+        return default
+
+
 # AWS Credentials (optional: falls back to instance profile / IRSA when unset)
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", None)
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", None)
@@ -50,11 +76,23 @@ DB_PORT = os.environ.get("DB_PORT", None)
 DB_USERNAME = os.environ.get("DB_USERNAME", None)
 DB_PASSWORD = os.environ.get("DB_PASSWORD", None)
 
-# Scanner behaviour
+# Scanner behaviour (see .env.example for the recommended values and README "Classification")
 LOG_QUERIES = True  # every query issued during DB scans is logged
-REPORT_TOKEN_LIKE_VALUES = _bool_env("REPORT_TOKEN_LIKE_VALUES", "true")  # random tokens with no field/keyword evidence -> Secret.TokenLikeValue
-_threshold = os.environ.get("SCORE_THRESHOLD", "").strip()
-SCORE_THRESHOLD = float(_threshold) if _threshold else 0.9  # minimum detection confidence to report
+REPORT_TOKEN_LIKE_VALUES = _bool_env("REPORT_TOKEN_LIKE_VALUES", "false")  # random tokens with no field/keyword evidence -> Secret.TokenLikeValue
+# Lowest confidence tier reported: possible | likely | very_likely. The legacy SCORE_THRESHOLD
+# float is still accepted (0.9 -> very_likely, 0.8 -> likely, lower -> possible).
+MIN_CONFIDENCE = os.environ.get("MIN_CONFIDENCE", "").strip() or os.environ.get("SCORE_THRESHOLD", "").strip() or "likely"
+REPORT_PRIVATE_IPS = _bool_env("REPORT_PRIVATE_IPS", "false")  # RFC 1918 / loopback / link-local addresses as PII.IPAddress
+DISABLED_DETECTORS = _list_env("DISABLED_DETECTORS")  # detector names never reported (see fixtures/findings-mapping.json)
+ALLOW_LIST = _list_env("ALLOW_LIST")  # exact values never reported (public contact addresses, known sample data)
+ALLOW_REGEX = _list_env("ALLOW_REGEX")  # JSON list of regexes over values never reported
+COLUMN_RATIO = _number_env("COLUMN_RATIO", None, float)  # share of a column's values that classifies it; None -> per-detector policy (0.5)
+MIN_COUNT = _number_env("MIN_COUNT", None, int)  # distinct `possible` hits per unit that become `likely`; None -> per-detector policy (10)
+AGGREGATION_THRESHOLD = _number_env("AGGREGATION_THRESHOLD", 25, int)  # hits per (detector, column) that collapse into one finding; 0 disables
+SAMPLE_LIMIT = _number_env("SAMPLE_LIMIT", 10000, int)  # rows / documents read per table or collection
+SAMPLE_STRATEGY = os.environ.get("SAMPLE_STRATEGY", "head").strip().lower() or "head"  # head | random (TABLESAMPLE / $sample)
+ADAPTIVE_SAMPLING = _bool_env("ADAPTIVE_SAMPLING", "false")  # stop reading a table/collection once its column verdicts settle
+NER_ENABLED = _bool_env("NER_ENABLED", "true")  # person names in prose when the optional spaCy model is installed (requirements-ner.txt)
 OUTPUT_DIR = os.environ.get("OUTPUT_DIR", None)  # findings/work dir; default <repo>/output
 
 # Regional compliance packs, comma-separated (US, IN, CA, GB)

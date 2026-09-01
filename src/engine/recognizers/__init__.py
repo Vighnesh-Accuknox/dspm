@@ -18,6 +18,11 @@ MODULES = (
     "de_se_fi_pl",
     "in_sg_au_kr_th",
     "za_ng_ph_generic",
+    "europe_extra",
+    "americas",
+    "asia_pacific",
+    "middle_east_africa",
+    "identifiers",
 )
 
 _ALL: Optional[List[Rule]] = None

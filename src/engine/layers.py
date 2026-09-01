@@ -15,9 +15,10 @@ from. Scores follow one scheme:
   0.5   weak shape, needs field-name evidence
   0.3   documented example / test value (never real)
 
-DetectionEngine reports findings scoring above its threshold (0.8 by default),
-so a weak shape is reported only when a context word, the field name or a
-checksum vouches for it.
+DetectionEngine maps scores to confidence tiers (very_likely >= 0.9, likely >=
+0.8, possible >= 0.5; src/engine/confidence.py) and reports `likely` and above
+by default, so a weak shape is reported only when a context word, the field
+name, a checksum or - through src/pipeline - its column or file vouches for it.
 """
 import re
 from typing import Any, Dict, List, Optional, Sequence
@@ -25,6 +26,7 @@ from typing import Any, Dict, List, Optional, Sequence
 # pyrefly: ignore [missing-import]
 import phonenumbers
 
+from src.engine import ner
 from src.engine import tokens as tk
 from src.engine.context import (
     credential_detector_for_field,
@@ -199,6 +201,7 @@ def validate_email(email: str) -> Optional[str]:
     return None
 
 
+LOOSE_PHONE_RE = re.compile(r"\+?\(?\d[\d\s().\-/]{5,22}\d")
 DOB_REGEX = re.compile(r"\b(19|20)\d{2}[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12]\d|3[01])\b")
 DOB_MIN_YEAR = 1930
 DOB_MAX_YEAR = 2012
@@ -277,7 +280,9 @@ def _mask_name(value: str) -> str:
     return " ".join(t[0] + "*" * (len(t) - 1) if len(t) > 1 else t for t in value.split())
 
 
-def scan_pii(text: str, field_name: Optional[str] = None, phone_regions: Optional[Sequence[str]] = None) -> list:
+def scan_pii(
+    text: str, field_name: Optional[str] = None, phone_regions: Optional[Sequence[str]] = None, use_ner: bool = True,
+) -> list:
     findings = []
 
     # 1. Emails: self-validating (TLD, domain labels, demo/role/message-id filters)
@@ -318,6 +323,15 @@ def scan_pii(text: str, field_name: Optional[str] = None, phone_regions: Optiona
                     findings.append(_finding("Phone Number", _CATEGORY_PII, "Medium", match.raw_string, 0.85, match.start, match.end, region=region.upper()))
             except Exception:
                 continue
+    #    A phone-named column whose value is phone-shaped but does not parse for the
+    #    enabled regions (a French number under a US/IN/GB configuration) is a
+    #    `possible` phone: the column name is the keyword (Macie counts a keyword
+    #    in the column name as proximity) and column density decides the rest.
+    if phone_context and not seen_spans:
+        candidate = text.strip()
+        digits = sum(c.isdigit() for c in candidate)
+        if 7 <= digits <= 15 and LOOSE_PHONE_RE.fullmatch(candidate) and len({c for c in candidate if c.isdigit()}) > 2:
+            findings.append(_finding("Phone Number", _CATEGORY_PII, "Medium", candidate, 0.6, 0, len(text), field_hint=True))
 
     # 3. Dates of birth: plausible year range + birth context or field
     for match in DOB_REGEX.finditer(text):
@@ -332,8 +346,17 @@ def scan_pii(text: str, field_name: Optional[str] = None, phone_regions: Optiona
     # 4. Addresses
     findings.extend(scan_addresses(text, field_name))
 
-    # 5. Person names: only where a field/key says it is a name
+    # 5. Person names: where a field/key says it is a name, and inside prose with the
+    #    optional NER model (Macie NAME / Purview named entities): `possible` unless
+    #    a context word or an honorific stands next to the name
     findings.extend(scan_person_names(text, field_name))
+    if use_ner and ner.looks_like_prose(text) and not is_credential_field(field_name):
+        taken = [(f["start"], f["end"]) for f in findings if f["detector"] == "PII.PersonName"]
+        for start, end, name, context in ner.person_names(text):
+            if any(s <= start and end <= e for s, e in taken):
+                continue
+            score = 0.85 if context else 0.6
+            findings.append(_finding("PII.PersonName", _CATEGORY_PII, "Low", name, score, start, end, ner=True, context_word=context))
 
     return findings
 
@@ -845,7 +868,9 @@ def _rule_sets():
         _RULES_CACHE["regional"] = [r for r in rules if r.region]
         _RULES_CACHE["generic"] = [r for r in rules if not r.region and r.name != "IBAN"]
         for r in rules:
-            needs_digit = all(("\\d" in p.regex or "[0-9]" in p.regex or "0-9" in p.regex) for p in r.patterns)
+            # a rule needs a digit in the text only when every pattern demands one explicitly
+            # (\d or a bare [0-9] class); an alphanumeric class such as [a-z0-9._-] does not
+            needs_digit = all(("\\d" in p.regex or "[0-9]" in p.regex or "[0123456789]" in p.regex) for p in r.patterns)
             r.__dict__["_needs_digit"] = needs_digit
     return _RULES_CACHE
 

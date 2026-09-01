@@ -49,6 +49,15 @@ NUMERIC_ID_FIELD_RE = re.compile(
     r")\b",
 )
 
+# "national id", "tax id", "patient number": the qualifier makes the field a personal identifier,
+# not a technical one - the generic id/number rules below must not suppress it
+PERSONAL_ID_FIELD_RE = re.compile(
+    r"\b(?:national|nation|tax|taxpayer|passport|patient|member|health|voter|citizen|resident|identity|personal|"
+    r"government|govt|insurance|policy|licen[cs]e|driving|driver|social|aadhaar|pan|nric|emirates|iqama|civil|"
+    r"registration|birth|beneficiary|medicare|medicaid|subscriber|student|employee|person|customer tax|fiscal)"
+    r"\s?(?:ids?|no|number|num|nr|code)\b",
+)
+
 # Which detector a bare opaque value in a credential field should be reported as
 _CREDENTIAL_KIND_RULES = (
     (re.compile(r"\b(?:passw(?:or)?ds?|passwd|pwd|passcode|passphrase)\b"), "Password Pattern"),
@@ -104,6 +113,8 @@ def classify_field(field_name: Optional[str]) -> Optional[str]:
         return None
     cred_end = max((m.end() for m in CREDENTIAL_FIELD_RE.finditer(joined)), default=-1)
     ident_end = max((m.end() for m in IDENTIFIER_FIELD_RE.finditer(joined)), default=-1)
+    if ident_end >= 0 and cred_end < ident_end and PERSONAL_ID_FIELD_RE.search(joined):
+        ident_end = -1  # national_id, tax_number, patient_id: a personal identifier field
     if cred_end < 0 and ident_end < 0:
         return None
     return "credential" if cred_end >= ident_end else "identifier"
@@ -119,7 +130,9 @@ def is_identifier_field(field_name: Optional[str]) -> bool:
 
 def is_numeric_id_field(field_name: Optional[str]) -> bool:
     joined = _joined(field_name)
-    return bool(joined) and NUMERIC_ID_FIELD_RE.search(joined) is not None
+    if not joined or NUMERIC_ID_FIELD_RE.search(joined) is None:
+        return False
+    return PERSONAL_ID_FIELD_RE.search(joined) is None
 
 
 def credential_detector_for_field(field_name: Optional[str]) -> Optional[str]:

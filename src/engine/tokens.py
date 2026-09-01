@@ -120,13 +120,83 @@ VENDOR_TOKEN_RULES: List[Tuple[str, "re.Pattern"]] = [
     ("Square Token", re.compile(r"\bsq0(?:atp|csp)-[0-9A-Za-z_-]{22,43}\b")),
     ("Telegram Bot Token", re.compile(r"\b\d{8,10}:AA[A-Za-z0-9_-]{33}\b")),
     ("Databricks Token", re.compile(r"\bdapi[a-h0-9]{32}\b")),
-    ("Atlassian Token", re.compile(r"\bATATT3[A-Za-z0-9_=-]{150,}\b")),
+    ("Atlassian Token", re.compile(r"\bAT[AC]TT3[A-Za-z0-9_=-]{150,}\b")),
     ("Grafana Token", re.compile(r"\b(?:glc_[A-Za-z0-9+/]{32,}={0,2}|glsa_[A-Za-z0-9]{32}_[A-Fa-f0-9]{8})\b")),
     ("Postman Key", re.compile(r"\bPMAK-[a-f0-9]{24}-[a-f0-9]{34}\b")),
     ("Hugging Face Token", re.compile(r"\bhf_[A-Za-z]{34}\b")),
     ("Age Secret Key", re.compile(r"\bAGE-SECRET-KEY-1[QPZRY9X8GF2TVDW0S3JN54KHCE6MUA7L]{58}\b")),
     ("Discord Bot Token", re.compile(r"\b[MN][A-Za-z\d]{23,}\.[\w-]{6}\.[\w-]{27,}\b")),
     ("Heroku API Key", re.compile(r"(?i)heroku[\w\s\"':=]{0,20}([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")),
+    ("DigitalOcean Token", re.compile(r"\b(?:dop|doo|dor)_v1_[a-f0-9]{64}\b")),
+    ("Google OAuth Client Secret", re.compile(r"\bGOCSPX-[A-Za-z0-9_-]{28}\b")),
+    ("Notion Token", re.compile(r"\b(?:secret|ntn)_[A-Za-z0-9]{43,50}\b")),
+    ("Linear API Key", re.compile(r"\blin_api_[A-Za-z0-9]{40}\b")),
+    ("Figma Token", re.compile(r"\bfigd_[A-Za-z0-9_-]{40,}\b")),
+    ("New Relic Key", re.compile(r"\bNRAK-[A-Z0-9]{27}\b")),
+    ("Sentry Token", re.compile(r"\bsntry[su]_[A-Za-z0-9+/=_-]{40,}\b")),
+    ("PlanetScale Token", re.compile(r"\bpscale_(?:tkn|oauth|pw)_[A-Za-z0-9._-]{32,64}\b")),
+    ("Supabase Key", re.compile(r"\bsbp_[a-f0-9]{40}\b")),
+    ("Doppler Token", re.compile(r"\bdp\.(?:pt|st|ct|sa)\.[A-Za-z0-9]{40,44}\b")),
+    ("Airtable Token", re.compile(r"\bpat[A-Za-z0-9]{14}\.[a-f0-9]{64}\b")),
+    ("Dropbox Token", re.compile(r"\bsl\.[A-Za-z0-9_-]{130,}\b")),
+    ("Facebook Access Token", re.compile(r"\bEAACEdEose0cBA[A-Za-z0-9]{20,}\b")),
+    ("Netlify Token", re.compile(r"\bnfp_[A-Za-z0-9_]{36}\b")),
+    ("Pulumi Token", re.compile(r"\bpul-[a-f0-9]{40}\b")),
+    ("Twitter Bearer Token", re.compile(r"\bAAAAAAAAAAAAAAAAAAAAA(?=[A-Za-z0-9%]*[a-z])(?=[A-Za-z0-9%]*[0-9%])[A-Za-z0-9%]{80,}\b")),
+    ("AWS MWS Token", re.compile(r"\bamzn\.mws\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b")),
+    ("Alibaba Access Key", re.compile(r"\bLTAI[A-Za-z0-9]{12,20}\b")),
+    ("JFrog Token", re.compile(r"\bcmVmdGtu[A-Za-z0-9=]{60,}\b|\bAKCp[A-Za-z0-9]{70,}\b")),
+    ("CircleCI Token", re.compile(r"\bCCI(?:PAT|PRJ)_[A-Za-z0-9_-]{22,}_[a-f0-9]{40}\b")),
+    ("Buildkite Token", re.compile(r"\bbkua_[a-f0-9]{40}\b")),
+    ("Cloudflare Origin CA Key", re.compile(r"\bv1\.0-[a-f0-9]{24}-[a-f0-9]{146}\b")),
+    ("Dynatrace Token", re.compile(r"\bdt0c01\.[A-Z0-9]{24}\.[A-Z0-9]{64}\b")),
+    ("Elastic Cloud Key", re.compile(r"\bessu_[A-Za-z0-9=]{40,}\b")),
+    ("GCP Service Account Key", re.compile(r"\"private_key_id\"\s*:\s*\"[a-f0-9]{40}\"")),
+    ("Groq API Key", re.compile(r"\bgsk_[A-Za-z0-9]{52}\b")),
+    ("Replicate Token", re.compile(r"\br8_[A-Za-z0-9]{37}\b")),
+    ("Perplexity API Key", re.compile(r"\bpplx-[A-Za-z0-9]{48}\b")),
+    ("xAI API Key", re.compile(r"\bxai-[A-Za-z0-9]{40,}\b")),
+    ("Pinecone API Key", re.compile(r"\bpcsk_[A-Za-z0-9_]{40,}\b")),
+    ("Firebase Cloud Messaging Key", re.compile(r"\bAAAA[A-Za-z0-9_-]{7}:APA91b[A-Za-z0-9_-]{100,}\b")),
+    ("1Password Service Account Token", re.compile(r"\bops_eyJ[A-Za-z0-9+/=_-]{200,}\b")),
+    ("Infisical Token", re.compile(r"\bst\.[a-f0-9-]{36}\.[a-f0-9]{32}\.[a-f0-9]{64}\b")),
+    ("Terraform Cloud Token", re.compile(r"\b[A-Za-z0-9]{14}\.atlasv1\.[A-Za-z0-9_-]{60,}\b")),
+    ("Prefect API Key", re.compile(r"\bpnu_[A-Za-z0-9]{36}\b")),
+    ("RubyGems API Key", re.compile(r"\brubygems_[a-f0-9]{48}\b")),
+    ("NuGet API Key", re.compile(r"\boy2[a-z0-9]{43}\b")),
+    ("Cargo Registry Token", re.compile(r"\bcio[A-Za-z0-9]{32}\b")),
+    ("Scalingo Token", re.compile(r"\btk-us-[A-Za-z0-9_-]{48}\b")),
+    ("Fly.io Token", re.compile(r"\bfo1_[A-Za-z0-9_-]{43}\b")),
+    ("Render Token", re.compile(r"\brnd_[A-Za-z0-9]{32}\b")),
+    ("Contentful Token", re.compile(r"\bCFPAT-[A-Za-z0-9_-]{43}\b")),
+    ("Shippo Token", re.compile(r"\bshippo_(?:live|test)_[a-f0-9]{40}\b")),
+    ("EasyPost Key", re.compile(r"\bEZ[AT]K[A-Za-z0-9]{54}\b")),
+    ("Flutterwave Key", re.compile(r"\bFLW(?:SECK|PUBK)(?:_TEST)?-[a-f0-9]{32}-X\b")),
+    ("Razorpay Key", re.compile(r"\brzp_(?:live|test)_[A-Za-z0-9]{14}\b")),
+    ("Braintree Access Token", re.compile(r"\baccess_token\$production\$[a-z0-9]{16}\$[a-f0-9]{32}\b")),
+    ("Plaid Access Token", re.compile(r"\baccess-(?:sandbox|development|production)-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b")),
+    ("HubSpot Token", re.compile(r"\bpat-(?:na|eu)\d-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b")),
+    ("Typeform Token", re.compile(r"\btfp_[A-Za-z0-9_-]{40,}\b")),
+    ("ClickUp Token", re.compile(r"\bpk_\d{4,}_[A-Z0-9]{32}\b")),
+    ("Asana Token", re.compile(r"\b[01]/\d{16}:[a-f0-9]{32}\b")),
+    ("Sourcegraph Token", re.compile(r"\bsgp_(?:local_)?[a-f0-9]{40}\b")),
+    ("SonarQube Token", re.compile(r"\bsq[pua]_[a-f0-9]{40}\b")),
+    ("ReadMe Token", re.compile(r"\brdme_[a-z0-9]{70}\b")),
+    ("Brevo API Key", re.compile(r"\bxkeysib-[a-f0-9]{64}-[A-Za-z0-9]{16}\b")),
+    ("Klaviyo Key", re.compile(r"\bpk_[a-f0-9]{34}\b")),
+    ("Microsoft Teams Webhook", re.compile(r"https://[a-z0-9-]+\.webhook\.office\.com/webhookb2/[a-f0-9-]{36}@[a-f0-9-]{36}/IncomingWebhook/[a-f0-9]{32}/[a-f0-9-]{36}")),
+    ("Discord Webhook", re.compile(r"https://(?:ptb\.|canary\.)?discord(?:app)?\.com/api/webhooks/\d{17,20}/[A-Za-z0-9_-]{60,}")),
+    ("DeepL API Key", re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:fx\b")),
+    ("Neon Database Password", re.compile(r"\bnpg_[A-Za-z0-9]{20,}\b")),
+    ("Laravel App Key", re.compile(r"\bAPP_KEY\s*=\s*(base64:[A-Za-z0-9+/=]{40,})")),
+    ("PuTTY Private Key", re.compile(r"PuTTY-User-Key-File-\d")),
+    ("Netrc Credentials", re.compile(r"\bmachine\s+\S+\s+login\s+\S+\s+password\s+\S+")),
+    ("Slack Config Token", re.compile(r"\bxoxe\.xox[bp]-\d-[A-Za-z0-9]{160,}\b|\bxoxe-\d-[A-Za-z0-9]{140,}\b")),
+    ("Yandex Token", re.compile(r"\bAQVN[A-Za-z0-9_-]{35,38}\b|\bt1\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{86}={0,2}")),
+    ("Adafruit IO Key", re.compile(r"\baio_[A-Za-z0-9]{28}\b")),
+    ("Frame.io Token", re.compile(r"\bfio-u-[A-Za-z0-9_=-]{64}\b")),
+    ("Zapier Webhook", re.compile(r"https://hooks\.zapier\.com/hooks/catch/\d+/[A-Za-z0-9]+/?")),
+    ("Bitcoin Private Key", re.compile(r"\b5[HJK][1-9A-HJ-NP-Za-km-z]{49}\b|\b[KL][1-9A-HJ-NP-Za-km-z]{51}\b")),
 ]
 
 
@@ -353,24 +423,44 @@ def analyze_token(token: str, min_length: int = 24) -> TokenInfo:
 
 
 VENDOR_GATE_RE = re.compile(
-    r"gh[poursx]_|github_pat_|gl[a-z]{2,5}-|xox[baprs]-|xapp-1-|hooks\.slack\.com|AIza|ya29\.|sk-|SG\.|\bSK[0-9a-fA-F]{32}|"
+    r"gh[poursx]_|github_pat_|gl[a-z]{2,5}-|xox[baprs]-|xapp-1-|hooks\.slack\.com|AIza|ya29\.|sk-|(?:sk|rk)_(?:live|test)_|SG\.|\bSK[0-9a-fA-F]{32}|"
     r"-us\d{1,2}\b|key-[0-9a-zA-Z]{32}|hv[sb]\.|dckr_pat_|npm_|pypi-|AccountKey=|sv=\d{4}|shp(?:at|ss|ca|pa)_|sq0(?:atp|csp)-|"
-    r"\d{8,10}:AA|dapi[a-h0-9]{32}|ATATT3|gl(?:c|sa)_|PMAK-|hf_[A-Za-z]{34}|AGE-SECRET-KEY-1|[MN][A-Za-z\d]{23,}\.|heroku",
+    r"\d{8,10}:AA|dapi[a-h0-9]{32}|ATATT3|gl(?:c|sa)_|PMAK-|hf_[A-Za-z]{34}|AGE-SECRET-KEY-1|[MN][A-Za-z\d]{23,}\.|heroku|"
+    r"do[por]_v1_|GOCSPX-|(?:secret|ntn)_[A-Za-z0-9]{43}|lin_api_|figd_|NRAK-|sntry[su]_|pscale_|sbp_[a-f0-9]{40}|"
+    r"dp\.(?:pt|st|ct|sa)\.|pat[A-Za-z0-9]{14}\.[a-f0-9]{64}|sl\.[A-Za-z0-9_-]{130}|EAACEdEose0cBA|nfp_|pul-[a-f0-9]{40}|AAAAAAAAAAAAAAAAAAAAA|"
+    r"amzn\.mws\.|LTAI|cmVmdGtu|AKCp|CCI(?:PAT|PRJ)_|bkua_|v1\.0-[a-f0-9]{24}|dt0c01\.|essu_|private_key_id|gsk_|r8_|pplx-|xai-|pcsk_|"
+    r":APA91b|ops_eyJ|st\.[a-f0-9-]{36}\.|\.atlasv1\.|pnu_|rubygems_|oy2[a-z0-9]{43}|cio[A-Za-z0-9]{32}|tk-us-|fo1_|rnd_|CFPAT-|shippo_|"
+    r"EZ[AT]K|FLW(?:SECK|PUBK)|rzp_|access_token\$production|access-(?:sandbox|development|production)-|pat-(?:na|eu)\d-|tfp_|pk_\d{4,}_|"
+    r"[01]/\d{16}:|sgp_|sq[pua]_|rdme_|xkeysib-|pk_[a-f0-9]{34}|webhook\.office\.com|discord(?:app)?\.com/api/webhooks|:fx\b|npg_|APP_KEY|"
+    r"PuTTY-User-Key-File|\bmachine\s+\S+\s+login|xoxe|AQVN|\bt1\.|aio_|fio-u-|hooks\.zapier\.com|\b5[HJK][1-9A-HJ-NP-Za-km-z]{49}|\b[KL][1-9A-HJ-NP-Za-km-z]{51}|ATCTT3",
     re.IGNORECASE,
 )
 
 
+def is_degenerate(value: str) -> bool:
+    """
+    A credential is never one character repeated, nor built from four symbols:
+    padding runs (AAAA...), masked values (xxxx...) and test buffers match many
+    vendor prefixes by accident. TruffleHog and gitleaks filter the same way.
+    """
+    body = re.sub(r"^[A-Za-z]+[_\-.]|[_\-.:%=/]", "", value)
+    return len(set(body)) <= 4 or re.fullmatch(r"(.)\1+", body or value) is not None
+
+
 def find_vendor_tokens(text: str) -> List[Tuple[str, int, int, str]]:
-    """(detector, start, end, value) for every known vendor token format in text."""
+    """(detector, start, end, value) for every known vendor token format in text; degenerate values are skipped."""
     out = []
     if not VENDOR_GATE_RE.search(text):
         return out
     for name, regex in VENDOR_TOKEN_RULES:
         for m in regex.finditer(text):
             if m.groups():
-                out.append((name, m.start(1), m.end(1), m.group(1)))
+                start, end, value = m.start(1), m.end(1), m.group(1)
             else:
-                out.append((name, m.start(), m.end(), m.group(0)))
+                start, end, value = m.start(), m.end(), m.group(0)
+            if is_degenerate(value):
+                continue
+            out.append((name, start, end, value))
     return out
 
 

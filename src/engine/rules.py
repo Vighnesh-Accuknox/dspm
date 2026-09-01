@@ -15,7 +15,8 @@ validator / invalidator callables (checksums, structural checks). Scoring:
                                  FIELD_HINT_SCORE (0.85) unless a validator said False
 
 run_rule() returns every match with score > 0 so callers (and tests) can reason
-about confidence; DetectionEngine applies the reporting threshold.
+about confidence; DetectionEngine maps scores to confidence tiers
+(src/engine/confidence.py) and applies the reporting tier.
 
 Country-specific patterns live in src/engine/recognizers/ (see that package's
 docstring for the licence attribution).
@@ -126,11 +127,11 @@ class Rule:
         best = self._max_pattern_score
         if field_name and self._field_hint_re is not None and self._field_hint_re.search(str(field_name).lower()):
             best = max(best, FIELD_HINT_SCORE)
-        if best > threshold:
+        if best >= threshold:
             return True
         if self._context_single & words or any(p in lowered for p in self._context_phrases):
             best = min(1.0, max(best + self.context_boost, self.min_score_with_context))
-        return best > threshold
+        return best >= threshold
 
 
 def tokenize_field_name(field_name: Optional[str]) -> List[str]:
@@ -240,6 +241,7 @@ def run_rule(rule: Rule, text: str, field_name: Optional[str] = None) -> List[Di
                 "pattern": pattern.name,
                 "context_word": context_word,
                 "field_hint": field_hint_hit,
+                "validated": validation is True,
             })
     return _dedupe(results)
 
@@ -253,9 +255,9 @@ def run_rules(
 ) -> List[Dict[str, Any]]:
     """
     Runs every enabled rule whose region is generic or in enabled_regions.
-    With a threshold, rules that cannot score above it for this text (no
-    validator, weak pattern, no context word / field hint present) are skipped
-    before any regex runs - the result is identical, most of the work is not.
+    With a threshold, rules that cannot reach it for this text (no validator,
+    weak pattern, no context word / field hint present) are skipped before any
+    regex runs - the result is identical, most of the work is not.
     """
     regions = {r.upper() for r in (enabled_regions or [])}
     out: List[Dict[str, Any]] = []

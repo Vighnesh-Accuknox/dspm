@@ -1,13 +1,14 @@
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 from urllib.parse import quote_plus
 
 # Conditional imports for soft failures
 try:
-    from sqlalchemy import create_engine, inspect, select
+    from sqlalchemy import create_engine, inspect, select, tablesample, text as sql_text
     from sqlalchemy import table as sql_table, column as sql_column
 except ImportError:
     create_engine = None
 
+from src.pipeline.records import COLUMNAR, Cell, Record
 from src.scanners.base import BaseScanner
 from src.utils.logger import get_logger
 
@@ -36,9 +37,9 @@ SYSTEM_SCHEMA_PREFIXES = ("pg_", "db_")
 class SQLScanner(BaseScanner):
     """
     Scans relational databases (PostgreSQL, MySQL, MariaDB, MSSQL) for sensitive data.
-    Discovers schemas, tables and columns dynamically, then streams rows in chunks.
-    Cell values are scanned with their column name as context so keyword-based
-    scoring (e.g. a bare email in an 'email' column) works on structured data.
+    Discovers schemas, tables and columns dynamically, then streams rows in chunks
+    as columnar Records (one Cell per non-empty column) into the classification
+    pipeline, which uses the column name as context and judges whole columns.
     """
 
     def __init__(self, engine, config: Dict[str, Any] = None, client=None):
@@ -79,7 +80,9 @@ class SQLScanner(BaseScanner):
             "include_views": false,          # optional, also scan views
             "incremental_column": "updated_at",       # optional column for incremental scans
             "last_scan_time": "2026-08-01T00:00:00",  # optional, used with incremental_column
-            "sample_limit": 10000            # optional, max rows per table
+            "sample_limit": 10000,           # optional, max rows per table
+            "sample_strategy": "head"        # optional: "head" (first rows) or "random" (TABLESAMPLE on
+                                             # PostgreSQL / MSSQL for large tables, head elsewhere)
         }
         """
         if not create_engine:
@@ -248,16 +251,25 @@ class SQLScanner(BaseScanner):
             return []
 
         relation = sql_table(name, *[sql_column(c) for c in column_names], schema=schema)
-        stmt = select(relation)
+        sample_limit = target.get("sample_limit", 10000)
+
+        # Random sampling (Wiz: "statistical sampling of a sufficient number of records"):
+        # TABLESAMPLE on engines that support it, when the table is large enough for it to matter
+        strategy = str(target.get("sample_strategy") or self.config.get("sample_strategy") or "head").lower()
+        source = relation
+        if strategy == "random" and sample_limit:
+            sampled = self._random_sample_source(sa_engine, relation, schema, name, sample_limit)
+            if sampled is not None:
+                source = sampled
+        stmt = select(source)
 
         # Incremental scanning: only rows changed since the last scan
         inc_col = target.get("incremental_column")
         last_scan_time = target.get("last_scan_time")
         if inc_col and last_scan_time and inc_col in column_names:
-            stmt = stmt.where(relation.c[inc_col] > last_scan_time)
+            stmt = stmt.where(source.c[inc_col] > last_scan_time)
 
         # Dialect-aware row cap (LIMIT / TOP), avoids full scans of huge tables
-        sample_limit = target.get("sample_limit", 10000)
         if sample_limit:
             stmt = stmt.limit(sample_limit)
 
@@ -276,17 +288,82 @@ class SQLScanner(BaseScanner):
                     query_str = str(stmt)
             logger.info(f"Executing query on {full_relation_name}: {' '.join(query_str.split())}")
 
-        grouped = {}
+        def location_of(row_idx: int, col_name: str) -> str:
+            return f"{schema_part}Relation '{name}' ({rel_type}), Row {row_idx}, Column '{col_name}'"
+
+        errors_before = self.stats["errors"]
+        findings = self.classify(
+            table_resource_id,
+            self._iter_rows(sa_engine, stmt, column_names, chunk_size, location_of),
+            location_fn=lambda column, n: f"{schema_part}Relation '{name}' ({rel_type}), Column '{column}' ({n} matches)",
+            unit_name=name,
+        )
+        if self.stats["errors"] == errors_before:
+            self.stats["tables_scanned"] += 1
+        return findings
+
+    def _estimate_rows(self, sa_engine: Any, schema: Optional[str], name: str) -> Optional[int]:
+        """Cheap planner estimate of a table's row count (PostgreSQL, MSSQL); None when unknown."""
+        dialect = sa_engine.dialect.name
+        try:
+            with sa_engine.connect() as conn:
+                if dialect == "postgresql":
+                    qualified = f'"{schema}"."{name}"' if schema else f'"{name}"'
+                    value = conn.execute(sql_text("SELECT reltuples::bigint FROM pg_class WHERE oid = to_regclass(:q)"), {"q": qualified}).scalar()
+                elif dialect == "mssql":
+                    value = conn.execute(
+                        sql_text(
+                            "SELECT SUM(p.rows) FROM sys.partitions p JOIN sys.tables t ON p.object_id = t.object_id "
+                            "JOIN sys.schemas s ON t.schema_id = s.schema_id "
+                            "WHERE t.name = :t AND s.name = :s AND p.index_id IN (0, 1)",
+                        ),
+                        {"t": name, "s": schema or "dbo"},
+                    ).scalar()
+                else:
+                    return None
+        except Exception as e:
+            logger.info(f"Row estimate unavailable for {name}: {str(e)[:120]}")
+            return None
+        try:
+            return int(value) if value is not None and int(value) >= 0 else None
+        except (TypeError, ValueError):
+            return None
+
+    def _random_sample_source(self, sa_engine: Any, relation: Any, schema: Optional[str], name: str, sample_limit: int) -> Any:
+        """
+        TABLESAMPLE SYSTEM (p) wrapping the relation when the engine supports it and
+        the table holds well over sample_limit rows; p is chosen so that about three
+        times sample_limit rows are sampled before LIMIT cuts them (page sampling is
+        clumpy). None means: read the head as usual.
+        """
+        if sa_engine.dialect.name not in ("postgresql", "mssql"):
+            return None
+        estimate = self._estimate_rows(sa_engine, schema, name)
+        if not estimate or estimate <= sample_limit * 2:
+            return None
+        percent = min(100.0, max(0.01, round(100.0 * sample_limit * 3 / estimate, 4)))
+        logger.info(f"Random sampling {name}: TABLESAMPLE {percent}% of ~{estimate} rows")
+        return tablesample(relation, percent, name="sampled")
+
+    def _iter_rows(
+        self, sa_engine: Any, stmt: Any, column_names: List[str], chunk_size: int,
+        location_of: Callable[[int, str], str],
+    ) -> Iterator[Record]:
+        """
+        Streams the statement's rows as columnar Records. Rows are counted in
+        stats even when the pipeline stops reading early (adaptive sampling).
+        """
+        row_idx = 0
         try:
             with sa_engine.connect() as conn:
                 result = conn.execution_options(stream_results=True).execute(stmt)
-                row_idx = 0
                 while True:
                     rows = result.fetchmany(chunk_size)
                     if not rows:
                         break
                     for row in rows:
                         mapping = row._mapping
+                        cells = []
                         for col_name in column_names:
                             val = mapping.get(col_name)
                             if val is None:
@@ -298,35 +375,9 @@ class SQLScanner(BaseScanner):
                                 continue
                             # The column name is context for the engine (credential/identifier
                             # columns, entity hints), never part of the scanned text
-                            cell_findings = self.engine.scan_text(val_str, field_name=col_name)
-                            for f in cell_findings:
-                                if self.is_suppressed(f["detector"], col_name):
-                                    continue
-                                location = (
-                                    f"{schema_part}Relation '{name}' ({rel_type}), "
-                                    f"Row {row_idx}, Column '{col_name}'"
-                                )
-                                grouped.setdefault((f["detector"], col_name), []).append(
-                                    self.format_finding(
-                                        f["detector"], f["category"], f["severity"], f["value"],
-                                        table_resource_id, location,
-                                    ),
-                                )
+                            cells.append(Cell(value=val_str, field=col_name, location=location_of(row_idx, col_name)))
                         row_idx += 1
-                self.stats["rows_scanned"] += row_idx
-                self.stats["tables_scanned"] += 1
-        except Exception as e:
-            self.stats["errors"] += 1
-            self.stats.setdefault("error_details", []).append(f"{full_relation_name}: {str(e)[:200]}")
-            logger.error(f"Error querying rows from {full_relation_name}: {str(e)}")
-
-        findings.extend(
-            self.flush_grouped_findings(
-                grouped,
-                lambda column, n: (
-                    f"{schema_part}Relation '{name}' ({rel_type}), "
-                    f"Column '{column}' ({n} matches)"
-                ),
-            ),
-        )
-        return findings
+                        if cells:
+                            yield Record(cells, shape=COLUMNAR)
+        finally:
+            self.stats["rows_scanned"] += row_idx

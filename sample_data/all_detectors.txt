@@ -1,0 +1,280 @@
+# One synthetic example per detector; the keyword before each value gives the unstructured path its context.
+us ssn: 219-09-9999
+us taxpayer id: 911-70-1234
+us passport: 912803456
+us driver license: H12234567
+us account number: 945456787654
+us aba: 121000358
+us dea: GL0285191
+us npi: 1234-567-893
+us medicare: 1EG4-TE5-MK73
+member id: HPN70482A9
+preauthorization number: PA-204815937
+claim number: CLM402817365
+prescription number: RX702948135
+referral number: REF204815
+us tin: 12-3456789
+ca sin: 130 692 544
+ca postal code: K1A 0A1
+gb driving licence: MORGA607054SM9IJ
+gb nhs: 401-023-2137
+gb national insurance: PR 123612C
+gb passport: AB9322005
+gb postcode: SW1A 1AA
+gb registration number: AB51 ABC
+es dni: 51587595K
+es nie: X9613851N
+es pasaporte: AAA578806
+it codice fiscale: AAAAAA05B11C648Y
+it cie: AA12345AA
+it passaporto: AA8532589
+it patente: U1K711J11M
+it piva: 01333550323
+tr tc kimlik: 10000000146
+tr plaka: 34 ABC 1234
+de betriebsstättennummer: 021234568
+de führerscheinnummer: BO79931423A
+de handelsregister: HRA 12345
+de krankenversicherungsnummer: A000500015
+de personalausweis: L01X00T44
+de kennzeichen: B AB 1234
+de arztnummer: 234567701
+de reisepass: C01234565
+de plz: 10115
+de rentenversicherungsnummer: 15070649C103
+de steueridentifikationsnummer: 12345678903
+de steuernummer: 0281508150123
+de umsatzsteuer identifikationsnummer: DE136695976
+se organisationsnummer: 212000-0142
+se personnummer: 198712202384
+fi hetu: 010594Y9032
+pl pesel: 44051401458
+in aadhaar: 312345678909
+in gstin: 27ABCDE1234F1Z5
+in pan: ABCPD1234Z
+in passport: A3456781
+in rto: KA53ME3456
+in voter: KSD1287349
+sg fin: S2740116C
+sg uen: 53125226D
+au abn: 51 824 753 556
+au acn: 000 000 019
+au medicare: 2123 45670 1
+au tax file number: 852 439 570
+kr brn: 104-86-56659
+kr korean driver license: 11-22-123456-12
+kr korean frn: 911124-5678906
+kr korean passport: M877A0888
+kr korean rrn: 960121-1021413
+th thai national id: 1234567890121
+za identity number: 8001015009087
+za passport: A34855903
+za licence number: 60390002CGBV
+za traffic register: 6001015000076
+za sars: 9123456789
+za vat: 4020269678
+za cipc: 2009/199240/23
+za licence plate: KD93GKGP
+ng nin: 12345678902
+ng plate number: APP-456CV
+ph umid: 0111-1234567-8
+ph tin: 000-123-456-000
+ph passport: P5202928A
+iban: DE89370400440532013000
+wallet: 16Yeky6GMjeNkAiNcBY7ZhrLoMSgg1BoyZ
+public ip: 8.8.8.8
+device mac: 3C:52:82:4F:9A:1B
+fr nir: 1 85 05 78 006 084 91
+fr passport: 13CB38638
+nl bsn: 327440430
+be rijksregisternummer: 85.07.30-839.95
+ch ahv: 756.0930.6547.71
+at sozialversicherungsnummer: 7014010180
+ie pps: 1869536B
+pt nif: 207512280
+lu matricule: 1985073037685
+dk cpr: 300785-6023
+no fødselsnummer: 30078508864
+is kennitala: 300785-3529
+cz rodné číslo: 850730/3387
+sk rodné číslo: 850730/4949
+hu taj: 158-691-589
+ro cnp: 1850730129001
+gr amka: 30078564025
+bg egn: 8507309252
+hr oib: 59699813869
+rs jmbg: 3007985715268
+si emšo: 3007985509927
+lt asmens kodas: 38507305736
+ee isikukood: 48507303471
+lv personas kods: 300785-10631
+ru inn: 877177211053
+ru snils: 602-167-309 49
+ua rntrc: 0735771566
+es seguridad social: 28-74663217-26
+gb utr: 5129497082
+gb sort code: 88-53-77
+br cpf: 823.855.915-45
+br cnpj: 30.220.890/0001-08
+mx curp: GOMK850730HDFRRL09
+mx rfc: GOMA850730RB8
+ar cuit: 20-49837081-1
+ar dni: 82.174.256
+cl rut: 12.345.671-8
+ca ohip: 6559-466-773-OB
+us ein: 80-9620470
+alien number: A20481537
+jp my number: 6648-5526-0102
+jp passport: TK3702602
+cn 身份证: 110105194912315912
+hk hkid: U100503(8)
+tw national id: P184145123
+nik number: 3171013007851796
+my mykad: 850730-14-6563
+vn cccd: 001085445493
+pk cnic: 47569-2034040-8
+lk nic: 851238112V
+nz ird: 49-091-850
+nz nhi: ZYC4527
+au ihi: 8003 6012 3456 7852
+au bsb: 062-000
+in ifsc: HDFC0001234
+in upi: rahul.sharma@okaxis
+ae emirates id: 784-1990-1311311-5
+sa iqama: 1166543411
+il teudat zehut: 796033975
+eg national id: 29007300159955
+gh ghana card: GHA-657105083-6
+imei: 35-845422-110932-2
+iccid: 8944753862346631701
+vin: 1HGCM82643C675372
+passport: P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
+lat: 12.9716, 77.5946
+icd: E11.9
+ndc: 0002-3227-30
+mrn: MRN: 12345678
+email: priya.sharma@acme-corp.io
+phone: +91 98765 43210
+date of birth: 1985-07-30
+street address: 221B Baker Street, London
+full name: Priya Sharma
+config: password=Tr0ub4dor&3xF!9
+password hash: $2b$12$KIXQ4l1h9vN2k7XpQ8wY5uJ3m6R1sT0aB4cD5eF6gH7iJ8kL9mN0o
+api key: k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7
+authorization: Bearer k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4T
+oauth: access_token=k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg
+session: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+aws access key id: AKIAK9J2X7QW4ZT1LP8V
+aws secret access key: k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9W
+private key: -----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEAk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x7Qw4Zt1Lp8Vb3Nc6H
+-----END RSA PRIVATE KEY-----
+database url: postgresql://scanner:Tr0ub4dor3xF@db.internal:5432/appdb
+authorization header: Basic c2Nhbm5lcjpUcjB1YjRkb3IzeEY=
+card number: 4539 1488 0343 6467
+iban: DE89 3704 0044 0532 0130 00
+swift code: DEUTDEFF500
+bank account number: 5023918476
+clinical notes: patient admitted to hospital; diagnosis confirmed; prescription issued by physician
+secret: k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x7Qw4Z
+payload: U2FsdGVkX1+k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x7Qw4Zt1Lp8Vb3Nc6H
+value: ghp_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7
+value: glpat-k9J2x7Qw4Zt1Lp8Vb3Nc
+value: xoxb-1234567890-1234567890123-k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5
+value: https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+value: AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+value: ya29.XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+value: 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
+value: sk-ant-api03-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXAA
+value: sk_live_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5
+value: 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
+value: SK7c3e1a9f5b2d4e6a7c3e1a9f5b2d4e6a
+value: 7c3e1a9f5b2d4e6a7c3e1a9f5b2d4e6a-us21
+value: key-k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg
+value: hvs.k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2
+value: dckr_pat_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0
+value: npm_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7
+value: pypi-AgEIcHlwaS5vcmcXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+value: AccountKey=k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7==
+value: ?sv=2022-11-02&ss=b&srt=sco&sp=rwdlac&sig=XXXXXXXXXXXXXXXXXXXXXXXX
+value: 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
+value: sq0atp-XXXXXXXXXXXXXXXXXXXXXX
+value: 8012345679:AAk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4
+value: dapi00000000000000000000000000000000
+value: ATATT3k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg
+value: glsa_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg_7c3e1a9f
+value: PMAK-7c3e1a9f5b2d4e6a7c3e1a9f-7c3e1a9f5b2d4e6a7c3e1a9f5b2d4e6a7c
+value: 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
+value: AGE-SECRET-KEY-1XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+value: Mk9J2x7Qw4Zt1Lp8Vb3Nc6Hs.k9J2x7.k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0
+value: heroku_api_key=7c3e1a9f-5b2d-4e6a-9c1b-3f7d2e8a6c4b
+value: dop_v1_7c3e1a9f5b2d4e6a7c3e1a9f5b2d4e6a7c3e1a9f5b2d4e6a7c3e1a9f5b2d4e6a
+value: GOCSPX-AbCdEfGhIjKlMnOpQrStUvWxYz01
+value: ntn_A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0U1v
+value: lin_api_a1B2c3D4e5F6g7H8i9J0k1L2m3N4o5P6q7R8s9T0
+value: figd_Ab1-Cd2_Ef3-Gh4_Ij5-Kl6_Mn7-Op8_Qr9-St0_Uv1-Wx2
+value: NRAK-ABCDEFGHIJKLMNOPQRSTUVWXY01
+value: sntrys_eyJpYXQiOjE3MDAwMDAwMDAsInVybCI6Imh0dHBzOi8vc2VudHJ5LmlvIn0
+value: pscale_tkn_AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcd
+value: sbp_0123456789abcdef0123456789abcdef01234567
+value: dp.st.AbCdEfGhIjKlMnOpQrStUvWxYz0123456789AbCdEf
+value: patAbCdEfGhIjKlMn.0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+value: sl.k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1
+value: EAACEdEose0cBAAbCdEfGhIjKlMnOpQrStUvWxYz01
+value: nfp_AbCdEfGhIjKlMnOpQrStUvWxYz0123456789
+value: pul-0123456789abcdef0123456789abcdef01234567
+value: AAAAAAAAAAAAAAAAAAAAAAbCdEfGhIjKlMnOpQrStUvWxYz0123456789AbCdEfGhIjKlMnOpQrStUvWxYz0123456789AbCdEfGhIjKlMnOpQrStUvWxYz0123456789
+value: amzn.mws.3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b
+value: LTAI5tK9J2x7Qw4Zt1Lp8Vb3
+value: AKCpk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg
+value: CCIPAT_k9J2x7Qw4Zt1Lp8Vb3Nc6H_7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f
+value: bkua_7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f
+value: v1.0-7c3e1a9f7c3e1a9f7c3e1a9f-7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c
+value: dt0c01.K9J2X7QW4ZT1LP8VB3NC6HS5.K9J2X7QW4ZT1LP8VB3NC6HS5YD0RF2MGK9J2X7QW4ZT1LP8VB3NC6HS5YD0RF2MG
+value: essu_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x7Qw==
+value: "private_key_id": "7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f"
+value: 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
+value: r8_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7U
+value: 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
+value: xai-k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk
+value: pcsk_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk_J2x7
+value: AAAAk9J2x7Q:APA91bk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9W
+value: ops_eyJk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9W
+value: st.3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b.7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f.7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f
+value: k9J2x7Qw4Zt1Lp.atlasv1.k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x7Qw4Zt1Lp8Vb3Nc6H
+value: pnu_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7
+value: rubygems_7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f
+value: oy2k9j2x7qw4zt1lp8vb3nc6hs5yd0rf2mgk9j2x7qw4zt
+value: ciok9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg
+value: tk-us-k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw
+value: fo1_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J
+value: rnd_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg
+value: CFPAT-k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J
+value: shippo_live_7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f
+value: EZAKk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp
+value: FLWSECK-7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f-X
+value: rzp_live_k9J2x7Qw4Zt1Lp
+value: access_token$production$k9j2x7qw4zt1lp8v$7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f
+value: access-production-3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b
+value: pat-na1-3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b
+value: tfp_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x
+value: pk_1234567_K9J2X7QW4ZT1LP8VB3NC6HS5YD0RF2MG
+value: 1/1234567890123456:7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f
+value: sgp_7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f
+value: sqp_7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f
+value: rdme_k9j2x7qw4zt1lp8vb3nc6hs5yd0rf2mgk9j2x7qw4zt1lp8vb3nc6hs5yd0rf2mgk9j2x7
+value: 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
+value: pk_7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c
+value: https://contoso.webhook.office.com/webhookb2/3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b@3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b/IncomingWebhook/7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f/3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b
+value: https://discord.com/api/webhooks/123456789012345678/k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0R
+value: 3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b:fx
+value: npg_k9J2x7Qw4Zt1Lp8Vb3Nc6H
+value: APP_KEY=base64:k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x=
+value: PuTTY-User-Key-File-3
+value: machine api.acme-corp.io login deploy password k9J2x7Qw4Zt1
+value: xoxe-1-k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9W
+value: AQVNk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7U
+value: aio_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0R
+value: fio-u-k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5
+value: https://hooks.zapier.com/hooks/catch/1234567/k9J2x7Q/
+value: 5HueCGU8rMjxEXxiPuD5BDku4MkFqeZyd4dZ1jvhTVqvbTLvyTJ

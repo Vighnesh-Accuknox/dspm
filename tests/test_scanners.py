@@ -306,7 +306,7 @@ def test_s3_scanner_single_line_multiple_instances(mock_boto_client):
     assert any("Column 47-" in loc for loc in locations)
 
 
-@patch("src.scanners.aws.s3.pd")
+@patch("src.scanners.files.parsers.pd")
 @patch("boto3.client")
 def test_s3_scanner_excel_per_sheet(mock_boto_client, mock_pd):
     # Mock pandas ExcelFile parsing
@@ -465,3 +465,44 @@ def test_mongo_uri_direct_connection_for_port_forwards():
     assert "directConnection" not in scanner._build_uri({"host": "mongo.internal", "port": 27017})
     assert scanner._build_uri({"host": "mongo.internal", "direct_connection": True}).endswith("?directConnection=true")
     assert "directConnection" not in scanner._build_uri({"host": "127.0.0.1", "direct_connection": False})
+
+
+def test_sql_random_sampling_uses_tablesample_on_postgres():
+    from sqlalchemy import column as sql_column, select, table as sql_table
+    from sqlalchemy.dialects import postgresql
+
+    scanner = SQLScanner(DetectionEngine(), config={"sample_strategy": "random"})
+    fake_engine = MagicMock()
+    fake_engine.dialect.name = "postgresql"
+    conn = fake_engine.connect.return_value.__enter__.return_value
+    conn.execute.return_value.scalar.return_value = 5_000_000
+    relation = sql_table("users", sql_column("id"), sql_column("email"), schema="public")
+    source = scanner._random_sample_source(fake_engine, relation, "public", "users", 10000)
+    compiled = str(select(source).limit(10000).compile(dialect=postgresql.dialect(), compile_kwargs={"literal_binds": True}))
+    assert "TABLESAMPLE system(0.6)" in compiled and "LIMIT 10000" in compiled
+    # small tables and other engines read the head
+    conn.execute.return_value.scalar.return_value = 1500
+    assert scanner._random_sample_source(fake_engine, relation, "public", "users", 10000) is None
+    fake_engine.dialect.name = "mysql"
+    assert scanner._random_sample_source(fake_engine, relation, "public", "users", 10) is None
+    # sqlite scans are unchanged under the random strategy
+    conn_str = _create_sqlite_db()
+    findings = scanner.scan({"engine": "sqlite", "connection_string": conn_str, "sample_strategy": "random"})
+    assert {f["detector"] for f in findings} == {"Email", "Password Pattern"}
+
+
+def test_mongo_random_sampling_uses_sample_stage():
+    coll_mock = MagicMock()
+    coll_mock.aggregate.return_value = [{"_id": "u1", "email": "carol.smith@yahoo.com"}]
+    db_mock = MagicMock()
+    db_mock.list_collection_names.return_value = ["users"]
+    db_mock.__getitem__.return_value = coll_mock
+    client_mock = MagicMock()
+    client_mock.__getitem__.return_value = db_mock
+
+    scanner = MongoScanner(DetectionEngine(), config={"sample_strategy": "random"}, client=client_mock)
+    findings = scanner.scan({"host": "mongo.local", "database": "appdb", "sample_limit": 500})
+    assert [f["detector"] for f in findings] == ["Email"]
+    pipeline = coll_mock.aggregate.call_args.args[0]
+    assert pipeline == [{"$sample": {"size": 500}}]
+    coll_mock.find.assert_not_called()

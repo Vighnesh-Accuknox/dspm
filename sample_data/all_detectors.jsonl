@@ -1,0 +1,277 @@
+{"_detector": "US SSN", "_region": "US", "us_ssn": "219-09-9999"}
+{"_detector": "US_ITIN", "_region": "US", "us_taxpayer_id": "911-70-1234"}
+{"_detector": "US_PASSPORT", "_region": "US", "us_passport": "912803456"}
+{"_detector": "US_DRIVER_LICENSE", "_region": "US", "us_driver_license": "H12234567"}
+{"_detector": "Bank Account", "_region": "US", "us_account_number": "945456787654"}
+{"_detector": "ABA_ROUTING_NUMBER", "_region": "US", "us_aba": "121000358"}
+{"_detector": "MEDICAL_LICENSE", "_region": "US", "us_dea": "GL0285191"}
+{"_detector": "US_NPI", "_region": "US", "us_npi": "1234-567-893"}
+{"_detector": "US_MBI", "_region": "US", "us_medicare": "1EG4-TE5-MK73"}
+{"_detector": "US_HEALTH_INSURANCE_MEMBER_ID", "_region": "US", "member_id": "HPN70482A9"}
+{"_detector": "US_PRIOR_AUTHORIZATION_NUMBER", "_region": "US", "preauthorization_number": "PA-204815937"}
+{"_detector": "US_CLAIM_NUMBER", "_region": "US", "claim_number": "CLM402817365"}
+{"_detector": "US_PRESCRIPTION_NUMBER", "_region": "US", "prescription_number": "RX702948135"}
+{"_detector": "US_REFERRAL_NUMBER", "_region": "US", "referral_number": "REF204815"}
+{"_detector": "US_PROVIDER_TAX_ID", "_region": "US", "us_tin": "12-3456789"}
+{"_detector": "CA SIN", "_region": "CA", "ca_sin": "130 692 544"}
+{"_detector": "CA_POSTAL_CODE", "_region": "CA", "ca_postal_code": "K1A 0A1"}
+{"_detector": "UK_DRIVING_LICENCE", "_region": "GB", "gb_driving_licence": "MORGA607054SM9IJ"}
+{"_detector": "UK_NHS", "_region": "GB", "gb_nhs": "401-023-2137"}
+{"_detector": "GB NINO", "_region": "GB", "gb_national_insurance": "PR 123612C"}
+{"_detector": "UK_PASSPORT", "_region": "GB", "gb_passport": "AB9322005"}
+{"_detector": "UK_POSTCODE", "_region": "GB", "gb_postcode": "SW1A 1AA"}
+{"_detector": "UK_VEHICLE_REGISTRATION", "_region": "GB", "gb_registration_number": "AB51 ABC"}
+{"_detector": "ES_NIF", "_region": "ES", "es_dni": "51587595K"}
+{"_detector": "ES_NIE", "_region": "ES", "es_nie": "X9613851N"}
+{"_detector": "ES_PASSPORT", "_region": "ES", "es_pasaporte": "AAA578806"}
+{"_detector": "IT_FISCAL_CODE", "_region": "IT", "it_codice_fiscale": "AAAAAA05B11C648Y"}
+{"_detector": "IT_IDENTITY_CARD", "_region": "IT", "it_cie": "AA12345AA"}
+{"_detector": "IT_PASSPORT", "_region": "IT", "it_passaporto": "AA8532589"}
+{"_detector": "IT_DRIVER_LICENSE", "_region": "IT", "it_patente": "U1K711J11M"}
+{"_detector": "IT_VAT_CODE", "_region": "IT", "it_piva": "01333550323"}
+{"_detector": "TR_NATIONAL_ID", "_region": "TR", "tr_tc_kimlik": "10000000146"}
+{"_detector": "TR_LICENSE_PLATE", "_region": "TR", "tr_plaka": "34 ABC 1234"}
+{"_detector": "DE_BSNR", "_region": "DE", "de_betriebsstättennummer": "021234568"}
+{"_detector": "DE_FUEHRERSCHEIN", "_region": "DE", "de_führerscheinnummer": "BO79931423A"}
+{"_detector": "DE_HANDELSREGISTER", "_region": "DE", "de_handelsregister": "HRA 12345"}
+{"_detector": "DE_HEALTH_INSURANCE", "_region": "DE", "de_krankenversicherungsnummer": "A000500015"}
+{"_detector": "DE_ID_CARD", "_region": "DE", "de_personalausweis": "L01X00T44"}
+{"_detector": "DE_KFZ", "_region": "DE", "de_kennzeichen": "B AB 1234"}
+{"_detector": "DE_LANR", "_region": "DE", "de_arztnummer": "234567701"}
+{"_detector": "DE_PASSPORT", "_region": "DE", "de_reisepass": "C01234565"}
+{"_detector": "DE_PLZ", "_region": "DE", "de_plz": "10115"}
+{"_detector": "DE_SOCIAL_SECURITY", "_region": "DE", "de_rentenversicherungsnummer": "15070649C103"}
+{"_detector": "DE_TAX_ID", "_region": "DE", "de_steueridentifikationsnummer": "12345678903"}
+{"_detector": "DE_TAX_NUMBER", "_region": "DE", "de_steuernummer": "0281508150123"}
+{"_detector": "DE_VAT_ID", "_region": "DE", "de_umsatzsteuer_identifikationsnummer": "DE136695976"}
+{"_detector": "SE_ORGANISATIONSNUMMER", "_region": "SE", "se_organisationsnummer": "212000-0142"}
+{"_detector": "SE_PERSONNUMMER", "_region": "SE", "se_personnummer": "198712202384"}
+{"_detector": "FI_PERSONAL_IDENTITY_CODE", "_region": "FI", "fi_hetu": "010594Y9032"}
+{"_detector": "PL_PESEL", "_region": "PL", "pl_pesel": "44051401458"}
+{"_detector": "IN Aadhaar", "_region": "IN", "in_aadhaar": "312345678909"}
+{"_detector": "IN GST", "_region": "IN", "in_gstin": "27ABCDE1234F1Z5"}
+{"_detector": "IN PAN", "_region": "IN", "in_pan": "ABCPD1234Z"}
+{"_detector": "IN PASSPORT", "_region": "IN", "in_passport": "A3456781"}
+{"_detector": "IN_VEHICLE_REGISTRATION", "_region": "IN", "in_rto": "KA53ME3456"}
+{"_detector": "IN VOTER ID", "_region": "IN", "in_voter": "KSD1287349"}
+{"_detector": "SG_NRIC_FIN", "_region": "SG", "sg_fin": "S2740116C"}
+{"_detector": "SG_UEN", "_region": "SG", "sg_uen": "53125226D"}
+{"_detector": "AU_ABN", "_region": "AU", "au_abn": "51 824 753 556"}
+{"_detector": "AU_ACN", "_region": "AU", "au_acn": "000 000 019"}
+{"_detector": "AU_MEDICARE", "_region": "AU", "au_medicare": "2123 45670 1"}
+{"_detector": "AU_TFN", "_region": "AU", "au_tax_file_number": "852 439 570"}
+{"_detector": "KR_BRN", "_region": "KR", "kr_brn": "104-86-56659"}
+{"_detector": "KR_DRIVER_LICENSE", "_region": "KR", "kr_korean_driver_license": "11-22-123456-12"}
+{"_detector": "KR_FRN", "_region": "KR", "kr_korean_frn": "911124-5678906"}
+{"_detector": "KR_PASSPORT", "_region": "KR", "kr_korean_passport": "M877A0888"}
+{"_detector": "KR_RRN", "_region": "KR", "kr_korean_rrn": "960121-1021413"}
+{"_detector": "TH_TNIN", "_region": "TH", "th_thai_national_id": "1234567890121"}
+{"_detector": "ZA_ID_NUMBER", "_region": "ZA", "za_identity_number": "8001015009087"}
+{"_detector": "ZA_PASSPORT", "_region": "ZA", "za_passport": "A34855903"}
+{"_detector": "ZA_DRIVER_LICENSE", "_region": "ZA", "za_licence_number": "60390002CGBV"}
+{"_detector": "ZA_TRAFFIC_REGISTER_NUMBER", "_region": "ZA", "za_traffic_register": "6001015000076"}
+{"_detector": "ZA_INCOME_TAX_NUMBER", "_region": "ZA", "za_sars": "9123456789"}
+{"_detector": "ZA_VAT_NUMBER", "_region": "ZA", "za_vat": "4020269678"}
+{"_detector": "ZA_COMPANY_REGISTRATION", "_region": "ZA", "za_cipc": "2009/199240/23"}
+{"_detector": "ZA_LICENSE_PLATE", "_region": "ZA", "za_licence_plate": "KD93GKGP"}
+{"_detector": "NG_NIN", "_region": "NG", "ng_nin": "12345678902"}
+{"_detector": "NG_VEHICLE_REGISTRATION", "_region": "NG", "ng_plate_number": "APP-456CV"}
+{"_detector": "PH_UMID", "_region": "PH", "ph_umid": "0111-1234567-8"}
+{"_detector": "PH_TIN", "_region": "PH", "ph_tin": "000-123-456-000"}
+{"_detector": "PH_PASSPORT", "_region": "PH", "ph_passport": "P5202928A"}
+{"_detector": "IBAN", "_region": "generic", "iban": "DE89370400440532013000"}
+{"_detector": "CRYPTO", "_region": "generic", "wallet": "16Yeky6GMjeNkAiNcBY7ZhrLoMSgg1BoyZ"}
+{"_detector": "PII.IPAddress", "_region": "generic", "public_ip": "8.8.8.8"}
+{"_detector": "MAC_ADDRESS", "_region": "generic", "device_mac": "3C:52:82:4F:9A:1B"}
+{"_detector": "FR_NIR", "_region": "FR", "fr_nir": "1 85 05 78 006 084 91"}
+{"_detector": "FR_PASSPORT", "_region": "FR", "fr_passport": "13CB38638"}
+{"_detector": "NL_BSN", "_region": "NL", "nl_bsn": "327440430"}
+{"_detector": "BE_NATIONAL_NUMBER", "_region": "BE", "be_rijksregisternummer": "85.07.30-839.95"}
+{"_detector": "CH_AHV", "_region": "CH", "ch_ahv": "756.0930.6547.71"}
+{"_detector": "AT_SVNR", "_region": "AT", "at_sozialversicherungsnummer": "7014010180"}
+{"_detector": "IE_PPS", "_region": "IE", "ie_pps": "1869536B"}
+{"_detector": "PT_NIF", "_region": "PT", "pt_nif": "207512280"}
+{"_detector": "LU_NATIONAL_ID", "_region": "LU", "lu_matricule": "1985073037685"}
+{"_detector": "DK_CPR", "_region": "DK", "dk_cpr": "300785-6023"}
+{"_detector": "NO_FODSELSNUMMER", "_region": "NO", "no_fødselsnummer": "30078508864"}
+{"_detector": "IS_KENNITALA", "_region": "IS", "is_kennitala": "300785-3529"}
+{"_detector": "CZ_RODNE_CISLO", "_region": "CZ", "cz_rodné_číslo": "850730/3387"}
+{"_detector": "SK_RODNE_CISLO", "_region": "SK", "sk_rodné_číslo": "850730/4949"}
+{"_detector": "HU_TAJ", "_region": "HU", "hu_taj": "158-691-589"}
+{"_detector": "RO_CNP", "_region": "RO", "ro_cnp": "1850730129001"}
+{"_detector": "GR_AMKA", "_region": "GR", "gr_amka": "30078564025"}
+{"_detector": "BG_EGN", "_region": "BG", "bg_egn": "8507309252"}
+{"_detector": "HR_OIB", "_region": "HR", "hr_oib": "59699813869"}
+{"_detector": "RS_JMBG", "_region": "RS", "rs_jmbg": "3007985715268"}
+{"_detector": "SI_EMSO", "_region": "SI", "si_emšo": "3007985509927"}
+{"_detector": "LT_ASMENS_KODAS", "_region": "LT", "lt_asmens_kodas": "38507305736"}
+{"_detector": "EE_ISIKUKOOD", "_region": "EE", "ee_isikukood": "48507303471"}
+{"_detector": "LV_PERSONAS_KODS", "_region": "LV", "lv_personas_kods": "300785-10631"}
+{"_detector": "RU_INN", "_region": "RU", "ru_inn": "877177211053"}
+{"_detector": "RU_SNILS", "_region": "RU", "ru_snils": "602-167-309 49"}
+{"_detector": "UA_RNTRC", "_region": "UA", "ua_rntrc": "0735771566"}
+{"_detector": "ES_NUSS", "_region": "ES", "es_seguridad_social": "28-74663217-26"}
+{"_detector": "GB_UTR", "_region": "GB", "gb_utr": "5129497082"}
+{"_detector": "GB_SORT_CODE", "_region": "GB", "gb_sort_code": "88-53-77"}
+{"_detector": "BR_CPF", "_region": "BR", "br_cpf": "823.855.915-45"}
+{"_detector": "BR_CNPJ", "_region": "BR", "br_cnpj": "30.220.890/0001-08"}
+{"_detector": "MX_CURP", "_region": "MX", "mx_curp": "GOMK850730HDFRRL09"}
+{"_detector": "MX_RFC", "_region": "MX", "mx_rfc": "GOMA850730RB8"}
+{"_detector": "AR_CUIT", "_region": "AR", "ar_cuit": "20-49837081-1"}
+{"_detector": "AR_DNI", "_region": "AR", "ar_dni": "82.174.256"}
+{"_detector": "CL_RUT", "_region": "CL", "cl_rut": "12.345.671-8"}
+{"_detector": "CA_OHIP", "_region": "CA", "ca_ohip": "6559-466-773-OB"}
+{"_detector": "US_EIN", "_region": "US", "us_ein": "80-9620470"}
+{"_detector": "US_ALIEN_REGISTRATION", "_region": "US", "alien_number": "A20481537"}
+{"_detector": "JP_MY_NUMBER", "_region": "JP", "jp_my_number": "6648-5526-0102"}
+{"_detector": "JP_PASSPORT", "_region": "JP", "jp_passport": "TK3702602"}
+{"_detector": "CN_RESIDENT_ID", "_region": "CN", "cn_身份证": "110105194912315912"}
+{"_detector": "HK_HKID", "_region": "HK", "hk_hkid": "U100503(8)"}
+{"_detector": "TW_NATIONAL_ID", "_region": "TW", "tw_national_id": "P184145123"}
+{"_detector": "ID_NIK", "_region": "ID", "nik_number": "3171013007851796"}
+{"_detector": "MY_MYKAD", "_region": "MY", "my_mykad": "850730-14-6563"}
+{"_detector": "VN_CCCD", "_region": "VN", "vn_cccd": "001085445493"}
+{"_detector": "PK_CNIC", "_region": "PK", "pk_cnic": "47569-2034040-8"}
+{"_detector": "LK_NIC", "_region": "LK", "lk_nic": "851238112V"}
+{"_detector": "NZ_IRD", "_region": "NZ", "nz_ird": "49-091-850"}
+{"_detector": "NZ_NHI", "_region": "NZ", "nz_nhi": "ZYC4527"}
+{"_detector": "AU_IHI", "_region": "AU", "au_ihi": "8003 6012 3456 7852"}
+{"_detector": "AU_BSB", "_region": "AU", "au_bsb": "062-000"}
+{"_detector": "IN_IFSC", "_region": "IN", "in_ifsc": "HDFC0001234"}
+{"_detector": "IN_UPI_ID", "_region": "IN", "in_upi": "rahul.sharma@okaxis"}
+{"_detector": "AE_EMIRATES_ID", "_region": "AE", "ae_emirates_id": "784-1990-1311311-5"}
+{"_detector": "SA_NATIONAL_ID", "_region": "SA", "sa_iqama": "1166543411"}
+{"_detector": "IL_TEUDAT_ZEHUT", "_region": "IL", "il_teudat_zehut": "796033975"}
+{"_detector": "EG_NATIONAL_ID", "_region": "EG", "eg_national_id": "29007300159955"}
+{"_detector": "GH_GHANA_CARD", "_region": "GH", "gh_ghana_card": "GHA-657105083-6"}
+{"_detector": "IMEI", "_region": "generic", "imei": "35-845422-110932-2"}
+{"_detector": "ICCID", "_region": "generic", "iccid": "8944753862346631701"}
+{"_detector": "VIN", "_region": "generic", "vin": "1HGCM82643C675372"}
+{"_detector": "PASSPORT_MRZ", "_region": "generic", "passport": "P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<"}
+{"_detector": "GEO_COORDINATES", "_region": "generic", "lat": "12.9716, 77.5946"}
+{"_detector": "ICD10_CODE", "_region": "generic", "icd": "E11.9"}
+{"_detector": "NDC_CODE", "_region": "generic", "ndc": "0002-3227-30"}
+{"_detector": "MEDICAL_RECORD_NUMBER", "_region": "generic", "mrn": "MRN: 12345678"}
+{"_detector": "Email", "_region": "layer", "email": "priya.sharma@acme-corp.io"}
+{"_detector": "Phone Number", "_region": "layer", "phone": "+91 98765 43210"}
+{"_detector": "Date of Birth", "_region": "layer", "date_of_birth": "1985-07-30"}
+{"_detector": "Address", "_region": "layer", "street_address": "221B Baker Street, London"}
+{"_detector": "PII.PersonName", "_region": "layer", "full_name": "Priya Sharma"}
+{"_detector": "Password Pattern", "_region": "layer", "config": "password=Tr0ub4dor&3xF!9"}
+{"_detector": "Secret.PasswordHash", "_region": "layer", "password_hash": "$2b$12$KIXQ4l1h9vN2k7XpQ8wY5uJ3m6R1sT0aB4cD5eF6gH7iJ8kL9mN0o"}
+{"_detector": "API Key", "_region": "layer", "api_key": "k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7"}
+{"_detector": "Bearer Token", "_region": "layer", "authorization": "Bearer k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4T"}
+{"_detector": "OAuth Token", "_region": "layer", "oauth": "access_token=k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg"}
+{"_detector": "JWT Token", "_region": "layer", "session": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"}
+{"_detector": "AWS Access Key", "_region": "layer", "aws_access_key_id": "AKIAK9J2X7QW4ZT1LP8V"}
+{"_detector": "AWS Secret Access Key", "_region": "layer", "aws_secret_access_key": "k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9W"}
+{"_detector": "Private Key Header", "_region": "layer", "private_key": "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x7Qw4Zt1Lp8Vb3Nc6H\n-----END RSA PRIVATE KEY-----"}
+{"_detector": "Credentials in URL", "_region": "layer", "database_url": "postgresql://scanner:Tr0ub4dor3xF@db.internal:5432/appdb"}
+{"_detector": "Basic Auth Credentials", "_region": "layer", "authorization_header": "Basic c2Nhbm5lcjpUcjB1YjRkb3IzeEY="}
+{"_detector": "Credit Card", "_region": "layer", "card_number": "4539 1488 0343 6467"}
+{"_detector": "IBAN", "_region": "layer", "iban": "DE89 3704 0044 0532 0130 00"}
+{"_detector": "SWIFT/BIC", "_region": "layer", "swift_code": "DEUTDEFF500"}
+{"_detector": "Bank Account", "_region": "layer", "bank_account_number": "5023918476"}
+{"_detector": "Healthcare Data Detection", "_region": "layer", "clinical_notes": "patient admitted to hospital; diagnosis confirmed; prescription issued by physician"}
+{"_detector": "High Entropy Secret", "_region": "layer", "secret": "k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x7Qw4Z"}
+{"_detector": "Encrypted Secret", "_region": "layer", "payload": "U2FsdGVkX1+k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x7Qw4Zt1Lp8Vb3Nc6H"}
+{"_detector": "GitHub Token", "_region": "secret", "value": "ghp_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7"}
+{"_detector": "GitLab Token", "_region": "secret", "value": "glpat-k9J2x7Qw4Zt1Lp8Vb3Nc"}
+{"_detector": "Slack Token", "_region": "secret", "value": "xoxb-1234567890-1234567890123-k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5"}
+{"_detector": "Slack Webhook", "_region": "secret", "value": "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"}
+{"_detector": "Google API Key", "_region": "secret", "value": "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"}
+{"_detector": "Google OAuth Token", "_region": "secret", "value": "ya29.XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"}
+{"_detector": "OpenAI API Key", "_region": "secret", "value": "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"}
+{"_detector": "Anthropic API Key", "_region": "secret", "value": "sk-ant-api03-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXAA"}
+{"_detector": "Stripe Key", "_region": "secret", "value": "sk_live_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5"}
+{"_detector": "SendGrid Key", "_region": "secret", "value": "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"}
+{"_detector": "Twilio Key", "_region": "secret", "value": "SK7c3e1a9f5b2d4e6a7c3e1a9f5b2d4e6a"}
+{"_detector": "Mailchimp Key", "_region": "secret", "value": "7c3e1a9f5b2d4e6a7c3e1a9f5b2d4e6a-us21"}
+{"_detector": "Mailgun Key", "_region": "secret", "value": "key-k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg"}
+{"_detector": "HashiCorp Vault Token", "_region": "secret", "value": "hvs.k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2"}
+{"_detector": "Docker Hub Token", "_region": "secret", "value": "dckr_pat_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0"}
+{"_detector": "npm Token", "_region": "secret", "value": "npm_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7"}
+{"_detector": "PyPI Token", "_region": "secret", "value": "pypi-AgEIcHlwaS5vcmcXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"}
+{"_detector": "Azure Storage Key", "_region": "secret", "value": "AccountKey=k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7=="}
+{"_detector": "Azure SAS Token", "_region": "secret", "value": "?sv=2022-11-02&ss=b&srt=sco&sp=rwdlac&sig=XXXXXXXXXXXXXXXXXXXXXXXX"}
+{"_detector": "Shopify Token", "_region": "secret", "value": "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"}
+{"_detector": "Square Token", "_region": "secret", "value": "sq0atp-XXXXXXXXXXXXXXXXXXXXXX"}
+{"_detector": "Telegram Bot Token", "_region": "secret", "value": "8012345679:AAk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4"}
+{"_detector": "Databricks Token", "_region": "secret", "value": "dapi00000000000000000000000000000000"}
+{"_detector": "Atlassian Token", "_region": "secret", "value": "ATATT3k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg"}
+{"_detector": "Grafana Token", "_region": "secret", "value": "glsa_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg_7c3e1a9f"}
+{"_detector": "Postman Key", "_region": "secret", "value": "PMAK-7c3e1a9f5b2d4e6a7c3e1a9f-7c3e1a9f5b2d4e6a7c3e1a9f5b2d4e6a7c"}
+{"_detector": "Hugging Face Token", "_region": "secret", "value": "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"}
+{"_detector": "Age Secret Key", "_region": "secret", "value": "AGE-SECRET-KEY-1XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"}
+{"_detector": "Discord Bot Token", "_region": "secret", "value": "Mk9J2x7Qw4Zt1Lp8Vb3Nc6Hs.k9J2x7.k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0"}
+{"_detector": "Heroku API Key", "_region": "secret", "value": "heroku_api_key=7c3e1a9f-5b2d-4e6a-9c1b-3f7d2e8a6c4b"}
+{"_detector": "DigitalOcean Token", "_region": "secret", "value": "dop_v1_7c3e1a9f5b2d4e6a7c3e1a9f5b2d4e6a7c3e1a9f5b2d4e6a7c3e1a9f5b2d4e6a"}
+{"_detector": "Google OAuth Client Secret", "_region": "secret", "value": "GOCSPX-AbCdEfGhIjKlMnOpQrStUvWxYz01"}
+{"_detector": "Notion Token", "_region": "secret", "value": "ntn_A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0U1v"}
+{"_detector": "Linear API Key", "_region": "secret", "value": "lin_api_a1B2c3D4e5F6g7H8i9J0k1L2m3N4o5P6q7R8s9T0"}
+{"_detector": "Figma Token", "_region": "secret", "value": "figd_Ab1-Cd2_Ef3-Gh4_Ij5-Kl6_Mn7-Op8_Qr9-St0_Uv1-Wx2"}
+{"_detector": "New Relic Key", "_region": "secret", "value": "NRAK-ABCDEFGHIJKLMNOPQRSTUVWXY01"}
+{"_detector": "Sentry Token", "_region": "secret", "value": "sntrys_eyJpYXQiOjE3MDAwMDAwMDAsInVybCI6Imh0dHBzOi8vc2VudHJ5LmlvIn0"}
+{"_detector": "PlanetScale Token", "_region": "secret", "value": "pscale_tkn_AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcd"}
+{"_detector": "Supabase Key", "_region": "secret", "value": "sbp_0123456789abcdef0123456789abcdef01234567"}
+{"_detector": "Doppler Token", "_region": "secret", "value": "dp.st.AbCdEfGhIjKlMnOpQrStUvWxYz0123456789AbCdEf"}
+{"_detector": "Airtable Token", "_region": "secret", "value": "patAbCdEfGhIjKlMn.0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}
+{"_detector": "Dropbox Token", "_region": "secret", "value": "sl.k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1"}
+{"_detector": "Facebook Access Token", "_region": "secret", "value": "EAACEdEose0cBAAbCdEfGhIjKlMnOpQrStUvWxYz01"}
+{"_detector": "Netlify Token", "_region": "secret", "value": "nfp_AbCdEfGhIjKlMnOpQrStUvWxYz0123456789"}
+{"_detector": "Pulumi Token", "_region": "secret", "value": "pul-0123456789abcdef0123456789abcdef01234567"}
+{"_detector": "Twitter Bearer Token", "_region": "secret", "value": "AAAAAAAAAAAAAAAAAAAAAAbCdEfGhIjKlMnOpQrStUvWxYz0123456789AbCdEfGhIjKlMnOpQrStUvWxYz0123456789AbCdEfGhIjKlMnOpQrStUvWxYz0123456789"}
+{"_detector": "AWS MWS Token", "_region": "secret", "value": "amzn.mws.3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b"}
+{"_detector": "Alibaba Access Key", "_region": "secret", "value": "LTAI5tK9J2x7Qw4Zt1Lp8Vb3"}
+{"_detector": "JFrog Token", "_region": "secret", "value": "AKCpk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg"}
+{"_detector": "CircleCI Token", "_region": "secret", "value": "CCIPAT_k9J2x7Qw4Zt1Lp8Vb3Nc6H_7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f"}
+{"_detector": "Buildkite Token", "_region": "secret", "value": "bkua_7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f"}
+{"_detector": "Cloudflare Origin CA Key", "_region": "secret", "value": "v1.0-7c3e1a9f7c3e1a9f7c3e1a9f-7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c"}
+{"_detector": "Dynatrace Token", "_region": "secret", "value": "dt0c01.K9J2X7QW4ZT1LP8VB3NC6HS5.K9J2X7QW4ZT1LP8VB3NC6HS5YD0RF2MGK9J2X7QW4ZT1LP8VB3NC6HS5YD0RF2MG"}
+{"_detector": "Elastic Cloud Key", "_region": "secret", "value": "essu_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x7Qw=="}
+{"_detector": "GCP Service Account Key", "_region": "secret", "value": "\"private_key_id\": \"7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f\""}
+{"_detector": "Groq API Key", "_region": "secret", "value": "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"}
+{"_detector": "Replicate Token", "_region": "secret", "value": "r8_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7U"}
+{"_detector": "Perplexity API Key", "_region": "secret", "value": "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"}
+{"_detector": "xAI API Key", "_region": "secret", "value": "xai-k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk"}
+{"_detector": "Pinecone API Key", "_region": "secret", "value": "pcsk_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk_J2x7"}
+{"_detector": "Firebase Cloud Messaging Key", "_region": "secret", "value": "AAAAk9J2x7Q:APA91bk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9W"}
+{"_detector": "1Password Service Account Token", "_region": "secret", "value": "ops_eyJk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9W"}
+{"_detector": "Infisical Token", "_region": "secret", "value": "st.3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b.7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f.7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f"}
+{"_detector": "Terraform Cloud Token", "_region": "secret", "value": "k9J2x7Qw4Zt1Lp.atlasv1.k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x7Qw4Zt1Lp8Vb3Nc6H"}
+{"_detector": "Prefect API Key", "_region": "secret", "value": "pnu_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7"}
+{"_detector": "RubyGems API Key", "_region": "secret", "value": "rubygems_7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f"}
+{"_detector": "NuGet API Key", "_region": "secret", "value": "oy2k9j2x7qw4zt1lp8vb3nc6hs5yd0rf2mgk9j2x7qw4zt"}
+{"_detector": "Cargo Registry Token", "_region": "secret", "value": "ciok9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg"}
+{"_detector": "Scalingo Token", "_region": "secret", "value": "tk-us-k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw"}
+{"_detector": "Fly.io Token", "_region": "secret", "value": "fo1_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J"}
+{"_detector": "Render Token", "_region": "secret", "value": "rnd_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg"}
+{"_detector": "Contentful Token", "_region": "secret", "value": "CFPAT-k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J"}
+{"_detector": "Shippo Token", "_region": "secret", "value": "shippo_live_7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f"}
+{"_detector": "EasyPost Key", "_region": "secret", "value": "EZAKk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp"}
+{"_detector": "Flutterwave Key", "_region": "secret", "value": "FLWSECK-7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f-X"}
+{"_detector": "Razorpay Key", "_region": "secret", "value": "rzp_live_k9J2x7Qw4Zt1Lp"}
+{"_detector": "Braintree Access Token", "_region": "secret", "value": "access_token$production$k9j2x7qw4zt1lp8v$7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f"}
+{"_detector": "Plaid Access Token", "_region": "secret", "value": "access-production-3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b"}
+{"_detector": "HubSpot Token", "_region": "secret", "value": "pat-na1-3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b"}
+{"_detector": "Typeform Token", "_region": "secret", "value": "tfp_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x"}
+{"_detector": "ClickUp Token", "_region": "secret", "value": "pk_1234567_K9J2X7QW4ZT1LP8VB3NC6HS5YD0RF2MG"}
+{"_detector": "Asana Token", "_region": "secret", "value": "1/1234567890123456:7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f"}
+{"_detector": "Sourcegraph Token", "_region": "secret", "value": "sgp_7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f"}
+{"_detector": "SonarQube Token", "_region": "secret", "value": "sqp_7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f"}
+{"_detector": "ReadMe Token", "_region": "secret", "value": "rdme_k9j2x7qw4zt1lp8vb3nc6hs5yd0rf2mgk9j2x7qw4zt1lp8vb3nc6hs5yd0rf2mgk9j2x7"}
+{"_detector": "Brevo API Key", "_region": "secret", "value": "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"}
+{"_detector": "Klaviyo Key", "_region": "secret", "value": "pk_7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f7c"}
+{"_detector": "Microsoft Teams Webhook", "_region": "secret", "value": "https://contoso.webhook.office.com/webhookb2/3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b@3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b/IncomingWebhook/7c3e1a9f7c3e1a9f7c3e1a9f7c3e1a9f/3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b"}
+{"_detector": "Discord Webhook", "_region": "secret", "value": "https://discord.com/api/webhooks/123456789012345678/k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0R"}
+{"_detector": "DeepL API Key", "_region": "secret", "value": "3f9a1c2e-4b5d-4e6f-8a7b-9c0d1e2f3a4b:fx"}
+{"_detector": "Neon Database Password", "_region": "secret", "value": "npg_k9J2x7Qw4Zt1Lp8Vb3Nc6H"}
+{"_detector": "Laravel App Key", "_region": "secret", "value": "APP_KEY=base64:k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9WkJ2x="}
+{"_detector": "PuTTY Private Key", "_region": "secret", "value": "PuTTY-User-Key-File-3"}
+{"_detector": "Netrc Credentials", "_region": "secret", "value": "machine api.acme-corp.io login deploy password k9J2x7Qw4Zt1"}
+{"_detector": "Slack Config Token", "_region": "secret", "value": "xoxe-1-k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9W"}
+{"_detector": "Yandex Token", "_region": "secret", "value": "AQVNk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7U"}
+{"_detector": "Adafruit IO Key", "_region": "secret", "value": "aio_k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0R"}
+{"_detector": "Frame.io Token", "_region": "secret", "value": "fio-u-k9J2x7Qw4Zt1Lp8Vb3Nc6Hs5Yd0Rf2Mg4Ta7Ue9Wk9J2x7Qw4Zt1Lp8Vb3Nc6Hs5"}
+{"_detector": "Zapier Webhook", "_region": "secret", "value": "https://hooks.zapier.com/hooks/catch/1234567/k9J2x7Q/"}
+{"_detector": "Bitcoin Private Key", "_region": "secret", "value": "5HueCGU8rMjxEXxiPuD5BDku4MkFqeZyd4dZ1jvhTVqvbTLvyTJ"}

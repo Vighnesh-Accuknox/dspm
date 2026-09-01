@@ -10,7 +10,7 @@ Supported connectors: **S3, PostgreSQL, MySQL, MariaDB, MSSQL, MongoDB/DocumentD
 python -m venv venv && ./venv/bin/pip install -r requirements.txt
 ```
 
-Configuration is read from environment variables (a `.env` file in the project root is loaded automatically by `settings.py`).
+Configuration is read from environment variables (a `.env` file in the project root is loaded automatically by `settings.py`). `.env.example` lists every variable with the recommended production values — `cp .env.example .env` and fill in the targets and credentials.
 
 ## Running
 
@@ -42,8 +42,17 @@ There are two entry points:
 | `LABEL_ID` | no | Label the uploaded findings are filed under in the CSPM backend, default `test` |
 | `OBJECT_REGION` | no | AWS region for the S3 client (applies to every S3 target) |
 | `ENABLED_REGIONS` | no | Comma-separated regional compliance packs, default `US,IN,GB` (valid: `US`, `CA`, `GB`, `DE`, `SE`, `FI`, `PL`, `ES`, `IT`, `TR`, `IN`, `SG`, `AU`, `KR`, `TH`, `ZA`, `NG`, `PH`; `UK` is accepted as an alias for `GB`). Also used as the regions for national-format phone numbers |
-| `REPORT_TOKEN_LIKE_VALUES` | no | `false` (default): random-looking tokens with no supporting evidence (credential-named field, `key=`/`token:` keyword, known format) are dropped; `true` reports them as `Secret.TokenLikeValue` (Medium) |
-| `SCORE_THRESHOLD` | no | Minimum detection confidence, default `0.8` (see *Detection engine* below) |
+| `REPORT_TOKEN_LIKE_VALUES` | no | `false` (default): random-looking tokens with no supporting evidence (credential-named field, `key=`/`token:` keyword, known format) are dropped; `true` keeps them as `possible` candidates reported as `Secret.TokenLikeValue` (Medium) when a whole column is made of them |
+| `MIN_CONFIDENCE` | no | Lowest confidence tier reported: `possible`, `likely` (default) or `very_likely` (see *Classification* below). The legacy `SCORE_THRESHOLD` float is still accepted (`0.9` → `very_likely`, `0.8` → `likely`, lower → `possible`) |
+| `ADAPTIVE_SAMPLING` | no | `false` (default). `true` stops reading a table/collection once its column verdicts have settled (see *Sampling*) |
+| `SAMPLE_STRATEGY` | no | `head` (default): the first `SAMPLE_LIMIT` rows/documents. `random`: `TABLESAMPLE` on PostgreSQL/MSSQL tables larger than twice the limit, `$sample` on MongoDB, head elsewhere (see *Sampling*) |
+| `SAMPLE_LIMIT` | no | Rows / documents read per table or collection, default `10000` |
+| `NER_ENABLED` | no | `true` (default): person names in free text through the spaCy model (`en_core_web_sm`, in `requirements.txt`); `false` skips the model |
+| `REPORT_PRIVATE_IPS` | no | `false` (default): RFC 1918 / loopback / link-local addresses are infrastructure, not `PII.IPAddress` |
+| `DISABLED_DETECTORS` | no | Detector names never reported (comma-separated or JSON list), e.g. `PII.IPAddress,MAC_ADDRESS` |
+| `ALLOW_LIST` / `ALLOW_REGEX` | no | Macie-style exceptions: exact values (comma-separated or JSON list) / JSON list of regexes over values that are never findings |
+| `COLUMN_RATIO` / `MIN_COUNT` | no | Override every detector's column-classification share (policy default `0.5`) / distinct-`possible`-hits promotion count (policy default `10`); empty keeps the per-detector policies |
+| `AGGREGATION_THRESHOLD` | no | Hits per (detector, column) that collapse into one column-level finding, default `25`; `0` disables |
 | `OUTPUT_DIR` | no | Findings/work directory. Default `<repo>/output`; the container image sets `/app/output` — point it at a mounted volume to persist findings |
 
 ### S3
@@ -182,14 +191,21 @@ Uses ambient AWS credentials (Lambda role / environment). DynamoDB Stream CDC ba
 
 | Key | Default | Description |
 |---|---|---|
-| `enabled_regions` | `[]` | Regional compliance packs (ISO alpha-2): `US`, `CA`, `GB`, `DE`, `SE`, `FI`, `PL`, `ES`, `IT`, `TR`, `IN`, `SG`, `AU`, `KR`, `TH`, `ZA`, `NG`, `PH` — 80+ national identifiers (SSN/ITIN/passport/driver licence, NHS/NINO, Aadhaar/PAN/GST/voter ID, PESEL, fiscal codes, ID cards, tax ids, health insurance numbers, …) |
+| `enabled_regions` | `[]` | Regional compliance packs (ISO alpha-2), 62 packs: `AE`, `AR`, `AT`, `AU`, `BE`, `BG`, `BR`, `CA`, `CH`, `CL`, `CN`, `CZ`, `DE`, `DK`, `EE`, `EG`, `ES`, `FI`, `FR`, `GB`, `GH`, `GR`, `HK`, `HR`, `HU`, `ID`, `IE`, `IL`, `IN`, `IS`, `IT`, `JP`, `KR`, `LK`, `LT`, `LU`, `LV`, `MX`, `MY`, `NG`, `NL`, `NO`, `NZ`, `PH`, `PK`, `PL`, `PT`, `RO`, `RS`, `RU`, `SA`, `SE`, `SG`, `SI`, `SK`, `TH`, `TR`, `TW`, `UA`, `US`, `VN`, `ZA` — national ids, tax numbers, passports, driver licences, health identifiers with their public check-digit algorithms |
 | `phone_regions` | `enabled_regions` | Regions used to parse national-format phone numbers (`5678942315` in a `mobile` field); international `+…` numbers are always detected |
 | `chunk_size` | 5000 (SQL) / 1000 (Mongo) | Rows/documents fetched per batch |
 | `connect_timeout` | 10 | Connection timeout in seconds (SQL and Mongo) |
 | `log_queries` | `false` (worker mode: always on) | Log every query issued during DB scans (dialect-compiled SQL with bound values, Mongo filters, DynamoDB scans). Note: emits table/column names into logs |
 | `last_scan_time` | – | S3 only: skip objects not modified since this timestamp |
-| `aggregation_threshold` | `25` | DB scans: a (detector, column) pair firing on at least this many rows/documents collapses into one column-level finding with an `occurrences` count. `0` disables |
-| `score_threshold` | `0.8` | Minimum confidence a finding needs to be reported |
+| `aggregation_threshold` | `25` | A (detector, column) pair firing on at least this many rows/documents/cells collapses into one column-level finding with an `occurrences` count. `0` disables |
+| `min_confidence` | `likely` | Lowest confidence tier reported: `possible` / `likely` / `very_likely` (a legacy `score_threshold` float is accepted) |
+| `column_ratio` | per detector (`0.5`) | Share of a column's sampled non-empty values that must match before the column is classified (Sentra's 50 % rule); overrides every detector policy |
+| `column_min_matches` | per detector (`3`) | Distinct matching values needed before a column verdict is drawn |
+| `min_count` | per detector (`10`) | Distinct `possible` hits in one unit (file, table column) that promote them to `likely` |
+| `allow_list` / `allow_regex` | `[]` | Macie-style allow lists: exact values / regexes never reported (public phone numbers, sample data) |
+| `adaptive_sampling` | `false` | Stop reading a unit once its column verdicts settle; `settle_min_records` (2000), `settle_window` (1000), `settle_margin` (0.05) tune the stop rule |
+| `sample_strategy` | `head` | `random` draws rows with `TABLESAMPLE` (PostgreSQL, MSSQL) / `$sample` (MongoDB) instead of reading the head; per-target `sample_strategy` overrides it |
+| `ner` | `true` | Person names in prose via the spaCy model |
 | `field_suppression` | `true` | Structural field-name rules: token detectors never fire in `*_id`/`hash`/`etag`/`path`/… fields, digit-run detectors never fire in counter/timestamp fields. Corroborated findings are exempt |
 | `decode_base64` | `true` | Decode base64 blobs (`Authorization: Basic …`, base64 JSON, PEM) and scan the plaintext |
 | `entropy_report_uncorroborated` | `false` | Report random-looking tokens that have no supporting evidence as `Secret.TokenLikeValue` (Medium) instead of dropping them |
@@ -200,32 +216,132 @@ Uses ambient AWS credentials (Lambda role / environment). DynamoDB Stream CDC ba
 | `entropy_min_length` | `24` | Minimum token length for the entropy detector |
 | `entropy_min_entropy` | `4.5` | Shannon-entropy threshold for base64-shaped tokens (hex tokens use 3.0 and need 32+ chars) |
 
-## Detection engine
+## Classification
 
-`src/engine/` turns each cell / document field / file chunk into findings. Every scan gets the text **and the field name** it came from (`DetectionEngine.scan_text(text, field_name=...)`) — in structured data the field name is the strongest signal there is, and it is never mixed into the scanned text.
+```
+connector  ──►  Record / TextBlob stream  ──►  src/pipeline (per unit)  ──►  findings
+                                                    │
+                                              src/engine (per value)
+```
 
-**Scoring.** Every detector produces a confidence and only findings above `score_threshold` (0.8) are reported:
+The code is split the way the vendor engines we studied are (Wiz, Cyera, Orca, Sentra, Varonis, Amazon Macie, Google Sensitive Data Protection, Microsoft Purview, Nightfall — see *How the vendors do it* below):
 
-| Score | Meaning | Examples |
+* **Connectors** (`src/scanners/`) know a data source. They enumerate its *units* (tables, collections, objects, sheets) and turn each unit into a stream of `Record`s (rows / documents made of `Cell`s that carry the value, its column name or field path, and a rendered location) or `TextBlob`s (pages, paragraphs, text blocks). They never call the detection engine.
+* **The engine** (`src/engine/`) judges one value at a time: pattern + validator + context words + field name → a score and a confidence tier. It stays the place where detectors are defined.
+* **The pipeline** (`src/pipeline/`) does everything a DSPM product does *after* pattern matching, once, for every connector: context policy, record-level corroboration, column density verdicts, minimum counts, adaptive sampling and aggregation.
+
+### Confidence tiers
+
+Every finding carries `confidence` and `evidence`:
+
+| Tier | Meaning | Examples |
 |---|---|---|
-| 0.95 | self-validating **and** corroborated | JWT with a decodable header, checksum-valid national id next to its context word, vendor-prefixed token, opaque value in a credential-named column |
-| 0.85 | self-validating alone | valid e-mail (IANA TLD, no demo/automated sender), Luhn + issuer prefix **with separators**, structured street address, Verhoeff-valid Aadhaar |
-| 0.6 | plausible shape, needs evidence | contiguous digit runs, BIC-shaped 8-letter words, header-only private keys |
-| 0.3 | documented example / test value | `AKIAIOSFODNN7EXAMPLE`, `4111 1111 1111 1111`, `hunter2` in advisory text |
+| `very_likely` | validated shape **and** corroboration | checksum-valid national id next to its keyword or in a column named for it, JWT with a decodable header, vendor-prefixed token, opaque value in a credential-named column, a classified column of `likely` cells |
+| `likely` | one strong signal | valid e-mail (IANA TLD, no demo/automated sender), Luhn + issuer prefix **with separators**, mod-97 IBAN, structured street address, a plausible shape backed by its column name or a context word, a classified column of `possible` cells |
+| `possible` | plausible shape only | SSN-shaped digit groups, a bare mod-10/mod-11-valid number, a random-looking token, a BIC-shaped word. Never reported on its own |
 
-**Checksums are not enough on their own.** A mod-10/mod-11 checksum passes ~10 % of random numbers, so a bare, separator-free match of a checksum-only recognizer (NPI, NHS, ABA, DEA, Aadhaar…) needs a context word or a field hint; epoch timestamps are never identifiers; private/loopback IPs are infrastructure, not PII (`report_private_ips`).
+`MIN_CONFIDENCE` picks the lowest tier reported (`likely` by default — Google's default is `possible`, Nightfall recommends `likely`). **Checksums are not enough on their own**: a mod-10/mod-11 check passes ~10 % of random numbers, so a checksum-valid number with no context word, field hint or column evidence is `possible` (a US phone number is a valid NHS number one time in ten). Epoch timestamps are never identifiers; private/loopback IPs are infrastructure (`report_private_ips`); documented examples (`AKIAIOSFODNN7EXAMPLE`, test cards, `hunter2` in advisory text) are never real.
 
-**Evidence.** Context words are detector-specific whole words near the match (`ssn`, `aadhaar`, `swift`, `card`, `password=`) or in the field name; generic words (`code`, `state`, `number`, `identity`, `key`) no longer count. Checksums (Luhn, Verhoeff, mod-97, mod-11, …) decide national ids, IBANs and cards. The entropy detector classifies token *shape* first — paths, URLs, ARNs, UUIDs, dates, slugs and word-built identifiers are never secrets — and then needs evidence (credential field, inline `token:`/`secret=` keyword, known vendor format); base64 `Salted__` blobs are reported as `Encrypted Secret`, base64 PEM as private keys, JWT claims are scanned for PII.
+`evidence` lists what backs the finding: `checksum`, `format` (self-validating shape), `context:<word>`, `field` (the column/path names the entity), `key:<name>` (assigned to a credential keyword), `column:<ratio>` (column density), `record:identity` (same record holds two identity signals), `count:<n>` (many in one file), `shape` / `needs_context` / `uncorroborated` (why something stayed `possible`).
 
-**One finding per span.** Overlapping matches are resolved by specificity: a JWT is not also a bearer token and two entropy blobs, a card number is not also a bank account, an IBAN is not also a BIC.
+### Detector policies
 
-**Field-name rules** (`src/engine/context.py`): credential-named fields (`token`, `secret_key`, `authorization`, `cookie`, `webhook_url`, …) classify their value as a credential whatever its entropy; identifier fields (`*_id`, `hash`, `etag`, `if-none-match`, `path`, `references`, …) never yield token findings; counter/timestamp fields never yield card/id numbers; `full_name`/`first_name` fields yield `PII.PersonName`; `mobile`/`phone` fields enable national-format phone parsing.
+Each detector has a reporting policy (`src/engine/policy.py`, looked up by name with category defaults, so a new recognizer needs no entry unless it deviates):
 
-**Output.** Every finding carries a `value_hash` (sha256 prefix) for correlating the same value across scans; reported values are capped at 200 characters.
+| Field | Meaning | Vendor precedent |
+|---|---|---|
+| `context` | `required`: a hit with neither validation nor context is capped at `possible` (national ids, bank accounts, cards, SWIFT, opaque tokens); `boost`: context raises the tier; `none`: self-identifying (e-mail, JWT, IBAN, vendor tokens) | Macie keyword requirements per data type |
+| `column_ratio`, `column_min_matches` | share of a column's sampled values (and distinct matches) that classify the column | Sentra 50 % rule, Google column profiles |
+| `min_count`, `count_promotion` | distinct `possible` hits in one unit that become `likely`; off for word-shaped patterns (SWIFT/BIC) and random strings | Orca statistical scan, Purview "low-confidence patterns with 20+ instances", Nightfall minimum findings |
+| `identity`, `identity_corroboration` | identity signals (name, e-mail, phone, address, DOB) promote a `possible` national id / card in the same record | Purview supporting elements, Cyera identifiability |
+| `negative_fields` | column names that veto the detector (`txn`, `hash`, `invoice`, `port`, `amount` …) | DLP negative keywords, Google exclude-by-hotword |
 
-**Recognizer packs.** `src/engine/recognizers/` holds 90 country-specific and generic recognizers as native `Rule` objects (`src/engine/rules.py`: pattern scores, context words, validators/invalidators; test vectors in `tests/test_recognizers_*.py`). Rules are grouped by region pack; generic ones (IBAN, crypto wallets, IP, MAC) always run, `URL`/`UUID` are shipped disabled.
+### Field-name rules
 
-**Regression corpus.** `tests/fixtures/detection_corpus.json` is an anonymised corpus built from real Postgres/Mongo scans: 370+ reviewed false positives that must stay silent and 160+ true positives that must stay detected (`tests/test_regression_corpus.py`).
+Structured data carries its strongest signal in the field name (`DetectionEngine.scan_text(text, field_name=...)`; the name is never mixed into the scanned text). Macie counts a keyword in the column name or any element of the JSON path as proximity, and so does the engine: `src/engine/context.py` classifies credential-named fields (`token`, `secret_key`, `authorization`, `cookie`, `webhook_url`, …) whose values are credentials whatever their entropy, identifier fields (`*_id`, `hash`, `etag`, `path`, …) that never yield token findings, counter/timestamp fields that never yield card/id numbers, `full_name`/`first_name` fields that yield `PII.PersonName`, and `mobile`/`phone` fields that enable national-format phone parsing (a phone-named column whose numbers do not parse for the enabled regions still yields `possible` phones that column density can promote). Overlapping matches keep the most specific detector (a JWT is not also a bearer token, a card number is not also a bank account).
+
+**Names in prose.** A name in a name-labelled column is a field rule; a name inside a support note, a PDF page or a comment field needs a model (Macie NAME, Purview named entities, Cyera NER). With the spaCy model (`en_core_web_sm`, shipped in `requirements.txt`; `NER_ENABLED=false` skips it), `src/engine/ner.py` accepts PERSON entities that look like written names — two to four title-case tokens, no digits or acronyms, no company suffix — and entities the small model mislabels when their first token is in the shipped given-name lexicon (`src/engine/data/given_names.txt`). A name next to a context word or honorific (patient, customer, employee, regards, dear, Mr/Dr …) is `likely`; otherwise it is `possible` and the pipeline decides: a document with ten distinct names is `likely`, a lone name in a sentence stays hidden.
+
+### Column, record and file verdicts (`src/pipeline`)
+
+* **Column density** — a column whose sampled non-empty values match a detector at `column_ratio` (default 50 %) with at least `column_min_matches` distinct values is classified as that detector one tier above its cells: 40 SSN-shaped values under a meaningless header are a `likely` SSN column; a column of valid e-mails is `very_likely`. An isolated `possible` hit in an otherwise clean column is noise and stays hidden.
+* **Unit-name context** — the table, collection, sheet or object name is part of the path to a value (Macie counts a keyword "in the name of an element in the path"): a `possible` card number in `credit_cards.number` or an SSN-shaped value in `ssn_export.csv` is `likely` (`unit:<name>`). Only `possible` candidates are lifted; very weak patterns still need their column name.
+* **Sibling columns** — companions named for the detector raise its column one more tier (Sentra): `expiry`/`cvv` next to a card column, `routing`/`ifsc`/`swift` next to a bank account, `date_of_birth`/`first_name` next to a national id (`siblings:<columns>`).
+* **Record corroboration** — a `possible` national id or card in a row/document that also carries two identity signals (name, e-mail, phone, address, birth date) becomes `likely` (`record:identity`).
+* **Column exclusivity** — once a column is classified, other detectors' hits in it are coincidences (a phone number that happens to pass the NHS mod-11 check) and are dropped unless `very_likely` on their own (Google SDP's exclude-if-another-infoType-matched).
+* **Minimum counts** — in a document or a mixed column, `min_count` distinct `possible` hits of one detector become `likely` (`count:<n>`): a file with 30 SSN-shaped numbers is not a coincidence, one is.
+* **Aggregation** — a (detector, column) pair with `aggregation_threshold` or more hits collapses into one column-level finding carrying `aggregated`, `occurrences`, `column`, `column_sampled`, `column_matches`, `column_ratio`.
+* **Allow lists** — `allow_list` / `allow_regex` suppress known values (public contact numbers, sample data), like Macie allow lists.
+
+### Sampling
+
+Connectors read up to `sample_limit` rows/documents per unit (10 000). By default that is the head of the table; `SAMPLE_STRATEGY=random` (or `sample_strategy` per target) draws a random sample instead — `TABLESAMPLE SYSTEM (p)` on PostgreSQL and MSSQL when the planner estimate says the table holds more than twice the limit (p is sized to about three times the limit before `LIMIT` cuts it), `$sample` on MongoDB, the head on MySQL/MariaDB where no cheap random read exists. With `adaptive_sampling` the pipeline stops reading a unit once `settle_min_records` records have been seen, no new (column, detector) pair appeared for `settle_window` records and no column sits within `settle_margin` of its classification ratio — Wiz's "expand the sample until statistical confidence is reached". Rows already read count in the stats.
+
+### Output
+
+Every finding carries `resource_id`, `detector`, `category`, `severity`, `value` (capped at 200 characters), `location`, `confidence`, `evidence` and a `value_hash` (sha256 prefix for correlating the same value across scans). Column-level findings add the aggregation fields above. The worker's clubbed JSON entries carry the highest `confidence` among their findings.
+
+**Recognizer packs.** `src/engine/recognizers/` holds 159 country-specific and generic recognizers across 62 region packs as native `Rule` objects (`src/engine/rules.py`: pattern scores, context words, validators/invalidators; test vectors in `tests/test_recognizers_*.py`). Rules are grouped by region pack; generic ones (IBAN, crypto wallets, IP, MAC, IMEI, ICCID, VIN, passport MRZ, coordinates, ICD-10 / NDC codes, medical record numbers) always run, `URL`/`UUID` are shipped disabled. Validators return True (checksum holds), False (dropped) or None where the algorithm is not authoritative for every number (Danish CPR after 2007, Latvian 32-prefixed codes, UK UTR, Mexican RFC). Every detector name must exist in `fixtures/findings-mapping.json` (`tests/test_detector_names.py`).
+
+**Regression corpus.** `tests/fixtures/detection_corpus.json` is an anonymised corpus built from real Postgres/Mongo scans: 370+ reviewed false positives that must stay silent and 160+ true positives that must stay detected (`tests/test_regression_corpus.py`). `tests/test_pipeline.py` covers the column/record/file rules and the connector contract.
+
+**Sample dataset.** `sample_data/all_detectors.jsonl` / `.txt` hold one synthetic example per detector (built by `python -m tests.sample_dataset_builder`; `--check` scans them and lists anything not detected) — scan them to see every finding type the engine can produce, and `tests/test_sample_dataset.py` keeps them in sync with the catalogue.
+
+## Adding a connector
+
+A connector is a `BaseScanner` subclass (`src/scanners/base.py`) that implements how to *reach* and *read* a source; classification is inherited:
+
+```python
+from src.pipeline import Cell, Record, TextBlob          # what a connector emits
+from src.scanners.base import BaseScanner
+
+class SnowflakeScanner(BaseScanner):
+    def __init__(self, engine, config=None, client=None):
+        super().__init__(engine, config, client)
+        self.stats = {"tables_scanned": 0, "rows_scanned": 0, "errors": 0}
+
+    def iter_scan(self, target):                          # one unit at a time, so callers can checkpoint
+        for schema, table in self._list_tables(target):
+            resource_id = f"snowflake://{target['account']}/{schema}.{table}"
+            findings = self.classify(                     # the whole pipeline: context policy, column verdicts,
+                resource_id,                              # record corroboration, min counts, aggregation
+                self._rows(schema, table, target),
+                location_fn=lambda column, n: f"Table '{table}', Column '{column}' ({n} matches)",
+            )
+            self.stats["tables_scanned"] += 1
+            yield resource_id, f"{schema}.{table}", self.dedup_findings(findings)
+
+    def scan(self, target):
+        return self.collect(target)
+
+    def _rows(self, schema, table, target):               # a generator of Records; count rows in stats
+        for idx, row in enumerate(self._query(schema, table, target.get("sample_limit", 10000))):
+            self.stats["rows_scanned"] += 1
+            yield Record([Cell(str(v), column, f"Table '{table}', Row {idx}, Column '{column}'") for column, v in row.items() if v])
+```
+
+Rules of the contract:
+
+1. Emit `Record`s for rows/documents (`Cell.field` is the column name or dotted path the engine uses as context; `Cell.key` the aggregation key when array indices should collapse; `src.pipeline.document_record` builds one from any nested document) and `TextBlob`s for free text (`locate(start, end)` renders span locations).
+2. Keep `location` strings connector-specific and stable; pass `location_fn(column, n)` for column-level findings.
+3. Count what you read in `self.stats` inside the generator (it keeps counting when adaptive sampling stops early) and let `classify()` record read errors (`self.stats["errors"]`, `error_details`).
+4. Files of any origin go through `src/scanners/files.iter_units(path, resource_id, config)` — an object-store connector only downloads.
+5. New detectors are `Rule`s in `src/engine/recognizers/` plus a `fixtures/findings-mapping.json` entry, and, only if they deviate from their category, a `DetectorPolicy` in `src/engine/policy.py`.
+
+## How the vendors do it
+
+What the design above copies, with sources:
+
+* **Detector = pattern + validation + context policy.** Macie's managed data identifiers require a keyword within 30 characters for ambiguous types (SSN, bank account, passport, birth date, AWS secret key) and none for self-describing formats; custom identifiers add keywords (max match distance 50, 1–300), ignore words and occurrence thresholds ("if an object contains fewer occurrences than the lowest threshold, Macie doesn't create a finding") — [keyword requirements](https://docs.aws.amazon.com/macie/latest/user/managed-data-identifiers-keywords.html), [custom identifiers](https://docs.aws.amazon.com/macie/latest/user/cdis-options.html). Purview SITs are a primary element plus supporting elements within a proximity window (250 characters), with confidence low 65 / medium 75 / high 85 and the guidance to "use high confidence patterns with low counts, say five to 10, and low confidence patterns with higher counts, say 20 or more" — [sensitive information types](https://learn.microsoft.com/en-us/purview/sit-sensitive-information-type-learn-about).
+* **Column names are context.** Macie treats a keyword in the column name or in any element of the JSON path as proximity; Google SDP: "for tabular data, the context includes the column name" ([InspectConfig](https://docs.cloud.google.com/sensitive-data-protection/docs/reference/rest/v2/InspectConfig)); Sentra raises certainty when "the column is named credit card number" or an expiry/CVV column sits next to it ([Sentra](https://www.sentra.io/blog/building-a-better-dspm)).
+* **Discrete confidence.** Google SDP POSSIBLE ("signals can include passing checksums; lack of a strong contextual clue") / LIKELY / VERY_LIKELY, minimum POSSIBLE by default ([likelihood](https://docs.cloud.google.com/sensitive-data-protection/docs/likelihood)); Nightfall's "Possible is triggered by the appearance of the token without considering context", recommended minimum Likely ([Nightfall](https://help.nightfall.ai/detection_platform/faq/confidence_levels)); Wiz reports "classification confidence levels for each finding" with configurable thresholds ([Wiz DSPM Q&A](https://www.securityscientist.net/blog/12-questions-and-answers-about-wiz-dspm-wiz/)).
+* **Counts and density decide.** Orca: "a single, random nine-digit number in a file is unlikely to be a real Social Security number versus a file containing many"; custom identifiers carry count/density thresholds and column-name allow/deny lists ([Orca](https://orca.security/resources/blog/custom-data-detection/)). Sentra: "if 50% of values are valid credit card numbers, the whole column is labelled as such". Nightfall: minimum number of findings per detector "within the same message or file". presidio-structured picks a column's entity as the most common one across sampled cells.
+* **Negative evidence.** Google exclusion rules (dictionary, regex, exclude-if-another-infoType, exclude-by-hotword "allows you to exclude an entire column"), Macie ignore words and allow lists, Varonis negative keywords ([Varonis](https://www.varonis.com/blog/data-classification-deep-dive)), Gitleaks stopwords / allowlists, TruffleHog verified-vs-unverified results.
+* **Sampling to confidence.** Wiz: "statistical sampling of a sufficient number of records provides high-confidence classification results … incrementally expanding the sample until statistical confidence is reached", metadata-only for logs, full content for unstructured files ([Wiz](https://www.wiz.io/blog/wiz-data-classification)). Macie samples representative objects per bucket/prefix/type breadth-first and never re-analyses unchanged objects ([Macie automated discovery](https://docs.aws.amazon.com/macie/latest/user/discovery-asdd-how-it-works.html)). Cyera clones database snapshots and clusters similar files, sampling each cluster ([Cyera](https://www.cyera.com/blog/advancing-sensitive-data-classification-in-the-age-of-ai)).
+* **Identity context.** Cyera enriches classifications with data-subject role, region and identifiability and uses NER to tell SSNs from employee ids ([Cyera](https://www.cyera.com/blog/understanding-data-in-context-an-llm-driven-approach-to-data-classification)); Purview's example SIT requires an SSN to sit within 250 characters of a Name, DateOfBirth or AccountNumber.
+* **One pipeline, many sources.** Wiz scans S3, Azure Blob, GCS, RDS, BigQuery, DynamoDB and Snowflake through the same classifier library with "structural analysis and content sampling"; Macie applies one keyword model with three proximity rules — columnar, record-based, unstructured — which is exactly the `Record` (columnar / record shape) vs `TextBlob` split here.
+
+Not copied (deliberately): LLM verification of matches (Cyera, Varonis "only for ambiguous content") and API-level secret verification (TruffleHog) — both call out of the scanner with customer data.
 
 ## TLS to databases
 

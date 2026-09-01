@@ -1,9 +1,9 @@
-import json
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterator, List
 
 import boto3
 from boto3.dynamodb.types import TypeDeserializer
 
+from src.pipeline.records import Record, document_record
 from src.scanners.base import BaseScanner
 from src.utils.logger import get_logger
 
@@ -12,13 +12,16 @@ logger = get_logger(__name__)
 
 class DynamoDBScanner(BaseScanner):
     """
-    Scans DynamoDB tables for sensitive data.
-    Supports full baseline scanning and event-driven incremental CDC scanning via DynamoDB Streams.
+    Scans DynamoDB tables for sensitive data. Items are streamed as Records
+    (attribute paths as context) into the classification pipeline. Supports
+    full baseline scanning and event-driven incremental CDC scanning via
+    DynamoDB Streams.
     """
 
     def __init__(self, engine, config: Dict[str, Any] = None):
         super().__init__(engine, config)
         self.deserializer = TypeDeserializer()
+        self.stats = {"tables_scanned": 0, "items_scanned": 0, "errors": 0}
 
     def scan(self, target: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
@@ -35,53 +38,44 @@ class DynamoDBScanner(BaseScanner):
         resource_id = f"arn:aws:dynamodb:{region or 'us-east-1'}:table/{table_name}"
         logger.info(f"Starting DynamoDB scan for {resource_id}")
 
-        ddb_client = (
-            boto3.client("dynamodb", region_name=region)
-            if region
-            else boto3.client("dynamodb")
-        )
-        findings = []
-
+        limit = target.get("sample_limit", 10000)
         try:
+            ddb_client = (
+                boto3.client("dynamodb", region_name=region)
+                if region
+                else boto3.client("dynamodb")
+            )
             paginator = ddb_client.get_paginator("scan")
-            items_scanned = 0
-            limit = target.get("sample_limit", 10000)
-            if self.config.get("log_queries"):
-                logger.info(f"Executing DynamoDB Scan on table '{table_name}' (sample_limit {limit})")
-
-            # Paginate through table scan
-            for page in paginator.paginate(TableName=table_name):
-                if items_scanned >= limit:
-                    break
-
-                items = page.get("Items", [])
-                for item_idx, raw_item in enumerate(items):
-                    item = self._deserialize_item(raw_item)
-                    item_findings = self._scan_deserialized_item(item)
-
-                    # Track location using primary keys if possible, or index
-                    pk_info = self._get_primary_key_info(item)
-                    location = (
-                        f"Item index {items_scanned + item_idx} (Keys: {pk_info})"
-                    )
-
-                    for f in item_findings:
-                        findings.append(
-                            self.format_finding(
-                                f["detector"],
-                                f["category"],
-                                f["severity"],
-                                f["value"],
-                                resource_id,
-                                location,
-                            ),
-                        )
-
-                items_scanned += len(items)
-
         except Exception as e:
+            self.record_error(f"{resource_id}: {str(e)[:200]}")
             logger.error(f"Error scanning DynamoDB table {resource_id}: {str(e)}")
+            return []
 
+        if self.config.get("log_queries"):
+            logger.info(f"Executing DynamoDB Scan on table '{table_name}' (sample_limit {limit})")
+
+        def items() -> Iterator[Record]:
+            items_scanned = 0
+            try:
+                for page in paginator.paginate(TableName=table_name):
+                    if items_scanned >= limit:
+                        break
+                    page_items = page.get("Items", [])
+                    for item_idx, raw_item in enumerate(page_items):
+                        item = self._deserialize_item(raw_item)
+                        # Track location using primary keys if possible, or index
+                        base = f"Item index {items_scanned + item_idx} (Keys: {self._get_primary_key_info(item)})"
+                        yield document_record(item, lambda path, b=base: f"{b}, Field '{path}'")
+                    items_scanned += len(page_items)
+            finally:
+                self.stats["items_scanned"] += items_scanned
+
+        errors_before = self.stats["errors"]
+        findings = self.classify(
+            resource_id, items(), location_fn=lambda field, n: f"Attribute '{field}' ({n} matches)", unit_name=table_name,
+        )
+        if self.stats["errors"] == errors_before:
+            self.stats["tables_scanned"] += 1
         return findings
 
     def scan_stream_records(
@@ -89,10 +83,11 @@ class DynamoDBScanner(BaseScanner):
         records: List[Dict[str, Any]],
     ) -> List[Dict[str, Any]]:
         """
-        Scans change data capture (CDC) stream records.
+        Scans change data capture (CDC) stream records, one classification
+        unit per source table.
         """
-        findings = []
-        for idx, record in enumerate(records):
+        per_table: Dict[str, List[Record]] = {}
+        for record in records:
             event_name = record.get("eventName")  # INSERT, MODIFY, REMOVE
             if event_name == "REMOVE":
                 continue  # skip deletions
@@ -109,25 +104,23 @@ class DynamoDBScanner(BaseScanner):
             )
 
             item = self._deserialize_item(raw_image)
-            item_findings = self._scan_deserialized_item(item)
-
             pk_info = self._get_primary_key_info(
                 self._deserialize_item(dynamodb_data.get("Keys", {})),
             )
-            location = f"CDC Event {event_name} (Keys: {pk_info})"
+            base = f"CDC Event {event_name} (Keys: {pk_info})"
+            per_table.setdefault(table_resource_id, []).append(
+                document_record(item, lambda path, b=base: f"{b}, Field '{path}'"),
+            )
 
-            for f in item_findings:
-                findings.append(
-                    self.format_finding(
-                        f["detector"],
-                        f["category"],
-                        f["severity"],
-                        f["value"],
-                        table_resource_id,
-                        location,
-                    ),
-                )
-
+        findings: List[Dict[str, Any]] = []
+        for table_resource_id, table_records in per_table.items():
+            findings.extend(
+                self.classify(
+                    table_resource_id, table_records,
+                    location_fn=lambda field, n: f"Attribute '{field}' ({n} matches)",
+                    unit_name=table_resource_id.rsplit("/", 1)[-1],
+                ),
+            )
         return findings
 
     def _deserialize_item(self, raw_item: Dict[str, Any]) -> Dict[str, Any]:
@@ -141,18 +134,6 @@ class DynamoDBScanner(BaseScanner):
             except Exception:
                 deserialized[key] = val  # fallback if deserialization fails
         return deserialized
-
-    def _scan_deserialized_item(self, item: Dict[str, Any]) -> List[Dict[str, Any]]:
-        findings = []
-        for attr_name, value in item.items():
-            # The attribute name is context for the engine (password/token/id attributes)
-            if isinstance(value, str):
-                findings.extend(self.engine.scan_text(value, field_name=attr_name))
-            elif isinstance(value, (dict, list, set)):
-                findings.extend(self.engine.scan_text(json.dumps(value, default=str), field_name=attr_name))
-            elif value is not None and not isinstance(value, bool):
-                findings.extend(self.engine.scan_text(str(value), field_name=attr_name))
-        return findings
 
     def _get_primary_key_info(self, item: Dict[str, Any]) -> str:
         # A simple helper to summarize first few keys for tracking
