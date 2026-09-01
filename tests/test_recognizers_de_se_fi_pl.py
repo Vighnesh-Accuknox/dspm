@@ -131,11 +131,13 @@ def test_de_bsnr():
 
 
 def test_de_bsnr_validator():
-    _validator(_rule("DE_BSNR"), [
-        ("021234568", None), ("521234567", None), ("711234567", None), ("351234567", None),
-        ("741234567", None), ("991234567", None), ("051234567", None),
-        ("000000000", False), ("02123456", False), ("0212345689", False), ("02123456A", False),
-    ])
+    _validator(
+        _rule("DE_BSNR"), [
+            ("021234568", None), ("521234567", None), ("711234567", None), ("351234567", None),
+            ("741234567", None), ("991234567", None), ("051234567", None),
+            ("000000000", False), ("02123456", False), ("0212345689", False), ("02123456A", False),
+        ],
+    )
 
 
 def test_de_bsnr_field_hint():
@@ -148,8 +150,10 @@ def test_de_bsnr_field_hint():
 
 def test_de_fuehrerschein():
     rule = _rule("DE_FUEHRERSCHEIN")
-    for text in ("BO12345678A", "MU12345678B", "HH98765432C", "KO12345678X", "DO98765432Z",
-                 "GE123456780", "MU123456785", "mu12345678b"):
+    for text in (
+        "BO12345678A", "MU12345678B", "HH98765432C", "KO12345678X", "DO98765432Z",
+        "GE123456780", "MU123456785", "mu12345678b",
+    ):
         _single(rule, text, 0, 11, 0.35)
     _count(rule, "Führerscheinnummer: BO12345678A", 1)
     _count(rule, "Fahrerlaubnis MU12345678B wurde ausgestellt.", 1)
@@ -158,8 +162,10 @@ def test_de_fuehrerschein():
 
 
 def test_de_fuehrerschein_field_hint():
-    _field_hint(_rule("DE_FUEHRERSCHEIN"), "BO12345678A",
-                ["fuehrerschein_nr", "führerscheinnummer", "driver_license", "drivers_licence_no"])
+    _field_hint(
+        _rule("DE_FUEHRERSCHEIN"), "BO12345678A",
+        ["fuehrerschein_nr", "führerscheinnummer", "driver_license", "drivers_licence_no"],
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -187,8 +193,10 @@ def test_de_handelsregister_field_hint():
 
 def test_de_health_insurance():
     rule = _rule("DE_HEALTH_INSURANCE")
-    for text in ("A000500015", "C000500021", "A123456780", "M123456785", "B123456782",
-                 "Z000000005", "Z999999997", "a123456780"):
+    for text in (
+        "A000500015", "C000500021", "A123456780", "M123456785", "B123456782",
+        "Z000000005", "Z999999997", "a123456780",
+    ):
         _single(rule, text, 0, 10, MAX_SCORE)
     _single(rule, "Krankenkasse KVNR: A123456780", 19, 29, MAX_SCORE)
     _single(rule, "eGK-Nummer M123456785 bitte angeben.", 11, 21, MAX_SCORE)
@@ -197,18 +205,22 @@ def test_de_health_insurance():
 
 
 def test_de_health_insurance_validator():
-    _validator(_rule("DE_HEALTH_INSURANCE"), [
-        ("A000500015", True), ("C000500021", True), ("A123456780", True), ("M123456785", True),
-        ("B123456782", True), ("Z000000005", True), ("Z999999997", True),
-        ("A123456787", False), ("M123456789", False), ("A000500010", False),
-        ("1123456780", False), ("A12345678", False), ("A1234567890", False),
-        ("a123456780", True),
-    ])
+    _validator(
+        _rule("DE_HEALTH_INSURANCE"), [
+            ("A000500015", True), ("C000500021", True), ("A123456780", True), ("M123456785", True),
+            ("B123456782", True), ("Z000000005", True), ("Z999999997", True),
+            ("A123456787", False), ("M123456789", False), ("A000500010", False),
+            ("1123456780", False), ("A12345678", False), ("A1234567890", False),
+            ("a123456780", True),
+        ],
+    )
 
 
 def test_de_health_insurance_field_hint():
-    _field_hint(_rule("DE_HEALTH_INSURANCE"), "A000500015",
-                ["krankenversicherungsnummer", "kvnr", "health_insurance_no"])
+    _field_hint(
+        _rule("DE_HEALTH_INSURANCE"), "A000500015",
+        ["krankenversicherungsnummer", "kvnr", "health_insurance_no"],
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -231,13 +243,15 @@ def test_de_id_card():
 
 
 def test_de_id_card_validator():
-    _validator(_rule("DE_ID_CARD"), [
-        ("L01X00T44", True), ("C01234565", True), ("CZ6311T03", True), ("G00000002", True),
-        ("l01x00t44", True),
-        ("L01X00T47", False), ("C01234567", False),
-        ("T22000129", None), ("T00000000", None),
-        ("L01X00T4", False), ("L01X00T440", False), ("L01X00T4A", False),
-    ])
+    _validator(
+        _rule("DE_ID_CARD"), [
+            ("L01X00T44", True), ("C01234565", True), ("CZ6311T03", True), ("G00000002", True),
+            ("l01x00t44", True),
+            ("L01X00T47", False), ("C01234567", False),
+            ("T22000129", None), ("T00000000", None),
+            ("L01X00T4", False), ("L01X00T440", False), ("L01X00T4A", False),
+        ],
+    )
 
 
 def test_de_id_card_field_hint():
@@ -251,8 +265,10 @@ def test_de_id_card_field_hint():
 
 def test_de_kfz():
     rule = _rule("DE_KFZ")
-    for text in ("B AB 1234", "M XY 999", "HH AB 1234", "KA EF 12H", "S AB 12E", "MIL E 1234",
-                 "MIL EF 1234E", "B-AB-1234", "M-XY-999", "HH-AB-1234", "b ab 1234", "m xy 999"):
+    for text in (
+        "B AB 1234", "M XY 999", "HH AB 1234", "KA EF 12H", "S AB 12E", "MIL E 1234",
+        "MIL EF 1234E", "B-AB-1234", "M-XY-999", "HH-AB-1234", "b ab 1234", "m xy 999",
+    ):
         _single(rule, text, 0, len(text), 0.3)  # umlaut-aware patterns (0.3) win over ASCII (0.2)
     _count(rule, "Das Fahrzeug mit Kennzeichen B AB 1234 wurde gesehen.", 1)
     _count(rule, "Kennzeichen: HH-AB-1234.", 1)
@@ -279,12 +295,14 @@ def test_de_lanr():
 
 
 def test_de_lanr_validator():
-    _validator(_rule("DE_LANR"), [
-        ("123456601", True), ("234567701", True), ("100000601", True), ("987654401", True),
-        ("555555501", True), ("999999901", True),
-        ("123456901", False), ("234567601", False), ("100000401", False),
-        ("12345660", False), ("1234566010", False), ("12345660a", False),
-    ])
+    _validator(
+        _rule("DE_LANR"), [
+            ("123456601", True), ("234567701", True), ("100000601", True), ("987654401", True),
+            ("555555501", True), ("999999901", True),
+            ("123456901", False), ("234567601", False), ("100000401", False),
+            ("12345660", False), ("1234566010", False), ("12345660a", False),
+        ],
+    )
 
 
 def test_de_lanr_field_hint():
@@ -306,13 +324,15 @@ def test_de_passport():
 
 
 def test_de_passport_validator():
-    _validator(_rule("DE_PASSPORT"), [
-        ("C01234565", True), ("F12345671", True), ("L01X00T44", True), ("CZ6311T03", True),
-        ("G00000002", True), ("C01X00T41", True), ("c01234565", True),
-        ("C01234567", False), ("L01X00T47", False),
-        ("C0123456", False), ("C012345678", False), ("C0123456A", False),
-        ("A01234567", False), ("IOQSUBDE1", False),
-    ])
+    _validator(
+        _rule("DE_PASSPORT"), [
+            ("C01234565", True), ("F12345671", True), ("L01X00T44", True), ("CZ6311T03", True),
+            ("G00000002", True), ("C01X00T41", True), ("c01234565", True),
+            ("C01234567", False), ("L01X00T47", False),
+            ("C0123456", False), ("C012345678", False), ("C0123456A", False),
+            ("A01234567", False), ("IOQSUBDE1", False),
+        ],
+    )
 
 
 def test_de_passport_field_hint():
@@ -353,24 +373,30 @@ def test_de_social_security():
     for text in ("15070649C103", "65070803A019", "20151090B023", "38551285K051"):
         _single(rule, text, 0, 12, MAX_SCORE)
     _single(rule, "RVNR: 15070649C103 laut Sozialversicherungsausweis.", 6, 18, MAX_SCORE)
-    for text in ("15070649C100", "65070803A012", "15070049C103", "15071349C103",
-                 "150706491103", "15070649C10", "15070649C1030"):
+    for text in (
+        "15070649C100", "65070803A012", "15070049C103", "15071349C103",
+        "150706491103", "15070649C10", "15070649C1030",
+    ):
         _none(rule, text)
 
 
 def test_de_social_security_validator():
-    _validator(_rule("DE_SOCIAL_SECURITY"), [
-        ("15070649C103", True), ("65070803A019", True), ("20151090B023", True), ("38551285K051", True),
-        ("15070649C100", False), ("65070803A012", False), ("65070803A018", False),
-        ("150706491103", False), ("15070649C10", False), ("15070649C1030", False),
-        ("15420649C103", False), ("15850649C103", False),
-        ("15070049C103", False), ("15071349C103", False),
-    ])
+    _validator(
+        _rule("DE_SOCIAL_SECURITY"), [
+            ("15070649C103", True), ("65070803A019", True), ("20151090B023", True), ("38551285K051", True),
+            ("15070649C100", False), ("65070803A012", False), ("65070803A018", False),
+            ("150706491103", False), ("15070649C10", False), ("15070649C1030", False),
+            ("15420649C103", False), ("15850649C103", False),
+            ("15070049C103", False), ("15071349C103", False),
+        ],
+    )
 
 
 def test_de_social_security_field_hint():
-    _field_hint(_rule("DE_SOCIAL_SECURITY"), "15070649C103",
-                ["sozialversicherungsnummer", "social_security_number", "svnr", "rv_nr"])
+    _field_hint(
+        _rule("DE_SOCIAL_SECURITY"), "15070649C103",
+        ["sozialversicherungsnummer", "social_security_number", "svnr", "rv_nr"],
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -383,19 +409,23 @@ def test_de_tax_id():
         _single(rule, text, 0, 11, MAX_SCORE)
     _single(rule, "Meine Steuer-ID: 12345678903.", 17, 28, MAX_SCORE)
     _single(rule, "IdNr. 98765432106 liegt vor.", 6, 17, MAX_SCORE)
-    for text in ("12345678901", "98765432100", "02345678901", "1234567890", "123456789030",
-                 "11111111111", "11112345678"):
+    for text in (
+        "12345678901", "98765432100", "02345678901", "1234567890", "123456789030",
+        "11111111111", "11112345678",
+    ):
         _none(rule, text)
 
 
 def test_de_tax_id_validator():
-    _validator(_rule("DE_TAX_ID"), [
-        ("12345678903", True), ("98765432106", True),
-        ("12345678901", False), ("98765432100", False),
-        ("02345678903", False), ("abcdefghijk", False),
-        ("1234567890", False), ("123456789030", False),
-        ("11111111111", False), ("11112345678", False), ("12222234567", False),
-    ])
+    _validator(
+        _rule("DE_TAX_ID"), [
+            ("12345678903", True), ("98765432106", True),
+            ("12345678901", False), ("98765432100", False),
+            ("02345678903", False), ("abcdefghijk", False),
+            ("1234567890", False), ("123456789030", False),
+            ("11111111111", False), ("11112345678", False), ("12222234567", False),
+        ],
+    )
 
 
 def test_de_tax_id_field_hint():
@@ -447,29 +477,35 @@ def test_de_vat_id_default_mode():
 def test_de_vat_id_real_world_formatting():
     rule = _rule("DE_VAT_ID")
     _single(rule, "DE 136 695 976", 0, 14, MAX_SCORE)
-    for text in ("DE 129 273 398", "DE 136695976", "DE-136-695-976", "DE.136.695.976",
-                 "DE 136-695.976", "de 136 695 976"):
+    for text in (
+        "DE 129 273 398", "DE 136695976", "DE-136-695-976", "DE.136.695.976",
+        "DE 136-695.976", "de 136 695 976",
+    ):
         _single(rule, text, 0, len(text), MAX_SCORE)
     _count(rule, "Rechnung USt-IdNr. DE 136 695 976 von Beispiel GmbH", 1)
 
 
 def test_de_vat_id_validator_tri_state():
-    _validator(_rule("DE_VAT_ID"), [
-        ("DE136695976", True), ("DE129273398", True), ("DE123456788", True), ("DE111111117", True),
-        ("de136695976", True), ("DE 136 695 976", True), ("DE-136-695-976", True),
-        ("DE.136.695.976", True), ("de 136-695.976", True),
-        ("DE12345678", False), ("DE1234567890", False), ("AT123456789", False), ("", False),
-        ("DEabcdefghi", False),
-        ("DE123456789", None), ("DE987654321", None), ("DE100000001", None),
-    ])
+    _validator(
+        _rule("DE_VAT_ID"), [
+            ("DE136695976", True), ("DE129273398", True), ("DE123456788", True), ("DE111111117", True),
+            ("de136695976", True), ("DE 136 695 976", True), ("DE-136-695-976", True),
+            ("DE.136.695.976", True), ("de 136-695.976", True),
+            ("DE12345678", False), ("DE1234567890", False), ("AT123456789", False), ("", False),
+            ("DEabcdefghi", False),
+            ("DE123456789", None), ("DE987654321", None), ("DE100000001", None),
+        ],
+    )
 
 
 def test_de_vat_id_validator_strict_mode():
     from src.engine.recognizers.de_se_fi_pl import _validate_de_vat_id
 
-    for value, expected in (("DE136695976", True), ("DE 136 695 976", True),
-                            ("DE12345678", False), ("AT123456789", False),
-                            ("DE123456789", False), ("DE987654321", False), ("DE100000001", False)):
+    for value, expected in (
+        ("DE136695976", True), ("DE 136 695 976", True),
+        ("DE12345678", False), ("AT123456789", False),
+        ("DE123456789", False), ("DE987654321", False), ("DE100000001", False),
+    ):
         assert _validate_de_vat_id(value, strict_checksum=True) is expected, value
 
 
@@ -496,12 +532,14 @@ def test_se_organisationsnummer():
 
 
 def test_se_organisationsnummer_validator():
-    _validator(_rule("SE_ORGANISATIONSNUMMER"), [
-        ("212000-0142", True), ("5567037485", True),
-        ("2120000143", False),   # Luhn mismatch
-        ("2100000142", False),   # third digit < 2
-        ("212000-014", False),   # 9 digits
-    ])
+    _validator(
+        _rule("SE_ORGANISATIONSNUMMER"), [
+            ("212000-0142", True), ("5567037485", True),
+            ("2120000143", False),   # Luhn mismatch
+            ("2100000142", False),   # third digit < 2
+            ("212000-014", False),   # 9 digits
+        ],
+    )
 
 
 def test_se_organisationsnummer_field_hint():
@@ -532,15 +570,17 @@ def test_se_personnummer():
 
 
 def test_se_personnummer_validator():
-    _validator(_rule("SE_PERSONNUMMER"), [
-        ("198712202384", True), ("871220-2384", True),
-        ("19000309-3393", False),  # Luhn mismatch
-        ("19001309-2393", False),  # month 13
-        ("200504422381", False),   # day 42
-        ("8712202384", True),      # samordningsnummer-style days (61+) are accepted by the date check
-        ("871280-2384", False),    # day 80 -> 20 ok for date, but Luhn fails
-        ("8712", False),
-    ])
+    _validator(
+        _rule("SE_PERSONNUMMER"), [
+            ("198712202384", True), ("871220-2384", True),
+            ("19000309-3393", False),  # Luhn mismatch
+            ("19001309-2393", False),  # month 13
+            ("200504422381", False),   # day 42
+            ("8712202384", True),      # samordningsnummer-style days (61+) are accepted by the date check
+            ("871280-2384", False),    # day 80 -> 20 ok for date, but Luhn fails
+            ("8712", False),
+        ],
+    )
 
 
 def test_se_personnummer_field_hint():
@@ -553,34 +593,42 @@ def test_se_personnummer_field_hint():
 
 def test_fi_personal_identity_code():
     rule = _rule("FI_PERSONAL_IDENTITY_CODE")
-    for text in ("010594Y9032", "010594Y9021", "020594X903P", "020594X902N", "030594W903B",
-                 "030694W9024", "040594V9030", "040594V902Y", "050594U903M", "050594U902L",
-                 "010516B903X", "010516B902W", "020516C903K", "020516C902J", "030516D9037",
-                 "030516D9026", "010501E9032", "020502E902X", "020503F9037", "020504A902E",
-                 "020504B904H", "131052-308T", "131052-308t", "020504a902e"):
+    for text in (
+        "010594Y9032", "010594Y9021", "020594X903P", "020594X902N", "030594W903B",
+        "030694W9024", "040594V9030", "040594V902Y", "050594U903M", "050594U902L",
+        "010516B903X", "010516B902W", "020516C903K", "020516C902J", "030516D9037",
+        "030516D9026", "010501E9032", "020502E902X", "020503F9037", "020504A902E",
+        "020504B904H", "131052-308T", "131052-308t", "020504a902e",
+    ):
         _single(rule, text, 0, 11, MAX_SCORE)
     _single(rule, "My personal identity code is: 010594Y9032. Thank you.", 30, 41, MAX_SCORE)
     _single(rule, "020594X903P is my hetu.", 0, 11, MAX_SCORE)
     _single(rule, "Here's my henkilötunnus 020594X902N.", 24, 35, MAX_SCORE)
     _single(rule, "My finnish id code is030594W903B.", 21, 32, MAX_SCORE)  # Very Weak pattern only
-    for text in ("111111-111A", "111111+110G", "311190-1111", "310289-211C", "012245A110G",
-                 "010324A110G", "131052/308T", "131052:308T", "131052.308T", "290200+311B"):
+    for text in (
+        "111111-111A", "111111+110G", "311190-1111", "310289-211C", "012245A110G",
+        "010324A110G", "131052/308T", "131052:308T", "131052.308T", "290200+311B",
+    ):
         _none(rule, text)
 
 
 def test_fi_personal_identity_code_validator():
-    _validator(_rule("FI_PERSONAL_IDENTITY_CODE"), [
-        ("010594Y9032", True), ("131052-308T", True), ("131052-308t", True),
-        ("111111-111A", False),   # control character mismatch
-        ("311190-1111", False),   # 31 November
-        ("290200+311B", False),   # 29 Feb 1800 (not a leap year)
-        ("010594Y903", False),    # 10 characters
-    ])
+    _validator(
+        _rule("FI_PERSONAL_IDENTITY_CODE"), [
+            ("010594Y9032", True), ("131052-308T", True), ("131052-308t", True),
+            ("111111-111A", False),   # control character mismatch
+            ("311190-1111", False),   # 31 November
+            ("290200+311B", False),   # 29 Feb 1800 (not a leap year)
+            ("010594Y903", False),    # 10 characters
+        ],
+    )
 
 
 def test_fi_personal_identity_code_field_hint():
-    _field_hint(_rule("FI_PERSONAL_IDENTITY_CODE"), "010594Y9032",
-                ["henkilotunnus", "henkilötunnus", "hetu", "personal_identity_code"])
+    _field_hint(
+        _rule("FI_PERSONAL_IDENTITY_CODE"), "010594Y9032",
+        ["henkilotunnus", "henkilötunnus", "hetu", "personal_identity_code"],
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -598,12 +646,14 @@ def test_pl_pesel():
 
 
 def test_pl_pesel_validator():
-    _validator(_rule("PL_PESEL"), [
-        ("44051401458", True), ("02070803628", True), ("11111111116", True),
-        ("44051401459", False), ("85040812345", False),
-        ("4405140145", False), ("440514014588", False),
-        ("4405140145A", False), ("44-051401458", False),
-    ])
+    _validator(
+        _rule("PL_PESEL"), [
+            ("44051401458", True), ("02070803628", True), ("11111111116", True),
+            ("44051401459", False), ("85040812345", False),
+            ("4405140145", False), ("440514014588", False),
+            ("4405140145A", False), ("44-051401458", False),
+        ],
+    )
 
 
 def test_pl_pesel_field_hint():

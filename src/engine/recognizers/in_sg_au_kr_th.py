@@ -55,7 +55,7 @@ _IN_GSTIN_PAIRS: Pairs = (("-", ""), (" ", ""))
 # upper-cased text (plain `re`, no flags), falling back to replacement pairs.
 _IN_GSTIN_STRICT_RE = re.compile(
     r"\b((?:0[1-9]|[1-3][0-7])[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}"
-    r"[0-9A-Za-z]{1}Z[0-9A-Za-z]{1})\b"
+    r"[0-9A-Za-z]{1}Z[0-9A-Za-z]{1})\b",
 )
 
 
