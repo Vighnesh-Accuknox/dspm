@@ -17,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: experiments
           token: ${{ secrets.GH_ORG_TOKEN }}
 
       - name: Get tag name
@@ -45,4 +45,4 @@ jobs:
         uses: CasperWA/push-protected@v2
         with:
           token: ${{ secrets.GH_ORG_TOKEN }}
-          branch: main
+          branch: experiments
