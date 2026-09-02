@@ -1,0 +1,48 @@
+name: Update Release Version
+
+on:
+  push:
+    tags:
+      - '*'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  update-release-file:
+    name: Update release.txt
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GH_ORG_TOKEN }}
+
+      - name: Get tag name
+        id: get_tag
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+          echo "TAG=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Update release.txt
+        run: |
+          echo "${{ steps.get_tag.outputs.TAG }}" > release.txt
+
+      - name: Commit changes
+        run: |
+          git config --global user.email "devops.alerts@accuknox.com"
+          git config --global user.name "accuknox-user"
+          git add release.txt
+          git commit -m "Update release.txt to ${{ steps.get_tag.outputs.TAG }}"
+
+      - name: Push commit to a protected branch
+        uses: CasperWA/push-protected@v2
+        with:
+          token: ${{ secrets.GH_ORG_TOKEN }}
+          branch: main
