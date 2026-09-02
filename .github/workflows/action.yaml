@@ -8,6 +8,7 @@ on:
 env:
   IMAGE_NAME: dspm
   ECR_REGISTRY: public.ecr.aws/k9v9d5v2
+  AWS_REGION: us-east-1
 
 jobs:
   build-and-push:
@@ -28,6 +29,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_DEV_ACCESS_ID }}
           aws-secret-access-key: ${{ secrets.AWS_DEV_SECRET_ID }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
